@@ -10,7 +10,7 @@ Este repositorio es una estación de trabajo completa pensada para ingenieros, a
 
 Está diseñado bajo dos principios fundamentales:
 1. **📦 Automatización de Software sin Fricción:** Provisiona y diagnostica en Windows todo el conjunto de herramientas esenciales de la industria (Git, GitHub CLI, Docker, Kubernetes, Terraform, Cloud CLIs de AWS y Azure, etc.) mediante scripts de PowerShell y **Windows Package Manager (Winget)**.
-2. **🧠 Espacio de Conocimiento Libre y Agnóstico (Second Brain + RAG):** **Arquitectura 100% modular y abierta.** Puedes crear libremente cualquier carpeta que necesites (puntes/, material/, practicas/, ideos/, certificaciones/, docker/, kubernetes/, etc.). El motor local indexa automáticamente tus notas Markdown, guías y PDFs en una base de datos **SQLite FTS5** y te brinda un **Tutor de IA interactivo** que responde citando tus propios documentos.
+2. **🧠 Espacio de Conocimiento Libre y Agnóstico (Second Brain + RAG):** **Arquitectura 100% modular y abierta.** Puedes crear libremente cualquier carpeta que necesites (apuntes/, material/, practicas/, videos/, certificaciones/, docker/, kubernetes/, etc.). El motor local indexa automáticamente tus notas Markdown, guías y PDFs en una base de datos **SQLite FTS5** y te brinda un **Tutor de IA interactivo** que responde citando tus propios documentos.
 
 ---
 
@@ -101,7 +101,7 @@ Puedes estructurar tus directorios como mejor se adapte a tu flujo de trabajo. U
 │   ├── verificar-tools.ps1
 │   ├── crear_indice_rag.py
 │   └── servidor_asistente.py
-├── course_hub.html          # Panel Web interactivo
+├── devops_hub.html          # Panel Web interactivo
 ├── player/                  # Reproductor de video local
 ├── iniciar-mi-hub.bat       # Lanzador en 1 clic
 └── actualizar-mi-base.bat   # Re-indexador en 1 clic

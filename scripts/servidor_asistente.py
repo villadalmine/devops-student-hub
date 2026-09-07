@@ -5,7 +5,7 @@
    SERVIDOR ASISTENTE & HUB DEVOPS UNIVERSAL
 ===============================================================================
 Servidor local multihilo que provee:
-  1. Interfaz Web DevOps Hub: course_hub.html y reproductor de video local.
+  1. Interfaz Web DevOps Hub: devops_hub.html y reproductor de video local.
   2. Streaming de Videos Locales (videos/*.mp4 con soporte HTTP Range 206).
   3. Motor de Búsqueda RAG sobre la base SQLite FTS5 (data/devops_knowledge.db).
   4. Tutor IA con modos: Tutor DevOps, Laboratorio/Terminal, Exámenes/Certificaciones.
@@ -97,7 +97,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         # Redirigir raíz al portal principal
         if path in ["/", "/index.html"]:
             self.send_response(302)
-            self.send_header("Location", "/course_hub.html")
+            self.send_header("Location", "/devops_hub.html")
             self.end_headers()
             return
 
@@ -483,7 +483,7 @@ def main():
     print(f" [*] Directorio Raíz : {STUDENT_DIR}")
     print(f" [*] Base de Datos   : {DB_PATH}")
     print(f" [*] Carpeta Videos  : {VIDEOS_DIR}")
-    print(f" [*] URL de Acceso   : http://localhost:{PORT}/course_hub.html")
+    print(f" [*] URL de Acceso   : http://localhost:{PORT}/devops_hub.html")
     print("=" * 80)
     print("Presiona Ctrl + C para detener el servidor.\n")
 

@@ -24,6 +24,6 @@ if not exist "data\devops_knowledge.db" (
 )
 
 echo [*] Lanzando servidor local en http://localhost:8080 ...
-start "" "http://localhost:8080/course_hub.html"
+start "" "http://localhost:8080/devops_hub.html"
 python scripts\servidor_asistente.py
 pause
