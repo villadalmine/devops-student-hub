@@ -42,6 +42,18 @@ CHATS_FILE = os.path.join(DATA_DIR, "chats_guardados.json")
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(VIDEOS_DIR, exist_ok=True)
 
+SYSTEM_LOGS = []
+
+def log_event(level, msg):
+    timestamp = time.strftime('%H:%M:%S')
+    log_entry = f"[{timestamp}] [{level}] {msg}"
+    print(log_entry, flush=True)
+    SYSTEM_LOGS.append(log_entry)
+    if len(SYSTEM_LOGS) > 200:
+        SYSTEM_LOGS.pop(0)
+
+log_event("INIT", f"Servidor RAG DevOps Hub inicializado en {STUDENT_DIR}")
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
@@ -93,6 +105,15 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         elif path == "/api/file":
             rel_file = query.get("path", [""])[0]
             self.handle_api_file(rel_file)
+            return
+
+        # 6. API: Telemetría y logs en vivo (/api/telemetry)
+        elif path == "/api/telemetry":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps(SYSTEM_LOGS, ensure_ascii=False).encode('utf-8'))
             return
 
         # 6. Streaming de Videos Locales (/videos/<filename>)
@@ -334,6 +355,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             return
 
         results = search_in_db(query_str, category_filter=category_filter, limit=10)
+        log_event("SEARCH", f"Búsqueda FTS5: '{query_str}' (Cat: {category_filter}) -> {len(results)} resultados")
         self.send_json({"ok": True, "query": query_str, "results": results})
 
     def handle_api_ask(self, body):
@@ -346,8 +368,11 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.send_json({"ok": False, "error": "Pregunta vacía."})
             return
 
+        log_event("USER", f"Consulta: '{question}' (Modo: {mode}, Motor IA: {model})")
+
         # 1. Recuperación RAG de fragmentos relevantes
         results = search_in_db(question, category_filter=cat_filter, limit=6)
+        log_event("RAG", f"Recuperados {len(results)} fragmentos relevantes para el contexto")
 
         # 2. Construcción del Prompt Pedagógico
         system_prompt = build_student_prompt(mode)
@@ -355,6 +380,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
 
         # 3. Invocación del Modelo (Antigravity CLI -> Claude Code -> Gemini -> Ollama -> RAG Offline)
         response_text, provider = execute_ai_query(system_prompt, question, context_text, model_choice=model)
+        log_event("DONE", f"Respuesta generada exitosamente con proveedor: {provider}")
 
         self.send_json({
             "ok": True,
@@ -367,10 +393,13 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
 
     def handle_api_reindex(self):
         index_script = os.path.join(SCRIPT_DIR, "crear_indice_rag.py")
+        log_event("MAINT", "Solicitud de re-indexación de la base recibida...")
         try:
             out = subprocess.check_output([sys.executable, index_script], stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+            log_event("MAINT", "Re-indexación completada con éxito.")
             self.send_json({"ok": True, "message": "Base de conocimiento actualizada con éxito.", "output": out})
         except Exception as e:
+            log_event("ERROR", f"Error durante re-indexación: {e}")
             self.send_json({"ok": False, "error": f"Error re-indexando: {e}"})
 
     def handle_get_saved_chats(self):
