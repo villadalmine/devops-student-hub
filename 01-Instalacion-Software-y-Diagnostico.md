@@ -1,7 +1,6 @@
 # Diagnóstico del Entorno Local y Guía de Instalación de Software
 
 > **Curso:** Cloud DevOps: Automatización y Despliegue  
-> **Institución:** EducaciónIT (Código: DEVO07 - Calendario: 84214)  
 > **Instructor:** rino@villadalmine.club  
 > **Fecha de Actualización:** Septiembre de 2026  
 
@@ -48,7 +47,7 @@ powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1
 ```
 
 ### Opciones Rápidas:
-* **Solo Obligatorio Alumni:** `powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1 -SoloObligatorio`
+* **Solo Software Base Core:** `powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1 -SoloObligatorio`
 * **Instalar Suite de IA:** `powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1 -Categoria AI`
 * **Instalar Terminales y TUIs:** `powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1 -Categoria TERM,TUI`
 * **Instalar Lenguajes y Redes eBPF:** `powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1 -Categoria LANG,EBPF`

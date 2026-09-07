@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Script de Verificacion de Herramientas Cloud DevOps para Windows.
-    Distingue entre Software Base Obligatorio / Mandatory (Alumni) y Herramientas Optativas.
+    Distingue entre Software Base DevOps (Core Esencial) y Herramientas Optativas.
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File .\verificar-tools.ps1
 #>
@@ -41,7 +41,7 @@ if (Test-Path $ghosttyPath) { $env:Path += ";$ghosttyPath" }
 $goPath = "C:\Program Files\Go\bin"
 if (Test-Path $goPath) { $env:Path += ";$goPath" }
 
-# 1. SOFTWARE BASE OBLIGATORIO / MANDATORY (ALUMNI / CLOUD DEVOPS)
+# 1. SOFTWARE BASE DEVOPS (CORE ESENCIAL)
 Write-Host " [1] SOFTWARE BASE OBLIGATORIO (MANDATORY):" -ForegroundColor Yellow
 $coreTools = @(
     @{ Name="Zoom Workplace"; Cmd="zoom"; Args=""; CustomCheck={ Test-Path "$env:APPDATA\Zoom\bin\Zoom.exe", "C:\Program Files\Zoom\bin\Zoom.exe", "$env:LOCALAPPDATA\Zoom\bin\Zoom.exe" } },

@@ -1,138 +1,139 @@
-# 🎓 Cloud DevOps Student Hub & Learning OS
+# 🚀 Cloud DevOps Workspace & Automation Hub
 
-> **Curso:** Cloud DevOps: Automatización y Despliegue (EducaciónIT - DEVO07)  
-> **Tu Segundo Cerebro Técnico:** Entorno offline-first con Tutor de IA local, apuntes, reproductor de clases y banco de autoevaluación.
-
----
-
-## 🌟 ¿Qué es este Campus Personal?
-
-Este repositorio es tu **Espacio de Aprendizaje Personal (Second Brain)** para las 12 clases del curso y para tu futura carrera como Ingeniero DevOps.
-
-A diferencia de un simple repositorio de código, aquí cuentas con:
-1. 🚀 **Instalador Automatizado de Herramientas:** Provisiona en minutos todo el software oficial de Alumni en Windows.
-2. 🤖 **Tutor Personal de IA con RAG Local:** Un asistente inteligente conectado a tu base de datos SQLite FTS5 (`data/devops_knowledge.db`) que responde dudas citando tus propios apuntes, diapositivas y transcripciones.
-3. 🎥 **Reproductor Local de Grabaciones:** Para ver tus clases locales (`.mp4`) o enlaces web sin depender de plataformas externas.
-4. 📝 **12 Plantillas de Apuntes en Markdown:** Listas para estructurar conceptos clave, comandos practicados y dudas.
-5. 🧩 **Simulador de Quizzes & Exámenes:** Banco interactivo de autoevaluación técnica con respuestas fundamentadas.
+> **Entorno Profesional DevOps para Windows:** Instalador automatizado de herramientas con Winget, base de conocimiento RAG local y asistente de IA de arquitectura abierta y agnóstica.
 
 ---
 
-## 🚀 Guía de Inicio Rápido (En 3 Pasos)
+## 💡 ¿Qué es este Repositorio?
 
-### Paso 1: Instalar el Software Base Obligatorio
-Abre PowerShell como **Administrador** en esta carpeta y ejecuta:
+Este repositorio es una estación de trabajo completa pensada para ingenieros, desarrolladores y estudiantes de **Cloud DevOps e Infraestructura moderna**. 
+
+Está diseñado bajo dos principios fundamentales:
+1. **📦 Automatización de Software sin Fricción:** Provisiona y diagnostica en Windows todo el conjunto de herramientas esenciales de la industria (Git, GitHub CLI, Docker, Kubernetes, Terraform, Cloud CLIs de AWS y Azure, etc.) mediante scripts de PowerShell y **Windows Package Manager (Winget)**.
+2. **🧠 Espacio de Conocimiento Libre y Agnóstico (Second Brain + RAG):** **No está atado a ningún curso ni estructura rígida de clases**. Puedes crear libremente cualquier carpeta que necesites (`apuntes/`, `material/`, `practicas/`, `videos/`, `certificaciones/`, `docker/`, `kubernetes/`, etc.). El motor local indexa automáticamente tus notas Markdown, guías y PDFs en una base de datos **SQLite FTS5** y te brinda un **Tutor de IA interactivo** que responde citando tus propios documentos.
+
+---
+
+## ⚡ 1. Instalación y Diagnóstico del Software DevOps
+
+Todo el proceso de instalación es automatizado, idempotente y utiliza herramientas oficiales de Microsoft y de los creadores de cada tecnología.
+
+### Paso A: Instalar el Software Base (Core Esencial)
+Abre **PowerShell como Administrador** en la raíz de este repositorio y ejecuta:
+
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloObligatorio
+powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloBase
 ```
-Esto instalará las 12 herramientas obligatorias (`Zoom, Git, GitHub CLI, VS Code, Docker, Terraform, AWS CLI, Azure CLI, kubectl, Helm, Minikube, jq`).
 
-> [!IMPORTANT]
-> **Autenticación con GitHub (Obligatorio):**  
-> Para poder sincronizar este repositorio en tu cuenta y clonar los ejercicios de clase, ejecuta:
-> ```powershell
-> gh auth login
-> ```
-> *(Selecciona: GitHub.com ➔ HTTPS ➔ Yes ➔ Login with a web browser).*
+Este comando instala el conjunto core recomendado:
+* **Control de Versiones & Colaboración:** `Git for Windows`, `GitHub CLI (gh)`.
+* **Editor & Entorno:** `Visual Studio Code`.
+* **Contenedores & Virtualización:** `Docker Desktop` (con WSL2 backend).
+* **Infraestructura como Código (IaC):** `HashiCorp Terraform`.
+* **Nubes Públicas:** `AWS CLI (v2)`, `Azure CLI (az)`.
+* **Orquestación de Contenedores:** `Kubernetes CLI (kubectl)`, `Helm`, `Minikube`.
+* **Procesamiento de Datos:** `jq` (filtro de respuestas JSON para scripts y pipelines).
 
-Para verificar que todo tu entorno esté al 100%, corre:
+*(Si deseas un menú interactivo con herramientas optativas adicionales como Ansible, Vagrant, Packer, K9s o Trivy, ejecuta simplemente `.\scripts\instalar-tools-devops.ps1`).*
+
+---
+
+### Paso B: Autenticarte con GitHub CLI (gh)
+Para vincular tu cuenta de GitHub, clonar repositorios y sincronizar tus cambios:
+
+```powershell
+gh auth login
+```
+> Elige: `GitHub.com` ➔ `HTTPS` ➔ `Yes` (autenticar Git credential helper) ➔ `Login with a web browser` e introduce el código de un solo uso que te muestra la terminal.
+
+---
+
+### Paso C: Verificar y Diagnosticar tu Entorno
+Comprueba que todos los comandos, variables de entorno `PATH` y servicios estén 100% operativos:
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\verificar-tools.ps1
 ```
 
 ---
 
-### Paso 2: Iniciar tu Campus Web en 1 Clic
-Haz doble clic en el archivo:
+## 🌐 2. Knowledge Hub & Asistente IA Local
+
+El repositorio incluye un servidor web local y un panel de control con motor RAG (Retrieval-Augmented Generation).
+
+### Iniciar el Hub en 1 Clic
+Haz doble clic sobre:
 ```text
-🚀 iniciar-mi-hub.bat
+▶ iniciar-mi-hub.bat
 ```
-Se abrirá automáticamente tu navegador en **`http://localhost:8080`** con el portal web interactivo.
+*(O ejecuta `python scripts/servidor_asistente.py`).*  
+Se abrirá automáticamente tu navegador en **`http://localhost:8080`**.
+
+### Características del Hub:
+* **💬 Tutor IA DevOps:** Un asistente pedagógico con 4 modos:
+  * *Tutor DevOps:* Conceptos de arquitectura cloud, Twelve-Factor App, DORA metrics y GitOps.
+  * *Laboratorio & Terminal:* Depuración de errores en consola, sintaxis de Dockerfiles, Terraform HCL y manifests de K8s.
+  * *Certificaciones & Entrevistas:* Simulador de preguntas técnicas (AWS, CKA, Docker, Terraform).
+  * *Documentación Local:* Preguntas que se responden consultando directamente tus notas locales.
+* **📁 Explorador Dinámico:** Muestra y agrupa en tarjetas todas las carpetas y documentos que vayas agregando.
+* **🔍 Buscador RAG SQLite FTS5:** Búsqueda a texto completo ultrarrápida sobre todos tus apuntes y PDFs.
+* **🎬 Reproductor de Video Local:** Transmite de forma fluida (`HTTP Range 206`) cualquier video que coloques en la carpeta `videos/`.
 
 ---
 
-### Paso 3: Usar tu Tutor de IA y Tomar Apuntes
-* **Para Estudiar:** En la pestaña **"Tutor IA & Chat"**, haz cualquier pregunta técnica. El asistente buscará en tus apuntes y materiales.
-* **Para Practicar:** Cambia el modo a **"Simulador de Examen"** y pídele: *"Tomame un quiz de 3 preguntas de la Clase 1"*.
-* **Para Tomar Notas:** Abre la carpeta `mis_apuntes/` y edita `Clase_01_Apuntes.md` con tus notas de cada clase.
+## 📂 Organización de Carpetas (Flexible y Libre)
 
----
-
-## 📁 Estructura del Repositorio
+Puedes estructurar tus directorios como mejor se adapte a tu flujo de trabajo. Una estructura sugerida:
 
 ```text
-dist_alumnos/
-├── 🚀 iniciar-mi-hub.bat             # 1 clic: Inicia el servidor local y abre el navegador
-├── 🔄 actualizar-mi-base.bat         # 1 clic: Re-escanea apuntes y PDFs en tu base SQLite
-├── 📄 course_hub.html                # Portal Web del Estudiante
-│
-├── 📂 mis_apuntes/                   # 📝 Tus notas Markdown clase por clase (Clase 01 a 12)
-├── 📂 mis_videos/                    # 🎥 Tus videos locales (.mp4) o URLs en clases.json
-├── 📂 material_clases/               # 📚 Diapositivas, PDFs y cheat sheets de referencia
-├── 📂 examenes_y_practicas/          # 🧩 Quizzes de autoevaluación y desafíos prácticos
-├── 📂 transcripciones/               # 🎙️ Subtítulos o transcripciones de audio/video
-├── 📂 player/                        # 🎬 Reproductor local de videos
-├── 📂 data/                          # 💾 Base de conocimiento SQLite FTS5 (devops_knowledge.db)
-└── 📂 scripts/                       # 🛠️ Scripts de instalación, diagnóstico y RAG
+├── apuntes/                 # Notas técnicas en Markdown (.md)
+│   ├── 01_Fundamentos_DevOps_y_Git.md
+│   └── README.md
+├── material/                # Libros, diapositivas, PDFs oficiales y cheat sheets
+│   └── README.md
+├── practicas/               # Dockerfiles, docker-compose, scripts bash/powershell, Terraform HCL
+│   └── README.md
+├── videos/                  # Grabaciones de clases, talleres o tutoriales (.mp4, .mkv, .webm)
+│   └── README.md
+├── data/                    # Base de datos SQLite FTS5 (devops_knowledge.db)
+├── scripts/                 # Scripts PowerShell de instalación y motor RAG en Python
+│   ├── instalar-tools-devops.ps1
+│   ├── verificar-tools.ps1
+│   ├── crear_indice_rag.py
+│   └── servidor_asistente.py
+├── course_hub.html          # Panel Web interactivo
+├── player/                  # Reproductor de video local
+├── iniciar-mi-hub.bat       # Lanzador en 1 clic
+└── actualizar-mi-base.bat   # Re-indexador en 1 clic
 ```
 
----
-
-## 🔄 ¿Cómo Actualizar tu Base de Conocimiento RAG?
-
-Cada vez que agregues un PDF a `material_clases/`, tomes nuevos apuntes en `mis_apuntes/` o descargues una transcripción:
-1. Haz doble clic en **`actualizar-mi-base.bat`** (o pulsa el botón **"Actualizar Base"** en la web).
-2. En **2 segundos**, SQLite indexará todo el texto nuevo.
-3. Tu Tutor IA ahora podrá responder citando esa nueva información.
+> **¿Quieres agregar una nueva carpeta?**  
+> Simplemente crea carpetas como `certificaciones/`, `aws-solutions-architect/`, `docker-labs/`, guarda archivos `.md` o `.pdf` dentro, y haz clic en **"Actualizar Base"** (o ejecuta `actualizar-mi-base.bat`). El sistema la detectará e indexará automáticamente.
 
 ---
 
-## 🤖 Configuración del Motor de IA (Opcional)
+## 🔄 Cómo Actualizar la Base de Conocimiento
 
-El Asistente funciona **100% offline out-of-the-box** usando el motor de búsqueda semántica SQLite FTS5. Si deseas respuestas redactadas con razonamiento conversacional generativo:
+Cada vez que agregues nuevos apuntes o descargues un libro/PDF:
+1. Haz doble clic en **`actualizar-mi-base.bat`** (o pulsa el botón **"Actualizar Base"** en la interfaz web).
+2. El script `scripts/crear_indice_rag.py` escaneará recursivamente todas tus carpetas y actualizará el índice de búsqueda en segundos.
 
-* **Opción A: Google Gemini (Recomendado y Gratuito)**
-  Obtén una clave gratuita en [Google AI Studio](https://aistudio.google.com/) y define la variable en tu sistema:
+---
+
+## 🤖 Proveedores de IA Soportados
+
+El Asistente RAG funciona **100% offline out-of-the-box** recuperando citas textuales y correlacionando fuentes locales desde SQLite. Si deseas habilitar redacción y razonamiento conversacional con LLMs generativos:
+
+* **Opción A: Google Gemini (Gratuito)**  
+  Genera una clave gratuita en [Google AI Studio](https://aistudio.google.com/) y configúrala en PowerShell:
   ```powershell
   [System.Environment]::SetEnvironmentVariable("GEMINI_API_KEY", "tu-clave-aqui", "User")
   ```
-
-* **Opción B: Ollama Local (100% Privado y Offline)**
-  Instala Ollama y descarga un modelo ligero:
-  ```powershell
-  ollama run qwen2.5
-  ```
-  El servidor asistente detectará automáticamente Ollama en `http://localhost:11434`.
+* **Opción B: Ollama Local (100% Privado y Offline)**  
+  Instala [Ollama](https://ollama.com/) y ejecuta tu modelo preferido (ej: `ollama run qwen2.5`). El servidor lo detectará automáticamente en el puerto 11434.
 
 ---
 
-## 🐙 Cómo Guardar tus Avances en tu Propio GitHub
+## 📄 Licencia
 
-Para respaldar tus notas, ejercicios y avances en tu perfil de GitHub:
-```powershell
-# 1. Guarda tus cambios
-git add .
-git commit -m "docs: apuntes y ejercicios de la clase"
-
-# 2. Súbelos a tu repositorio personal
-git push origin main
-```
-
----
-
-## 📅 Cronograma de las 12 Clases
-
-| Clase | Módulo | Tema Principal |
-| :---: | :--- | :--- |
-| **Clase 01** | M1: Fundamentos | Introducción a DevOps, Cultura CALMS, Métricas DORA y Git |
-| **Clase 02** | M1: Fundamentos | GitFlow, Trunk-Based Development, Pull Requests y Code Review |
-| **Clase 03** | M2: Cloud AWS | Cloud Computing, Modelo de Responsabilidad, AWS IAM y Amazon S3 |
-| **Clase 04** | M2: Cloud AWS | Cómputo EC2, Redes VPC, Subnets, Route Tables y Security Groups |
-| **Clase 05** | M3: Terraform | Infraestructura como Código (IaC), Sintaxis HCL, Providers y Recursos |
-| **Clase 06** | M3: Terraform | Terraform State, S3 Backend + DynamoDB locking y LocalStack |
-| **Clase 07** | M4: Docker | Contenerización, Docker Engine, Dockerfiles y Multi-Stage Builds |
-| **Clase 08** | M4: Docker | Docker Compose Multi-servicio, Redes, Volúmenes y Seguridad |
-| **Clase 09** | M5: Kubernetes | Orquestación con K8s, Arquitectura, Pods, Deployments y Auto-healing |
-| **Clase 10** | M5: Kubernetes | Services (ClusterIP, NodePort, LoadBalancer), Ingress, Secrets y Helm |
-| **Clase 11** | M6: CI/CD | Pipelines automatizados con GitHub Actions y GitOps con Argo CD |
-| **Clase 12** | M7: AWS Containers | Contenedores en AWS (ECS, Fargate, EKS), Monitoreo CloudWatch y Cierre |
+Código abierto bajo licencia MIT. ¡Siéntete libre de adaptarlo, bifurcarlo y utilizarlo para tu propio aprendizaje continuo!

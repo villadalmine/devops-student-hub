@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 ===============================================================================
-   INDEXADOR RAG LOCAL DEL ESTUDIANTE (CLOUD DEVOPS - EDUCACIONIT)
+   INDEXADOR RAG UNIVERSAL & BASE DE CONOCIMIENTO (CLOUD DEVOPS)
 ===============================================================================
-Escanea dinámicamente y actualiza la base de datos SQLite FTS5 (data/devops_knowledge.db):
-  - 📝 Mis Apuntes de Clase (mis_apuntes/)
-  - 📚 Diapositivas, PDFs y Libros (material_clases/)
-  - 🎙️ Transcripciones de Grabaciones (transcripciones/)
-  - 🧩 Exámenes y Quizzes de Práctica (examenes_y_practicas/)
-  - 🛠️ Guías de Instalación y Diagnóstico (01-Guia-*, README.md)
+Escanea de forma recursiva CUALQUIER directorio del espacio de trabajo
+(apuntes/, material/, videos/, practicas/, o carpetas personalizadas) e indexa
+todos los archivos Markdown (.md), texto (.txt) y documentos PDF (.pdf)
+en una base de datos SQLite FTS5 (data/devops_knowledge.db).
 ===============================================================================
 """
 
@@ -27,9 +25,13 @@ if sys.platform == "win32" and hasattr(sys.stdout, 'reconfigure'):
         pass
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
-DATA_DIR = os.path.join(STUDENT_DIR, "data")
+WORKSPACE_DIR = os.path.dirname(SCRIPT_DIR)
+DATA_DIR = os.path.join(WORKSPACE_DIR, "data")
 DB_PATH = os.path.join(DATA_DIR, "devops_knowledge.db")
+
+# Carpetas o archivos que no deben indexarse
+EXCLUDE_DIRS = {".git", ".agent", "skills", "scripts", "data", "player", "herdr", "nvim", "__pycache__", "node_modules", ".vscode"}
+EXCLUDE_FILES = {"clases.json", "package.json", "package-lock.json"}
 
 try:
     import pypdf
@@ -42,6 +44,7 @@ def init_db(db_path):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     
+    c.execute("DROP TABLE IF EXISTS course_docs;")
     c.execute("""
         CREATE TABLE IF NOT EXISTS course_docs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,9 +52,6 @@ def init_db(db_path):
             category TEXT NOT NULL,
             rel_path TEXT NOT NULL,
             abs_path TEXT NOT NULL,
-            clase_num INTEGER,
-            modulo TEXT,
-            video_url TEXT,
             summary TEXT,
             content TEXT NOT NULL,
             tags TEXT,
@@ -65,7 +65,6 @@ def init_db(db_path):
             title,
             category,
             rel_path,
-            modulo,
             tags,
             content,
             content='course_docs',
@@ -76,38 +75,11 @@ def init_db(db_path):
     conn.commit()
     return conn
 
-def detect_clase_num(text, filename=""):
-    combined = f"{filename} {text[:300]}".lower()
-    m = re.search(r'\b(?:clase|c)\s*0?([1-9]|1[0-2])\b', combined)
-    if m:
-        return int(m.group(1))
-    return None
-
-def detect_modulo(clase_num):
-    if not clase_num:
-        return "General"
-    if clase_num in [1, 2]:
-        return "M1: Cultura y Fundamentos DevOps"
-    elif clase_num in [3, 4]:
-        return "M2: Cloud Computing con AWS"
-    elif clase_num in [5, 6]:
-        return "M3: Infraestructura como Código con Terraform"
-    elif clase_num in [7, 8]:
-        return "M4: Contenedores con Docker"
-    elif clase_num in [9, 10]:
-        return "M5: Orquestación con Kubernetes"
-    elif clase_num == 11:
-        return "M6: CI/CD y GitOps"
-    elif clase_num == 12:
-        return "M7: Servicios Cloud Containers y Cierre"
-    return "General"
-
-def chunk_markdown(content, default_clase_num=None, chunk_size=500):
+def chunk_markdown(content, chunk_size=500):
     lines = content.split('\n')
     chunks = []
     current_chunk = []
-    current_title = "General"
-    current_clase = default_clase_num
+    current_title = "Documento"
     current_words = 0
     
     for line in lines:
@@ -116,8 +88,7 @@ def chunk_markdown(content, default_clase_num=None, chunk_size=500):
             if current_words >= 150 and line.startswith(('## ', '# ')):
                 chunk_text = "\n".join(current_chunk).strip()
                 if chunk_text:
-                    detected_c = detect_clase_num(chunk_text) or current_clase or default_clase_num
-                    chunks.append((current_title, chunk_text, detected_c))
+                    chunks.append((current_title, chunk_text))
                 current_chunk = []
                 current_words = 0
             current_title = clean_h
@@ -128,16 +99,14 @@ def chunk_markdown(content, default_clase_num=None, chunk_size=500):
         if current_words >= chunk_size:
             chunk_text = "\n".join(current_chunk).strip()
             if chunk_text:
-                detected_c = detect_clase_num(chunk_text) or current_clase or default_clase_num
-                chunks.append((current_title, chunk_text, detected_c))
+                chunks.append((current_title, chunk_text))
             current_chunk = []
             current_words = 0
             
     if current_chunk:
         chunk_text = "\n".join(current_chunk).strip()
         if chunk_text:
-            detected_c = detect_clase_num(chunk_text) or current_clase or default_clase_num
-            chunks.append((current_title, chunk_text, detected_c))
+            chunks.append((current_title, chunk_text))
             
     return chunks
 
@@ -156,21 +125,21 @@ def extract_pdf_chunks(pdf_path, chunk_pages=3):
             accum_text += f"\n--- [Página {i+1}] ---\n" + text
             
             if (i + 1) % chunk_pages == 0 or (i + 1) == total:
-                if len(accum_text.strip()) > 80:
-                    c_num = detect_clase_num(accum_text, os.path.basename(pdf_path))
+                if len(accum_text.strip()) > 60:
                     title = f"Páginas {start_p}-{i+1}"
-                    chunks.append((title, accum_text.strip(), c_num))
+                    chunks.append((title, accum_text.strip()))
                 accum_text = ""
                 start_p = i + 2
     except Exception as e:
         print(f" [!] Error leyendo PDF {pdf_path}: {e}")
     return chunks
 
-def build_student_index():
+def build_universal_index():
     print("\n" + "=" * 80)
-    print("   INDEXANDO BASE DE CONOCIMIENTO PERSONAL DEL ALUMNO (SQLITE FTS5)")
-    print("=" * 80)
-    print(f" [+] Destino: {DB_PATH}\n")
+    print("   INDEXANDO BASE DE CONOCIMIENTO DEVOPS UNIVERSAL (SQLITE FTS5)")
+    print("================================================================================")
+    print(f" [+] Directorio Raíz : {WORKSPACE_DIR}")
+    print(f" [+] Base de Datos   : {DB_PATH}\n")
     
     conn = init_db(DB_PATH)
     cursor = conn.cursor()
@@ -178,206 +147,110 @@ def build_student_index():
     total_docs = 0
     categories = {}
     
-    def insert_chunk(title, category, rel_path, abs_path, clase_num, modulo, content, tags=""):
+    def insert_chunk(title, category, rel_path, abs_path, content, tags=""):
         nonlocal total_docs
         summary = content[:200].replace('\n', ' ').strip() + "..."
         cursor.execute("""
-            INSERT INTO course_docs (title, category, rel_path, abs_path, clase_num, modulo, video_url, summary, content, tags)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (title, category, rel_path, abs_path, clase_num, modulo, "", summary, content, tags))
+            INSERT INTO course_docs (title, category, rel_path, abs_path, summary, content, tags)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (title, category, rel_path, abs_path, summary, content, tags))
         
         doc_id = cursor.lastrowid
         cursor.execute("""
-            INSERT INTO course_docs_fts (rowid, title, category, rel_path, modulo, tags, content)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (doc_id, title, category, rel_path, modulo, tags, content))
+            INSERT INTO course_docs_fts (rowid, title, category, rel_path, tags, content)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (doc_id, title, category, rel_path, tags, content))
         
         total_docs += 1
         categories[category] = categories.get(category, 0) + 1
 
-    # 1. Indexar Mis Apuntes (mis_apuntes/)
-    apuntes_dir = os.path.join(STUDENT_DIR, "mis_apuntes")
-    if os.path.isdir(apuntes_dir):
-        for f in sorted(os.listdir(apuntes_dir)):
-            if f.endswith('.md'):
-                abs_p = os.path.join(apuntes_dir, f)
-                rel_p = f"mis_apuntes/{f}"
+    # Escaneo recursivo libre de todos los directorios
+    for root, dirs, files in os.walk(WORKSPACE_DIR):
+        # Filtrar directorios excluidos en tiempo real
+        dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS and not d.startswith('.')]
+        
+        for file in sorted(files):
+            if file in EXCLUDE_FILES or file.startswith('.'):
+                continue
+
+            abs_path = os.path.join(root, file)
+            rel_path = os.path.relpath(abs_path, WORKSPACE_DIR).replace('\\', '/')
+            
+            # Determinar categoría a partir del directorio contenedor
+            parts = rel_path.split('/')
+            if len(parts) > 1:
+                category = parts[0]
+            else:
+                category = "general"
+
+            # 1. Archivos Markdown y Texto
+            if file.endswith(('.md', '.txt')):
                 try:
-                    with open(abs_p, 'r', encoding='utf-8') as fh:
+                    with open(abs_path, 'r', encoding='utf-8', errors='ignore') as fh:
                         text = fh.read()
-                    c_num = detect_clase_num(text, f)
-                    chunks = chunk_markdown(text, default_clase_num=c_num)
-                    for t, c_text, c_n in chunks:
+                    chunks = chunk_markdown(text)
+                    for t, c_text in chunks:
                         insert_chunk(
-                            title=f"Apuntes Clase {c_n or '?'}: {t}",
-                            category="apuntes_alumno",
-                            rel_path=rel_p,
-                            abs_path=abs_p,
-                            clase_num=c_n,
-                            modulo=detect_modulo(c_n),
+                            title=f"{file} ({t})",
+                            category=category,
+                            rel_path=rel_path,
+                            abs_path=abs_path,
                             content=c_text,
-                            tags="apuntes notas estudiante calms dora git aws docker terraform k8s"
+                            tags=f"{category} devops documentacion notas"
                         )
-                    print(f" [OK] Indexados apuntes: {f} ({len(chunks)} fragmentos)")
+                    print(f" [OK] Indexado: {rel_path} ({len(chunks)} fragmentos)")
                 except Exception as e:
-                    print(f" [!] Error en {f}: {e}")
+                    print(f" [!] Error indexando {rel_path}: {e}")
 
-    # 2. Indexar Material de Clases (material_clases/)
-    mat_dir = os.path.join(STUDENT_DIR, "material_clases")
-    if os.path.isdir(mat_dir):
-        for root, _, files in os.walk(mat_dir):
-            for f in files:
-                abs_p = os.path.join(root, f)
-                rel_p = os.path.relpath(abs_p, STUDENT_DIR).replace('\\', '/')
-                if f.endswith('.md') or f.endswith('.txt'):
-                    try:
-                        with open(abs_p, 'r', encoding='utf-8', errors='ignore') as fh:
-                            text = fh.read()
-                        c_num = detect_clase_num(text, f)
-                        chunks = chunk_markdown(text, default_clase_num=c_num)
-                        for t, c_text, c_n in chunks:
-                            insert_chunk(
-                                title=f"Material: {f} - {t}",
-                                category="material_clase",
-                                rel_path=rel_p,
-                                abs_path=abs_p,
-                                clase_num=c_n,
-                                modulo=detect_modulo(c_n),
-                                content=c_text,
-                                tags="diapositivas pdf lectura material"
-                            )
-                        print(f" [OK] Indexado material: {rel_p} ({len(chunks)} fragmentos)")
-                    except Exception as e:
-                        print(f" [!] Error en {f}: {e}")
-                elif f.endswith('.pdf'):
-                    pdf_chunks = extract_pdf_chunks(abs_p)
-                    for t, c_text, c_n in pdf_chunks:
-                        insert_chunk(
-                            title=f"PDF: {f} ({t})",
-                            category="material_clase",
-                            rel_path=rel_p,
-                            abs_path=abs_p,
-                            clase_num=c_n,
-                            modulo=detect_modulo(c_n),
-                            content=c_text,
-                            tags="pdf libro oficial teoria"
-                        )
-                    if pdf_chunks:
-                        print(f" [OK] Indexado PDF: {f} ({len(pdf_chunks)} fragmentos)")
+            # 2. Archivos PDF
+            elif file.endswith('.pdf'):
+                pdf_chunks = extract_pdf_chunks(abs_path)
+                for t, c_text in pdf_chunks:
+                    insert_chunk(
+                        title=f"{file} ({t})",
+                        category=category,
+                        rel_path=rel_path,
+                        abs_path=abs_path,
+                        content=c_text,
+                        tags=f"{category} pdf libro manual oficial"
+                    )
+                if pdf_chunks:
+                    print(f" [OK] Indexado PDF: {rel_path} ({len(pdf_chunks)} fragmentos)")
 
-    # 3. Indexar Transcripciones (transcripciones/)
-    trans_dir = os.path.join(STUDENT_DIR, "transcripciones")
-    if os.path.isdir(trans_dir):
-        for f in sorted(os.listdir(trans_dir)):
-            if f.endswith('.md') or f.endswith('.txt'):
-                abs_p = os.path.join(trans_dir, f)
-                rel_p = f"transcripciones/{f}"
+            # 3. Archivos JSON con preguntas o definiciones
+            elif file.endswith('.json') and "quiz" in file.lower():
                 try:
-                    with open(abs_p, 'r', encoding='utf-8', errors='ignore') as fh:
-                        text = fh.read()
-                    c_num = detect_clase_num(text, f)
-                    chunks = chunk_markdown(text, default_clase_num=c_num)
-                    for t, c_text, c_n in chunks:
-                        insert_chunk(
-                            title=f"Transcripción Grabación: {f} ({t})",
-                            category="transcripcion",
-                            rel_path=rel_p,
-                            abs_path=abs_p,
-                            clase_num=c_n,
-                            modulo=detect_modulo(c_n),
-                            content=c_text,
-                            tags="transcripcion video audio grabacion profesor clase"
-                        )
-                    print(f" [OK] Indexada transcripción: {f} ({len(chunks)} fragmentos)")
-                except Exception as e:
-                    print(f" [!] Error en {f}: {e}")
-
-    # 4. Indexar Exámenes y Prácticas (examenes_y_practicas/)
-    exam_dir = os.path.join(STUDENT_DIR, "examenes_y_practicas")
-    if os.path.isdir(exam_dir):
-        for f in os.listdir(exam_dir):
-            abs_p = os.path.join(exam_dir, f)
-            rel_p = f"examenes_y_practicas/{f}"
-            if f.endswith('.json'):
-                try:
-                    with open(abs_p, 'r', encoding='utf-8') as jf:
+                    with open(abs_path, 'r', encoding='utf-8') as jf:
                         data = json.load(jf)
                     if isinstance(data, list):
                         for item in data:
-                            c_num = item.get("clase", 1)
                             preg = item.get("pregunta", "")
                             opc = "\n".join(item.get("opciones", []))
                             corr = item.get("correcta", "")
                             just = item.get("justificacion", "")
-                            c_text = f"PREGUNTA EXAMEN (Clase {c_num}):\n{preg}\n\nOPCIONES:\n{opc}\n\nRESPUESTA CORRECTA: {corr}\n\nJUSTIFICACION:\n{just}"
+                            c_text = f"PREGUNTA:\n{preg}\n\nOPCIONES:\n{opc}\n\nRESPUESTA:\n{corr}\n\nJUSTIFICACION:\n{just}"
                             insert_chunk(
-                                title=f"Quiz Clase {c_num}: {preg[:50]}...",
-                                category="examen_practica",
-                                rel_path=rel_p,
-                                abs_path=abs_p,
-                                clase_num=c_num,
-                                modulo=detect_modulo(c_num),
+                                title=f"Quiz: {preg[:45]}...",
+                                category=category,
+                                rel_path=rel_path,
+                                abs_path=abs_path,
                                 content=c_text,
-                                tags="examen quiz practica multiple choice evaluacion"
+                                tags="quiz examen practica evaluacion"
                             )
-                        print(f" [OK] Indexado JSON de exámenes: {f} ({len(data)} preguntas)")
+                        print(f" [OK] Indexado JSON: {rel_path} ({len(data)} items)")
                 except Exception as e:
-                    print(f" [!] Error en JSON {f}: {e}")
-            elif f.endswith('.md'):
-                try:
-                    with open(abs_p, 'r', encoding='utf-8') as fh:
-                        text = fh.read()
-                    c_num = detect_clase_num(text, f)
-                    chunks = chunk_markdown(text, default_clase_num=c_num)
-                    for t, c_text, c_n in chunks:
-                        insert_chunk(
-                            title=f"Práctica / Examen: {t}",
-                            category="examen_practica",
-                            rel_path=rel_p,
-                            abs_path=abs_p,
-                            clase_num=c_n,
-                            modulo=detect_modulo(c_n),
-                            content=c_text,
-                            tags="laboratorio desafio evaluacion"
-                        )
-                    print(f" [OK] Indexada guía de examen: {f} ({len(chunks)} fragmentos)")
-                except Exception as e:
-                    print(f" [!] Error en {f}: {e}")
-
-    # 5. Indexar Guías Base y README
-    guias = ["01-Guia-Completa-Instalacion-Windows.md", "01-Instalacion-Software-y-Diagnostico.md", "README.md"]
-    for g in guias:
-        abs_p = os.path.join(STUDENT_DIR, g)
-        if os.path.exists(abs_p):
-            try:
-                with open(abs_p, 'r', encoding='utf-8') as fh:
-                    text = fh.read()
-                chunks = chunk_markdown(text)
-                for t, c_text, _ in chunks:
-                    insert_chunk(
-                        title=f"Guía: {g} ({t})",
-                        category="guia_entorno",
-                        rel_path=g,
-                        abs_path=abs_p,
-                        clase_num=None,
-                        modulo="General",
-                        content=c_text,
-                        tags="instalacion herramientas requisitos entorno windows powershell winget"
-                    )
-                print(f" [OK] Indexada guía del curso: {g} ({len(chunks)} fragmentos)")
-            except Exception as e:
-                print(f" [!] Error en {g}: {e}")
+                    print(f" [!] Error en {rel_path}: {e}")
 
     conn.commit()
     conn.close()
     
     print("\n" + "=" * 80)
-    print(f"🎉 INDEXACION COMPLETADA CON EXITO: {total_docs} FRAGMENTOS EN TOTAL")
-    print("=" * 80)
-    for cat, cnt in categories.items():
-        print(f"   • {cat.ljust(22)} : {cnt} fragmentos")
+    print(f"🎉 INDEXACION EXITOSA: {total_docs} FRAGMENTOS PROCESADOS")
+    print("================================================================================")
+    for cat, cnt in sorted(categories.items()):
+        print(f"   • Categoría '{cat.ljust(18)}' : {cnt} fragmentos")
     print("=" * 80 + "\n")
     return total_docs
 
 if __name__ == "__main__":
-    build_student_index()
+    build_universal_index()

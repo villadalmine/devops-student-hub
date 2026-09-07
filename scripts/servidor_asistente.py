@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 ===============================================================================
-   SERVIDOR ASISTENTE & CAMPUS PERSONAL DEL ALUMNO (CLOUD DEVOPS 2026)
+   SERVIDOR ASISTENTE & HUB DEVOPS UNIVERSAL
 ===============================================================================
 Servidor local multihilo que provee:
-  1. Interfaz Web del Estudiante: course_hub.html y reproductor de clases.
-  2. Streaming de Videos Locales (mis_videos/*.mp4 con soporte de HTTP Range 206).
+  1. Interfaz Web DevOps Hub: course_hub.html y reproductor de video local.
+  2. Streaming de Videos Locales (videos/*.mp4 con soporte HTTP Range 206).
   3. Motor de Búsqueda RAG sobre la base SQLite FTS5 (data/devops_knowledge.db).
-  4. Tutor IA con modos: Tutor de Estudio, Simulador de Quizzes, Asistente de Terminal.
-  5. Re-indexación dinámica en 1 clic de apuntes, PDFs y transcripciones.
+  4. Tutor IA con modos: Tutor DevOps, Laboratorio/Terminal, Exámenes/Certificaciones.
+  5. Re-indexación dinámica en 1 clic de cualquier carpeta (apuntes, material, etc.).
 ===============================================================================
 """
 
@@ -36,7 +36,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
 DATA_DIR = os.path.join(STUDENT_DIR, "data")
 DB_PATH = os.path.join(DATA_DIR, "devops_knowledge.db")
-VIDEOS_DIR = os.path.join(STUDENT_DIR, "mis_videos")
+VIDEOS_DIR = os.path.join(STUDENT_DIR, "videos")
 CHATS_FILE = os.path.join(DATA_DIR, "chats_guardados.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -65,7 +65,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.handle_api_stats()
             return
 
-        # 2. API: Catálogo de Videos de las 12 Clases
+        # 2. API: Catálogo dinámico de videos locales
         elif path == "/api/videos":
             self.handle_api_videos()
             return
@@ -73,8 +73,8 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         # 3. API: Búsqueda RAG en SQLite FTS5
         elif path == "/api/search":
             q = query.get("q", [""])[0]
-            c_filter = query.get("clase", [None])[0]
-            self.handle_api_search(q, c_filter)
+            cat = query.get("category", [None])[0]
+            self.handle_api_search(q, category_filter=cat)
             return
 
         # 4. API: Historial de Chats Guardados
@@ -94,7 +94,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             return
 
-        # Redirigir raíz al portal del estudiante
+        # Redirigir raíz al portal principal
         if path in ["/", "/index.html"]:
             self.send_response(302)
             self.send_header("Location", "/course_hub.html")
@@ -150,43 +150,49 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             c.execute("SELECT category, COUNT(*) FROM course_docs GROUP BY category;")
             cats = dict(c.fetchall())
 
-            c.execute("SELECT clase_num, COUNT(*) FROM course_docs WHERE clase_num IS NOT NULL GROUP BY clase_num;")
-            classes = dict(c.fetchall())
-
             conn.close()
+
+            # Contar videos disponibles en videos/
+            video_files = []
+            if os.path.exists(VIDEOS_DIR):
+                for root, _, files in os.walk(VIDEOS_DIR):
+                    for f in files:
+                        if f.lower().endswith(('.mp4', '.mkv', '.webm', '.avi', '.mov')):
+                            video_files.append(f)
+
             self.send_json({
                 "ok": True,
                 "total_docs": total,
                 "categories": cats,
-                "classes": classes,
+                "total_videos": len(video_files),
                 "db_path": DB_PATH
             })
         except Exception as e:
             self.send_json({"ok": False, "error": str(e)})
 
     def handle_api_videos(self):
-        json_file = os.path.join(VIDEOS_DIR, "clases.json")
-        clases_list = []
-        if os.path.exists(json_file):
-            try:
-                with open(json_file, "r", encoding="utf-8") as f:
-                    clases_list = json.load(f)
-            except Exception:
-                pass
+        videos_list = []
+        if os.path.exists(VIDEOS_DIR):
+            for root, _, files in os.walk(VIDEOS_DIR):
+                for f in sorted(files):
+                    if f.lower().endswith(('.mp4', '.mkv', '.webm', '.mov', '.avi')):
+                        abs_p = os.path.join(root, f)
+                        rel_p = os.path.relpath(abs_p, VIDEOS_DIR).replace('\\', '/')
+                        size_mb = round(os.path.getsize(abs_p) / (1024 * 1024), 2)
+                        
+                        # Generar título amigable a partir del nombre del archivo
+                        clean_title = os.path.splitext(f)[0].replace('_', ' ').replace('-', ' ').title()
+                        
+                        videos_list.append({
+                            "id": rel_p,
+                            "titulo": clean_title,
+                            "archivo": f,
+                            "rel_path": rel_p,
+                            "tamano_mb": size_mb,
+                            "stream_url": f"/videos/{urllib.parse.quote(rel_p)}"
+                        })
 
-        # Validar qué archivos locales existen en disco
-        for item in clases_list:
-            loc = item.get("archivo_local", "")
-            full_p = os.path.join(VIDEOS_DIR, loc)
-            item["existe_local"] = os.path.exists(full_p) and os.path.getsize(full_p) > 1000
-            if item["existe_local"]:
-                item["stream_endpoint"] = f"/videos/{urllib.parse.quote(loc)}"
-            elif item.get("url_stream"):
-                item["stream_endpoint"] = item["url_stream"]
-            else:
-                item["stream_endpoint"] = None
-
-        self.send_json({"ok": True, "clases": clases_list})
+        self.send_json({"ok": True, "videos": videos_list})
 
     def handle_video_streaming(self, filename):
         video_path = os.path.join(VIDEOS_DIR, filename)
@@ -206,7 +212,6 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             content_type = "video/webm"
 
         if range_header:
-            # Manejo de Range Requests (HTTP 206 Partial Content) para scrub/seek fluido
             m = re.search(r"bytes=(\d+)-(\d*)", range_header)
             if m:
                 start = int(m.group(1))
@@ -252,28 +257,28 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             except (ConnectionResetError, ConnectionAbortedError):
                 pass
 
-    def handle_api_search(self, query_str, clase_filter=None):
+    def handle_api_search(self, query_str, category_filter=None):
         if not os.path.exists(DB_PATH) or not query_str.strip():
             self.send_json({"ok": True, "results": []})
             return
 
-        results = search_in_db(query_str, clase_filter=clase_filter, limit=10)
+        results = search_in_db(query_str, category_filter=category_filter, limit=10)
         self.send_json({"ok": True, "query": query_str, "results": results})
 
     def handle_api_ask(self, body):
         question = body.get("question", "").strip()
-        mode = body.get("mode", "tutor")  # tutor | quiz_practice | lab_assistant | video_review
-        clase_num = body.get("clase")
+        mode = body.get("mode", "tutor")  # tutor | lab_assistant | quiz_practice | doc_qa
+        cat_filter = body.get("category")
 
         if not question:
             self.send_json({"ok": False, "error": "Pregunta vacía."})
             return
 
         # 1. Recuperación RAG de fragmentos relevantes
-        results = search_in_db(question, clase_filter=clase_num, limit=6)
+        results = search_in_db(question, category_filter=cat_filter, limit=6)
 
-        # 2. Construcción del Prompt Pedagógico para el Alumno
-        system_prompt = build_student_prompt(mode, clase_num)
+        # 2. Construcción del Prompt Pedagógico
+        system_prompt = build_student_prompt(mode)
         context_text = build_context_snippet(results)
 
         # 3. Invocación del Modelo (Gemini -> Ollama -> RAG Offline Fallback)
@@ -335,11 +340,10 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
 # MOTOR DE BÚSQUEDA RAG & PROMPTS
 # -----------------------------------------------------------------------------
 
-def search_in_db(query_str, clase_filter=None, limit=6):
+def search_in_db(query_str, category_filter=None, limit=6):
     if not os.path.exists(DB_PATH):
         return []
 
-    # Limpieza básica de términos para FTS5
     clean_q = re.sub(r'[^\w\s]', ' ', query_str)
     tokens = [w for w in clean_q.split() if len(w) > 2 and w.lower() not in ["como", "para", "este", "esta", "sobre", "cual", "quiero", "puedo"]]
     if not tokens:
@@ -354,19 +358,19 @@ def search_in_db(query_str, clase_filter=None, limit=6):
 
     results = []
     try:
-        if clase_filter:
+        if category_filter and category_filter != "all":
             sql = """
-                SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.clase_num, cd.modulo, cd.content, rank
+                SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.content, rank
                 FROM course_docs_fts fts
                 JOIN course_docs cd ON fts.rowid = cd.id
-                WHERE course_docs_fts MATCH ? AND cd.clase_num = ?
+                WHERE course_docs_fts MATCH ? AND cd.category = ?
                 ORDER BY rank
                 LIMIT ?;
             """
-            c.execute(sql, (fts_match, int(clase_filter), limit))
+            c.execute(sql, (fts_match, category_filter, limit))
         else:
             sql = """
-                SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.clase_num, cd.modulo, cd.content, rank
+                SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.content, rank
                 FROM course_docs_fts fts
                 JOIN course_docs cd ON fts.rowid = cd.id
                 WHERE course_docs_fts MATCH ?
@@ -381,10 +385,8 @@ def search_in_db(query_str, clase_filter=None, limit=6):
                 "title": row[1],
                 "category": row[2],
                 "rel_path": row[3],
-                "clase_num": row[4],
-                "modulo": row[5],
-                "content": row[6][:600],
-                "score": round(row[7], 3) if row[7] is not None else 0
+                "content": row[4][:600],
+                "score": round(row[5], 3) if row[5] is not None else 0
             })
     except Exception as e:
         print(f" [!] Error en búsqueda FTS5: {e}")
@@ -393,44 +395,41 @@ def search_in_db(query_str, clase_filter=None, limit=6):
 
     return results
 
-def build_student_prompt(mode, clase_num):
-    clase_context = f" enfocándote especialmente en los temas de la Clase {clase_num}" if clase_num else ""
-    
+def build_student_prompt(mode):
     if mode == "quiz_practice":
-        return f"""Eres el Evaluador y Entrenador de Exámenes de Cloud DevOps (EducaciónIT){clase_context}.
-Tu objetivo es ayudar al alumno a prepararse para las evaluaciones oficiales.
-- Si el alumno solicita una trivia o pregunta, plantéale de 1 a 3 preguntas desafiantes de opción múltiple (A, B, C, D) con contexto práctico real.
-- Si el alumno responde una opción, evalúa con rigurosidad técnica: felicítalo si acertó o explica detalladamente por qué la opción correcta es la adecuada y por qué las demás son trampas conceptuales.
-- Basa tus preguntas en los apuntes y exámenes indexados."""
+        return """Eres el Entrenador de Certificaciones y Entrevistas Técnicas Cloud DevOps.
+Tu objetivo es ayudar al usuario a evaluar sus conocimientos técnicos (AWS, Docker, Kubernetes, Terraform, Git, CI/CD).
+- Plantea de 1 a 3 preguntas desafiantes de opción múltiple con escenarios reales de producción.
+- Si el usuario responde, califica con rigor técnico: explica detalladamente por qué la opción correcta es óptima y por qué las demás fallan o no son mejores prácticas."""
 
     elif mode == "lab_assistant":
-        return f"""Eres el Asistente de Laboratorio y Terminal de Cloud DevOps (EducaciónIT){clase_context}.
-Tu misión es asistir al alumno en la resolución de errores en consola, sintaxis de Dockerfiles, Terraform HCL, Kubernetes YAML y comandos de Git.
-- Da explicaciones paso a paso con los comandos exactos para solucionar el fallo.
-- Utiliza la regla 'Show, Don't Tell': muestra la terminal esperada y advierte sobre errores comunes."""
+        return """Eres el Asistente de Laboratorio, Terminal y Depuración DevOps.
+Tu misión es asistir en la solución de errores en consola, comandos bash/powershell, sintaxis de Dockerfiles, Terraform HCL, Kubernetes manifests y pipelines de CI/CD.
+- Da explicaciones paso a paso con los comandos exactos para resolver el problema.
+- Muestra ejemplos prácticos y advierte sobre errores comunes."""
 
-    elif mode == "video_review":
-        return f"""Eres el Asistente de Grabaciones y Repaso de Clase de Cloud DevOps (EducaciónIT){clase_context}.
-Tu función es resumir lo tratado en las grabaciones de clase, rescatar los consejos del profesor, responder dudas frecuentes de compañeros y señalar los minutos clave para volver a ver."""
+    elif mode == "doc_qa":
+        return """Eres el Asistente de Documentación y Material Técnico.
+Tu función es responder preguntas basándote estrictamente en las notas, guías, libros o apuntes indexados en el espacio de trabajo local del usuario."""
 
     # Default: tutor
-    return f"""Eres el Tutor Personal de IA del alumno en el curso Cloud DevOps: Automatización y Despliegue (EducaciónIT){clase_context}.
-Tu objetivo es que el alumno comprenda cada concepto técnico con profundidad, entusiasmo y solidez conceptual.
-- Explica los temas abstractos utilizando analogías claras de la vida real antes de la sintaxis técnica.
-- Proporciona comandos de terminal prácticos con explicaciones de sus flags.
-- Apóyate en el contexto de apuntes, transcripciones y materiales adjuntos."""
+    return """Eres un Mentor y Arquitecto Experto en Cloud DevOps e Infraestructura moderna.
+Tu objetivo es que el usuario comprenda cada concepto técnico con profundidad conceptual, entusiasmo y aplicabilidad práctica real.
+- Explica temas complejos con analogías claras antes de profundizar en la sintaxis.
+- Proporciona ejemplos prácticos con comandos explicados.
+- Integra las mejores prácticas de la industria (DORA, 12 Factors, IaC, GitOps, Observabilidad)."""
 
 def build_context_snippet(results):
     if not results:
         return "No se encontraron fragmentos locales directamente relacionados. Utiliza tus conocimientos de ingeniería DevOps general."
-    text = "=== FUENTES DE TUS APUNTES Y MATERIALES LOCALES ===\n\n"
+    text = "=== FUENTES DE DOCUMENTACION Y APUNTES LOCALES ===\n\n"
     for r in results:
         text += f"--- [{r['category'].upper()}] {r['title']} (Archivo: {r['rel_path']}) ---\n"
         text += f"{r['content']}\n\n"
     return text
 
 def execute_ai_query(system_prompt, question, context_text):
-    full_prompt = f"{system_prompt}\n\n{context_text}\n\nPregunta del alumno:\n{question}\n\nRespuesta estructurada para el alumno (usa formato Markdown claro con títulos, viñetas y bloques de código):"
+    full_prompt = f"{system_prompt}\n\n{context_text}\n\nConsulta:\n{question}\n\nRespuesta estructurada (usa formato Markdown claro con títulos, viñetas y bloques de código):"
 
     # 1. Probar Google Gemini si existe GEMINI_API_KEY
     gemini_key = os.environ.get("GEMINI_API_KEY")
@@ -465,21 +464,21 @@ def execute_ai_query(system_prompt, question, context_text):
         pass
 
     # 3. Fallback Inteligente RAG Offline
-    fallback_text = f"### 🎓 Respuesta Basada en tus Apuntes y Materiales Locales:\n\n"
+    fallback_text = f"### 💡 Respuesta Basada en tu Documentación Local:\n\n"
     fallback_text += f"He consultado tu base de datos SQLite y correlacionado los siguientes fragmentos para responder tu consulta sobre **'{question}'**:\n\n"
     
     if "No se encontraron" in context_text:
-        fallback_text += "No encontré notas específicas en tus carpetas para este término. Te sugiero anotar lo que vayas aprendiendo en tu archivo de apuntes (`mis_apuntes/`) y volver a consultar.\n\n"
+        fallback_text += "No encontré notas específicas en tus carpetas para este término. Puedes crear notas en `apuntes/` o colocar material en `material/` y re-indexar con un clic.\n\n"
         fallback_text += "> 💡 **Tip:** Puedes configurar una API Key gratuita de Gemini (`set GEMINI_API_KEY=...`) o ejecutar `ollama run qwen2.5` en tu máquina para habilitar razonamiento conversacional autónomo 100% offline."
     else:
-        fallback_text += context_text.replace("=== FUENTES DE TUS APUNTES Y MATERIALES LOCALES ===", "").strip()
+        fallback_text += context_text.replace("=== FUENTES DE DOCUMENTACION Y APUNTES LOCALES ===", "").strip()
         fallback_text += "\n\n---\n*Para activar respuestas redactadas con modelos de lenguaje generativo, agrega tu `GEMINI_API_KEY` o inicia Ollama localmente.*"
 
     return fallback_text, "Motor RAG Offline (SQLite FTS5)"
 
 def main():
     print("\n" + "=" * 80)
-    print("   INICIANDO SERVIDOR DEL CAMPUS PERSONAL DEL ALUMNO")
+    print("   INICIANDO SERVIDOR DEL DEVOPS WORKSPACE & KNOWLEDGE HUB")
     print("======================================================================")
     print(f" [*] Directorio Raíz : {STUDENT_DIR}")
     print(f" [*] Base de Datos   : {DB_PATH}")

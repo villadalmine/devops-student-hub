@@ -1,8 +1,7 @@
 # Guía de Instalación del Entorno Cloud DevOps (Windows)
 
 > **Curso:** Cloud DevOps: Automatización y Despliegue  
-> **Institución:** EducaciónIT (Código: DEVO07 | Calendario: 84214)  
-> **Estructura:** Software Base Obligatorio (Mandatory) vs. Ecosistema de Herramientas Optativas por Categorías  
+> **Estructura:** Software Base DevOps (Core Esencial) vs. Ecosistema de Herramientas Optativas por Categorías  
 
 ---
 
@@ -10,12 +9,12 @@
 
 | Categoría | Descripción | Requerido para Cursar |
 | :--- | :--- | :---: |
-| 🔴 **Software Base Obligatorio (Mandatory)** | Extraído del programa oficial de EducaciónIT / Alumni, nubes principales (AWS + Azure) y procesador JSON (`jq`). Necesario para asistir a clase en vivo, laboratorios prácticos y exámenes. | **SÍ (100% Obligatorio / Mandatory)** |
+| 🔴 **Software Base DevOps (Core Esencial)** | Extraído del programa oficial de Cloud DevOps, nubes principales (AWS + Azure) y procesador JSON (`jq`). Necesario para asistir a clase en vivo, laboratorios prácticos y exámenes. | **SÍ (100% Obligatorio / Mandatory)** |
 | 🟢 **Herramientas Optativas** | Terminales GPU, clientes XMPP/Jabber, visores TUI, lenguajes, redes eBPF, multiplexor Herdr y suite de IA. Mejoran la productividad y flujo de trabajo pero su instalación es a elección. | **NO (100% Optativo)** |
 
 ---
 
-## 🔴 1. Software Base Obligatorio (Mandatory - Alumni & Cloud DevOps)
+## 🔴 1. Software Base DevOps (Core Esencial)
 
 Este es el stack tecnológico que cada alumno y docente **debe tener instalado obligatoriamente**:
 
@@ -84,7 +83,7 @@ powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1
 ```
 
 ### Opciones del Menú:
-1. **[Opción 1] Solo Software Base Obligatorio de Alumni (Mandatory):**
+1. **[Opción 1] Solo Software Base DevOps (Core Esencial):**
    * Instala las 12 herramientas oficiales obligatorias (Zoom, Git, **GitHub CLI (gh)**, VS Code, Docker, Terraform, **AWS CLI**, **Azure CLI**, Kubectl, Helm, Minikube, **jq**).
    * *Atajo directo:* `.\instalar-tools-devops.ps1 -SoloObligatorio`
 2. **[Opción 2] Ecosistema Completo:**

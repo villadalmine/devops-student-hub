@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reproductor de Clases - Cloud DevOps (Campus del Alumno)</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>DevOps Video Player | Media Hub</title>
   <style>
     :root {
       --bg-primary: #0b0f19;
@@ -28,7 +27,7 @@
     .container { display: flex; flex: 1; overflow: hidden; }
     @media (max-width: 900px) { .container { flex-direction: column; } }
     .main-player { flex: 1; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
-    .video-wrapper { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); min-height: 360px; display: flex; align-items: center; justify-content: center; }
+    .video-wrapper { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); min-height: 380px; display: flex; align-items: center; justify-content: center; }
     video { width: 100%; height: auto; max-height: 68vh; display: block; }
     .placeholder-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem; text-align: center; gap: 1rem; background: radial-gradient(circle, #1e293b 0%, #0b0f19 100%); width: 100%; height: 100%; min-height: 380px; border-radius: 12px; }
     .placeholder-overlay h3 { font-size: 1.3rem; color: #f8fafc; }
@@ -42,29 +41,25 @@
     @media (max-width: 900px) { .sidebar { width: 100%; border-left: none; border-top: 1px solid var(--border); } }
     .sidebar-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .playlist { flex: 1; overflow-y: auto; list-style: none; }
-    .class-item { padding: 1rem 1.25rem; border-bottom: 1px solid rgba(51, 65, 85, 0.4); cursor: pointer; transition: background 0.15s; display: flex; gap: 0.75rem; align-items: flex-start; }
-    .class-item:hover { background-color: rgba(56, 189, 248, 0.08); }
-    .class-item.active { background-color: rgba(56, 189, 248, 0.15); border-left: 4px solid var(--accent); }
-    .class-num { background-color: #334155; color: #e2e8f0; font-size: 0.75rem; font-weight: bold; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .class-item.active .class-num { background-color: var(--accent); color: #0f172a; }
-    .class-desc h4 { font-size: 0.85rem; color: #f1f5f9; margin-bottom: 0.2rem; }
-    .class-desc p { font-size: 0.75rem; color: #94a3b8; }
-    .status-badge { font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; margin-top: 0.3rem; display: inline-block; }
-    .status-local { background: #065f46; color: #6ee7b7; }
-    .status-stream { background: #1e3a8a; color: #93c5fd; }
-    .status-none { background: #374151; color: #9ca3af; }
+    .video-item { padding: 1rem 1.25rem; border-bottom: 1px solid rgba(51, 65, 85, 0.4); cursor: pointer; transition: background 0.15s; display: flex; gap: 0.75rem; align-items: flex-start; }
+    .video-item:hover { background-color: rgba(56, 189, 248, 0.08); }
+    .video-item.active { background-color: rgba(56, 189, 248, 0.15); border-left: 4px solid var(--accent); }
+    .video-num { background-color: #334155; color: #e2e8f0; font-size: 0.75rem; font-weight: bold; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .video-item.active .video-num { background-color: var(--accent); color: #0f172a; }
+    .video-desc h4 { font-size: 0.85rem; color: #f1f5f9; margin-bottom: 0.2rem; }
+    .video-desc p { font-size: 0.75rem; color: #94a3b8; }
   </style>
 </head>
 <body>
 
   <header>
     <div class="brand">
-      <a href="/course_hub.html" class="btn-header">⬅ Volver al Campus</a>
-      <h1>🎓 Cloud DevOps Player</h1>
-      <span class="badge">Campus Alumno</span>
+      <a href="/course_hub.html" class="btn-header">← Volver al Hub</a>
+      <h1>🎬 DevOps Media Player</h1>
+      <span class="badge">Local Streaming</span>
     </div>
     <div class="header-actions">
-      <button class="btn-header" onclick="reindexarBase()">🔄 Re-indexar Base</button>
+      <button class="btn-header" onclick="cargarVideos()">🔄 Actualizar Lista</button>
     </div>
   </header>
 
@@ -73,168 +68,113 @@
       <div class="video-wrapper">
         <video id="videoPlayer" controls playsinline preload="auto"></video>
         <div id="placeholderOverlay" class="placeholder-overlay">
-          <span style="font-size: 3rem;">🎥</span>
-          <h3 id="phTitle">Grabación de Clase Pendiente</h3>
-          <p id="phText">Esta clase aún no tiene video cargado. Para reproducirla en local, coloca el archivo MP4 en tu carpeta:</p>
-          <div class="code-pill" id="phPath">mis_videos/Clase_01.mp4</div>
-          <p style="font-size: 0.8rem; color: #64748b;">También puedes configurar una URL de Zoom, YouTube o Alumni en <code style="color: #38bdf8;">mis_videos/clases.json</code>.</p>
+          <span style="font-size: 3rem;">📁</span>
+          <h3 id="phTitle">Sin Videos Disponibles</h3>
+          <p id="phText">Para reproducir cualquier clase, taller o tutorial en streaming local con soporte de HTTP Range, coloca tus archivos de video (.mp4, .mkv, .webm) en la carpeta:</p>
+          <div class="code-pill">videos/</div>
+          <p style="font-size: 0.8rem; color: #64748b;">Los videos son ignorados por git automáticamente para no saturar tu repositorio.</p>
         </div>
       </div>
 
       <div class="class-info">
-        <h2 id="currentClassTitle">Cargando clase...</h2>
+        <h2 id="currentVideoTitle">Selecciona un video de la lista lateral</h2>
         <div class="meta">
-          <span id="currentClassModule" class="tag">Módulo</span>
-          <span id="currentClassDuration" class="tag">Duración</span>
-          <span id="currentClassStatus" class="tag">Estado</span>
+          <span id="currentVideoPath" class="tag">Archivo: Ninguno</span>
+          <span id="currentVideoSize" class="tag">Tamaño: 0 MB</span>
         </div>
         <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-          <a id="btnVerApuntes" href="#" target="_blank" class="btn-header">📝 Ver Mis Apuntes de esta Clase</a>
-          <a href="/course_hub.html" class="btn-header">💬 Consultar con el Tutor IA</a>
+          <a href="/course_hub.html" class="btn-header">💬 Consultar Dudas con el Asistente IA</a>
         </div>
       </div>
     </main>
 
     <aside class="sidebar">
       <div class="sidebar-header">
-        <span>📅 Clases del Curso (12)</span>
-        <span style="font-size: 0.75rem; color: #94a3b8;" id="classesCount">12 clases</span>
+        <span>📂 Videos Locales (<span id="videosCount">0</span>)</span>
       </div>
-      <ul class="playlist" id="playlist">
-        <!-- Generado dinámicamente -->
+      <ul id="playlist" class="playlist">
+        <!-- Llenado dinámico -->
       </ul>
     </aside>
   </div>
 
   <script>
-    let clasesData = [];
-    let currentIndex = 0;
-    const video = document.getElementById("videoPlayer");
-    const placeholder = document.getElementById("placeholderOverlay");
+    let videosData = [];
+    const player = document.getElementById('videoPlayer');
+    const placeholder = document.getElementById('placeholderOverlay');
 
-    async function loadVideosList() {
+    window.addEventListener('DOMContentLoaded', () => {
+      cargarVideos();
+    });
+
+    async function cargarVideos() {
+      const listEl = document.getElementById('playlist');
+      listEl.innerHTML = '<li style="padding: 1.5rem; text-align: center; color: #94a3b8; font-size: 0.8rem;">Escaneando videos/...</li>';
+
       try {
-        const res = await fetch("/api/videos");
-        const data = await res.json();
-        if (data.ok && data.clases) {
-          clasesData = data.clases;
-          renderPlaylist();
-          
-          // Leer parámetro clase de la URL si existe (?clase=2)
-          const params = new URLSearchParams(window.location.search);
-          const cNum = parseInt(params.get("clase")) || 1;
-          const idx = clasesData.findIndex(c => c.clase === cNum);
-          selectClass(idx >= 0 ? idx : 0);
-        }
-      } catch (err) {
-        console.error("Error cargando lista de videos:", err);
-      }
-    }
+        const resp = await fetch('/api/videos');
+        const data = await resp.json();
 
-    function renderPlaylist() {
-      const playlist = document.getElementById("playlist");
-      playlist.innerHTML = "";
-      clasesData.forEach((c, idx) => {
-        const li = document.createElement("li");
-        li.className = `class-item ${idx === currentIndex ? 'active' : ''}`;
-        li.onclick = () => selectClass(idx);
-
-        let badgeClass = "status-none";
-        let badgeText = "⚪ Sin video";
-        if (c.existe_local) {
-          badgeClass = "status-local";
-          badgeText = "🟢 Local (.mp4)";
-        } else if (c.url_stream) {
-          badgeClass = "status-stream";
-          badgeText = "🔵 Stream Web";
+        if (!data.videos || data.videos.length === 0) {
+          listEl.innerHTML = '<li style="padding: 1.5rem; text-align: center; color: #94a3b8; font-size: 0.8rem;">No hay archivos de video en videos/.</li>';
+          document.getElementById('videosCount').textContent = '0';
+          mostrarPlaceholder();
+          return;
         }
 
-        li.innerHTML = `
-          <div class="class-num">${c.clase}</div>
-          <div class="class-desc">
-            <h4>Clase ${c.clase < 10 ? '0' + c.clase : c.clase}: ${escapeHtml(c.titulo.replace(/Clase \d+:\s*/, ''))}</h4>
-            <p>${escapeHtml(c.modulo || '')}</p>
-            <span class="status-badge ${badgeClass}">${badgeText}</span>
-          </div>
-        `;
-        playlist.appendChild(li);
-      });
-    }
+        videosData = data.videos;
+        document.getElementById('videosCount').textContent = videosData.length;
+        listEl.innerHTML = '';
 
-    function selectClass(index) {
-      currentIndex = index;
-      const c = clasesData[index];
-      if (!c) return;
+        videosData.forEach((v, idx) => {
+          const li = document.createElement('li');
+          li.className = 'video-item';
+          li.onclick = () => reproducirVideo(idx);
+          li.innerHTML = `
+            <div class="video-num">${idx + 1}</div>
+            <div class="video-desc">
+              <h4>${v.titulo}</h4>
+              <p>${v.rel_path} • ${v.tamano_mb} MB</p>
+            </div>
+          `;
+          listEl.appendChild(li);
+        });
 
-      // Actualizar vista activa
-      document.querySelectorAll(".class-item").forEach((el, idx) => {
-        el.classList.toggle("active", idx === index);
-      });
+        // Reproducir el primero por defecto
+        reproducirVideo(0);
 
-      document.getElementById("currentClassTitle").innerText = c.titulo;
-      document.getElementById("currentClassModule").innerText = c.modulo || "Módulo DevOps";
-      document.getElementById("currentClassDuration").innerText = c.duracion || "2h 30m";
-      document.getElementById("btnVerApuntes").href = `/mis_apuntes/Clase_${c.clase < 10 ? '0' + c.clase : c.clase}_Apuntes.md`;
-
-      const numPadded = c.clase < 10 ? '0' + c.clase : c.clase;
-      document.getElementById("phPath").innerText = `mis_videos/Clase_${numPadded}.mp4`;
-
-      if (c.existe_local) {
-        placeholder.style.display = "none";
-        video.style.display = "block";
-        video.src = c.stream_endpoint;
-        video.load();
-        document.getElementById("currentClassStatus").innerText = "🟢 Archivo Local Listo";
-      } else if (c.url_stream) {
-        if (c.url_stream.endsWith(".m3u8") && Hls.isSupported()) {
-          placeholder.style.display = "none";
-          video.style.display = "block";
-          const hls = new Hls();
-          hls.loadSource(c.url_stream);
-          hls.attachMedia(video);
-          document.getElementById("currentClassStatus").innerText = "🔵 Transmitiendo Stream HLS";
-        } else {
-          // Enlace externo (Zoom, YouTube, etc.)
-          placeholder.style.display = "flex";
-          video.style.display = "none";
-          document.getElementById("phTitle").innerText = "Enlace Web Externo Configurado";
-          document.getElementById("phText").innerHTML = `Esta clase está vinculada a una URL externa.<br><br><a href="${c.url_stream}" target="_blank" class="btn-header" style="display:inline-flex;margin:auto;">▶ Abrir Grabación en Nueva Pestaña</a>`;
-          document.getElementById("currentClassStatus").innerText = "🔗 Enlace Externo";
-        }
-      } else {
-        // Sin video aún
-        video.pause();
-        video.src = "";
-        video.style.display = "none";
-        placeholder.style.display = "flex";
-        document.getElementById("phTitle").innerText = "Grabación de Clase Pendiente";
-        document.getElementById("phText").innerText = "Esta clase aún no tiene video cargado en tu equipo. Copia tu archivo MP4 a la carpeta:";
-        document.getElementById("currentClassStatus").innerText = "⚪ Pendiente de Carga";
-      }
-    }
-
-    async function reindexarBase() {
-      if (!confirm("¿Deseas re-indexar tus apuntes y materiales locales ahora?")) return;
-      try {
-        const res = await fetch("/api/reindex", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          alert("¡Base de conocimiento actualizada con éxito!\n" + (data.output || ''));
-        } else {
-          alert("Error: " + data.error);
-        }
       } catch (e) {
-        alert("Error al conectar con el servidor: " + e);
+        listEl.innerHTML = `<li style="padding: 1.5rem; color: #f87171; font-size: 0.8rem;">Error: ${e.message}</li>`;
       }
     }
 
-    function escapeHtml(str) {
-      return (str || '').replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-      }[tag] || tag));
+    function reproducirVideo(index) {
+      if (!videosData[index]) return;
+      const v = videosData[index];
+
+      // Actualizar selección visual
+      document.querySelectorAll('.video-item').forEach((el, idx) => {
+        if (idx === index) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+
+      document.getElementById('currentVideoTitle').textContent = v.titulo;
+      document.getElementById('currentVideoPath').textContent = `Archivo: ${v.rel_path}`;
+      document.getElementById('currentVideoSize').textContent = `Tamaño: ${v.tamano_mb} MB`;
+
+      placeholder.style.display = 'none';
+      player.style.display = 'block';
+      player.src = v.stream_url;
+      player.play().catch(e => console.log("Autoplay bloqueado:", e));
     }
 
-    window.onload = loadVideosList;
+    function mostrarPlaceholder() {
+      player.style.display = 'none';
+      placeholder.style.display = 'flex';
+      document.getElementById('currentVideoTitle').textContent = 'No hay videos cargados';
+      document.getElementById('currentVideoPath').textContent = 'Archivo: Ninguno';
+      document.getElementById('currentVideoSize').textContent = 'Tamaño: 0 MB';
+    }
   </script>
 </body>
 </html>

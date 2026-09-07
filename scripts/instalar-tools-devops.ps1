@@ -1,17 +1,17 @@
 <#
 .SYNOPSIS
     Script de Instalacion Automatizada de Herramientas Cloud DevOps para Windows.
-    Curso: Cloud DevOps: Automatizacion y Despliegue (EducacionIT - DEVO07).
+    Curso: Cloud DevOps: Automatizacion y Despliegue (Cloud DevOps Automation).
 
 .DESCRIPTION
     Escanea el sistema previamente, marca visualmente que herramientas ya estan instaladas
     para evitar reinstalarlas y ofrece opciones de instalacion por categorias o seleccion:
-      1) Solo Software Base Obligatorio de Alumni (Zoom, Git, GitHub CLI (gh), VS Code, Docker, Terraform, AWS CLI, Azure CLI, Kubectl, Helm, Minikube, jq).
+      1) Solo Software Base DevOps (Core Esencial) (Zoom, Git, GitHub CLI (gh), VS Code, Docker, Terraform, AWS CLI, Azure CLI, Kubectl, Helm, Minikube, jq).
       2) Ecosistema Completo (Obligatorio + Todas las herramientas optativas).
       3) Seleccion Personalizada por Categorias o Numeros (ej: 'BASE', 'AI', 'TERM', 'TUI', 'EBPF', 'LANG', '1-31').
 
 .PARAMETER SoloObligatorio
-    Si se activa, gestiona UNICAMENTE el software oficial requerido por EducacionIT.
+    Si se activa, gestiona UNICAMENTE el software oficial requerido por DevOps.
 
 .PARAMETER Completo
     Si se activa, gestiona todo el ecosistema (Obligatorio + Optativos).
@@ -128,19 +128,19 @@ if (Test-Path $goPath) { $env:Path += ";$goPath" }
 
 # 3. CATALOGO COMPLETO DE HERRAMIENTAS CATEGORIZADAS (31 TOOLS)
 $allTools = @(
-    # --- [BASE] SOFTWARE BASE OBLIGATORIO (MANDATORY / ALUMNI) ---
-    @{ IdNum=1;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Zoom Workplace"; Id="Zoom.Zoom"; Command="zoom"; VersionArg=""; Description="Plataforma oficial de clases en vivo"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ Test-Path "$env:APPDATA\Zoom\bin\Zoom.exe", "C:\Program Files\Zoom\bin\Zoom.exe", "$env:LOCALAPPDATA\Zoom\bin\Zoom.exe" } },
-    @{ IdNum=2;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Git for Windows"; Id="Git.Git"; Command="git"; VersionArg="--version"; Description="Control de versiones distribuido"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=3;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="GitHub CLI (gh)"; Id="GitHub.cli"; Command="gh"; VersionArg="--version"; Description="CLI oficial de GitHub para autenticar cuenta (gh auth login) y sincronizar repositorios"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=4;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Visual Studio Code"; Id="Microsoft.VisualStudioCode"; Command="code"; VersionArg="--version"; Description="Editor principal de codigo e infraestructura"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=5;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Docker Desktop"; Id="Docker.DockerDesktop"; Command="docker"; VersionArg="--version"; Description="Motor de Contenerizacion Linux en Windows"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=6;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="HashiCorp Terraform"; Id="Hashicorp.Terraform"; Command="terraform"; VersionArg="--version"; Description="Infraestructura como Codigo - IaC"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=7;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="AWS CLI (v2)"; Id="Amazon.AWSCLI"; Command="aws"; VersionArg="--version"; Description="CLI oficial para Amazon Web Services"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=8;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Azure CLI (az)"; Id="Microsoft.AzureCLI"; Command="az"; VersionArg="version"; Description="CLI oficial para Microsoft Azure Cloud"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ (Get-Command "az" -ErrorAction SilentlyContinue) -or (Test-Path "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd") } },
-    @{ IdNum=9;  Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Kubernetes CLI (kubectl)"; Id="Kubernetes.kubectl"; Command="kubectl"; VersionArg="version --client"; Description="CLI para orquestacion de K8s"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=10; Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Helm"; Id="Helm.Helm"; Command="helm"; VersionArg="version --short"; Description="Package manager para Kubernetes"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=11; Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="Minikube"; Id="Kubernetes.minikube"; Command="minikube"; VersionArg="version --short"; Description="Cluster local de Kubernetes"; InstallerType="winget"; Tipo="Obligatorio" },
-    @{ IdNum=12; Categoria="BASE"; CatNombre="Software Base Obligatorio Alumni"; Name="jq (JSON Processor)"; Id="jqlang.jq"; Command="jq"; VersionArg="--version"; Description="Procesador y filtro de JSON para scripts DevOps"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ (Get-Command "jq" -ErrorAction SilentlyContinue) -or (Test-Path "$env:LOCALAPPDATA\Microsoft\WinGet\Links\jq.exe") } },
+    # --- [BASE] SOFTWARE BASE DEVOPS (CORE ESENCIAL) ---
+    @{ IdNum=1;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Zoom Workplace"; Id="Zoom.Zoom"; Command="zoom"; VersionArg=""; Description="Videoconferencias y comunicacion de equipo"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ Test-Path "$env:APPDATA\Zoom\bin\Zoom.exe", "C:\Program Files\Zoom\bin\Zoom.exe", "$env:LOCALAPPDATA\Zoom\bin\Zoom.exe" } },
+    @{ IdNum=2;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Git for Windows"; Id="Git.Git"; Command="git"; VersionArg="--version"; Description="Control de versiones distribuido"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=3;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="GitHub CLI (gh)"; Id="GitHub.cli"; Command="gh"; VersionArg="--version"; Description="CLI oficial de GitHub para autenticar cuenta (gh auth login) y sincronizar repositorios"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=4;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Visual Studio Code"; Id="Microsoft.VisualStudioCode"; Command="code"; VersionArg="--version"; Description="Editor principal de codigo e infraestructura"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=5;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Docker Desktop"; Id="Docker.DockerDesktop"; Command="docker"; VersionArg="--version"; Description="Motor de Contenerizacion Linux en Windows"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=6;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="HashiCorp Terraform"; Id="Hashicorp.Terraform"; Command="terraform"; VersionArg="--version"; Description="Infraestructura como Codigo - IaC"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=7;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="AWS CLI (v2)"; Id="Amazon.AWSCLI"; Command="aws"; VersionArg="--version"; Description="CLI oficial para Amazon Web Services"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=8;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Azure CLI (az)"; Id="Microsoft.AzureCLI"; Command="az"; VersionArg="version"; Description="CLI oficial para Microsoft Azure Cloud"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ (Get-Command "az" -ErrorAction SilentlyContinue) -or (Test-Path "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd") } },
+    @{ IdNum=9;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Kubernetes CLI (kubectl)"; Id="Kubernetes.kubectl"; Command="kubectl"; VersionArg="version --client"; Description="CLI para orquestacion de K8s"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=10; Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Helm"; Id="Helm.Helm"; Command="helm"; VersionArg="version --short"; Description="Package manager para Kubernetes"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=11; Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Minikube"; Id="Kubernetes.minikube"; Command="minikube"; VersionArg="version --short"; Description="Cluster local de Kubernetes"; InstallerType="winget"; Tipo="Obligatorio" },
+    @{ IdNum=12; Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="jq (JSON Processor)"; Id="jqlang.jq"; Command="jq"; VersionArg="--version"; Description="Procesador y filtro de JSON para scripts DevOps"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ (Get-Command "jq" -ErrorAction SilentlyContinue) -or (Test-Path "$env:LOCALAPPDATA\Microsoft\WinGet\Links\jq.exe") } },
 
     # --- [TERM] TERMINALES, COMUNICACION & EDITORES MODERNOS ---
     @{ IdNum=13; Categoria="TERM"; CatNombre="Terminales y Editores Modernos"; Name="Gajim (Cliente XMPP)"; Id="Gajim.Gajim"; Command="gajim"; VersionArg="--version"; Description="Cliente XMPP moderno para mensajeria segura y cifrada"; InstallerType="winget"; Tipo="Optativo"; CustomCheck={ (Get-Command "gajim" -ErrorAction SilentlyContinue) -or (Test-Path "C:\Program Files\Gajim\bin\Gajim.exe", "C:\Program Files (x86)\Gajim\bin\Gajim.exe", "$env:LOCALAPPDATA\Programs\Gajim\bin\Gajim.exe") } },
@@ -237,7 +237,7 @@ if ($SoloObligatorio) {
     Write-Info "Modo seleccionado por parametro: CATEGORIAS ($($catList -join ', '))."
 } else {
     Write-Header "SELECCION DE TIPO DE INSTALACION"
-    Write-Host " [1] Solo Software Base Obligatorio de Alumni (Recomendado para cursar)" -ForegroundColor Green
+    Write-Host " [1] Solo Software Base DevOps (Core Esencial) (Recomendado para desarrollo e infraestructura)" -ForegroundColor Green
     Write-Host "     -> Zoom, Git, GitHub CLI (gh), VS Code, Docker, Terraform, AWS CLI, Azure CLI, Kubectl, Helm, Minikube, jq" -ForegroundColor Gray
     Write-Host ""
     Write-Host " [2] Ecosistema Completo (Obligatorio + Todas las 31 herramientas)" -ForegroundColor Cyan
@@ -256,7 +256,7 @@ if ($SoloObligatorio) {
         Write-Header "CATALOGO DE HERRAMIENTAS AGRUPADAS POR CATEGORIA"
         
         $categoriesInfo = @(
-            @{ Code="BASE"; Name="SOFTWARE BASE OBLIGATORIO ALUMNI (MANDATORY)"; Color="Yellow"; Range="1 - 12" },
+            @{ Code="BASE"; Name="SOFTWARE BASE DEVOPS (CORE ESENCIAL)"; Color="Yellow"; Range="1 - 12" },
             @{ Code="TERM"; Name="TERMINALES, COMUNICACION Y EDITORES"; Color="Green"; Range="13 - 18" },
             @{ Code="TUI";  Name="HERRAMIENTAS TUI Y PRODUCTIVIDAD"; Color="Cyan"; Range="19 - 23" },
             @{ Code="EBPF"; Name="CONTENEDORES, REDES Y EBPF"; Color="Magenta"; Range="24 - 26" },
