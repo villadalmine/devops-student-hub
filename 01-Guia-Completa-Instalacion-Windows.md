@@ -1,6 +1,5 @@
 # Guía de Instalación del Entorno Cloud DevOps (Windows)
 
-> **Curso:** Cloud DevOps: Automatización y Despliegue  
 > **Estructura:** Software Base DevOps (Core Esencial) vs. Ecosistema de Herramientas Optativas por Categorías  
 
 ---
@@ -9,18 +8,18 @@
 
 | Categoría | Descripción | Requerido para Cursar |
 | :--- | :--- | :---: |
-| 🔴 **Software Base DevOps (Core Esencial)** | Extraído del programa oficial de Cloud DevOps, nubes principales (AWS + Azure) y procesador JSON (`jq`). Necesario para asistir a clase en vivo, laboratorios prácticos y exámenes. | **SÍ (100% Obligatorio / Mandatory)** |
+| 🔴 **Software Base DevOps (Core Esencial)** | Extraído del programa oficial de Cloud DevOps, nubes principales (AWS + Azure) y procesador JSON (`jq`). Necesario para laboratorios prácticos, desarrollo e infraestructura. | **SÍ (100% Obligatorio / Mandatory)** |
 | 🟢 **Herramientas Optativas** | Terminales GPU, clientes XMPP/Jabber, visores TUI, lenguajes, redes eBPF, multiplexor Herdr y suite de IA. Mejoran la productividad y flujo de trabajo pero su instalación es a elección. | **NO (100% Optativo)** |
 
 ---
 
 ## 🔴 1. Software Base DevOps (Core Esencial)
 
-Este es el stack tecnológico que cada alumno y docente **debe tener instalado obligatoriamente**:
+Este es el stack tecnológico que cada usuario y docente **debe tener instalado obligatoriamente**:
 
 | Herramienta | Versión Mínima / ID Winget | Módulos Oficiales | Propósito en el Programa |
 | :--- | :---: | :---: | :--- |
-| **Zoom Workplace** | `Zoom.Zoom` (6.0+) | Todas las clases | Plataforma oficial para el dictado de las 12 clases sincrónicas en vivo. |
+| **Zoom Workplace** | `Zoom.Zoom` (6.0+) | Reuniones de equipo | Plataforma para reuniones, demos y sesiones técnicas en vivo. |
 | **Git for Windows** | `Git.Git` (2.40+) | M1, M3, M6 | Control de versiones distribuido y trabajo con ramas. |
 | **Visual Studio Code** | `Microsoft.VisualStudioCode` | M1 a M7 | IDE principal para edición de código, Dockerfiles, YAML y HCL. |
 | **Docker Desktop (+ WSL 2)** | `Docker.DockerDesktop` (4.25+) | M4, M5, M6, M7 | Motor de contenerización Linux en Windows. |
@@ -29,7 +28,7 @@ Este es el stack tecnológico que cada alumno y docente **debe tener instalado o
 | **Azure CLI (az)** | `Microsoft.AzureCLI` (2.50+) | M2, M3, M7 | Gestión, suscripciones y despliegue en Microsoft Azure Cloud. |
 | **Kubernetes CLI (kubectl)** | `Kubernetes.kubectl` (1.28+) | M5, M6, M7 | Administración de clústeres y despliegue de manifiestos. |
 | **Helm** | `Helm.Helm` (3.12+) | M5 | Gestor de paquetes y charts para Kubernetes. |
-| **Minikube** | `Kubernetes.minikube` (1.32+) | M5 | Clúster local ligero de Kubernetes para pruebas en clase. |
+| **Minikube** | `Kubernetes.minikube` (1.32+) | M5 | Clúster local ligero de Kubernetes para pruebas y laboratorios. |
 | **jq (JSON Processor)** | `jqlang.jq` (1.7+) | M1 a M7 | Procesamiento, parsing y filtrado de respuestas JSON en pipelines y CLIs. |
 | **WSL 2 (Ubuntu)** | Kernel 5.10+ | M4, M5 | Subsistema de Linux para Windows (backend de Docker). |
 
@@ -43,9 +42,9 @@ Las herramientas opcionales están organizadas en **5 categorías temáticas** p
 * **Gajim (`gajim`):** Cliente XMPP/Jabber moderno y ligero para Windows con soporte de cifrado extremo a extremo (OMEMO), salas de chat y envío de archivos.
 * **Ghostty Terminal (`ghostty` / `ghostly`):** Emulador de terminal nativo acelerado por GPU, con renderizado ultra-rápido, tipografía con ligaduras y pestañas nativas.
 * **Zed Editor (`zed`):** Editor moderno y veloz escrito en Rust con IA integrada.
-* **Herdr (`herdr`):** Multiplexor de terminal (*tmux moderno*) con paneles preconfigurados por tema del curso (`Ctrl+1` a `Ctrl+7`).
+* **Herdr (`herdr`):** Multiplexor de terminal (*tmux moderno*) con paneles preconfigurados por tema de tus proyectos (`Ctrl+1` a `Ctrl+7`).
 * **Neovim (`nvim`):** Editor modal extensible de alto rendimiento para consola.
-* **VLC Media Player (`vlc`):** Reproductor multimedia para transmisiones y grabaciones de clase HLS `.m3u8` desde consola.
+* **VLC Media Player (`vlc`):** Reproductor multimedia para transmisiones y grabaciones y tutoriales HLS `.m3u8` desde consola.
 
 ### 📦 [TUI] Herramientas TUI & Productividad
 * **GitHub CLI (`gh`):** CLI oficial de GitHub con soporte para Pull Requests, visualización de GitHub Actions y extensión de Copilot.
@@ -94,7 +93,7 @@ powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1
    * Puedes ingresar códigos de categoría (`BASE`, `AI`, `TUI`, `TERM`, `EBPF`, `LANG`), números (`1-12`, `13-18`, `19-23`) o combinaciones (`BASE, AI, 13`).
 
 ### 🔐 Autenticación Obligatoria con GitHub CLI (`gh`):
-Para clonar los repositorios privados y públicos de cada clase, sincronizar ramas y entregar laboratorios, es obligatorio autenticarse una sola vez en el sistema:
+Para clonar los repositorios privados y públicos de cada proyecto, sincronizar ramas y entregar laboratorios, es obligatorio autenticarse una sola vez en el sistema:
 ```powershell
 # Iniciar sesión en GitHub desde PowerShell:
 gh auth login

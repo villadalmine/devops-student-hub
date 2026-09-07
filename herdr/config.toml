@@ -1,4 +1,4 @@
-# Configuración Oficial de Herdr para el Curso Cloud DevOps
+# Configuración de Herdr para DevOps Workspace
 # Archivo de destino en Windows: %APPDATA%\herdr\config.toml
 
 [server]

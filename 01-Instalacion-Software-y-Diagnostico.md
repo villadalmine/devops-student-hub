@@ -1,6 +1,5 @@
 # Diagnóstico del Entorno Local y Guía de Instalación de Software
 
-> **Curso:** Cloud DevOps: Automatización y Despliegue  
 > **Instructor:** rino@villadalmine.club  
 > **Fecha de Actualización:** Septiembre de 2026  
 

@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Script de Instalacion Automatizada de Herramientas Cloud DevOps para Windows.
-    Curso: Cloud DevOps: Automatizacion y Despliegue (Cloud DevOps Automation).
+    Entorno y Toolkit de Automatizacion Cloud DevOps para Windows.
 
 .DESCRIPTION
     Escanea el sistema previamente, marca visualmente que herramientas ya estan instaladas
@@ -509,7 +509,7 @@ if ($ghInstalled -or $ghMissing) {
             }
         } else {
             Write-WarningMsg "GitHub CLI (gh) esta instalado pero todavia NO esta autenticado con tu cuenta de GitHub."
-            Write-Host "   Para vincular tu cuenta con GitHub y clonar repositorios del curso, ejecuta:" -ForegroundColor Yellow
+            Write-Host "   Para vincular tu cuenta con GitHub y clonar repositorios de tus proyectos, ejecuta:" -ForegroundColor Yellow
             Write-Host "   gh auth login" -ForegroundColor Cyan
             Write-Host "   -> Pasos recomendados: Selecciona 'GitHub.com' -> 'HTTPS' -> 'Y' -> 'Login with a web browser'" -ForegroundColor Gray
         }

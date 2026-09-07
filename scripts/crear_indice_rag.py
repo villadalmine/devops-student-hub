@@ -31,7 +31,7 @@ DB_PATH = os.path.join(DATA_DIR, "devops_knowledge.db")
 
 # Carpetas o archivos que no deben indexarse
 EXCLUDE_DIRS = {".git", ".agent", "skills", "scripts", "data", "player", "herdr", "nvim", "__pycache__", "node_modules", ".vscode"}
-EXCLUDE_FILES = {"clases.json", "package.json", "package-lock.json"}
+EXCLUDE_FILES = {"videos.json", "package.json", "package-lock.json"}
 
 try:
     import pypdf

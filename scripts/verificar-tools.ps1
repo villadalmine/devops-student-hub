@@ -186,7 +186,7 @@ if ($coreInstalled -lt $coreTools.Count) {
     Write-Host " Para instalar las herramientas OBLIGATORIAS faltantes, ejecuta como Admin:" -ForegroundColor Yellow
     Write-Host "   powershell -ExecutionPolicy Bypass -File .\instalar-tools-devops.ps1 -SoloObligatorio" -ForegroundColor White
 } else {
-    Write-Host " Excelente: Tu equipo cuenta con todo el software obligatorio para el curso." -ForegroundColor Green
+    Write-Host " Excelente: Tu equipo cuenta con todo el software obligatorio para el entorno DevOps." -ForegroundColor Green
 }
 
 $ghCmd = Get-Command "gh" -ErrorAction SilentlyContinue
@@ -196,7 +196,7 @@ if ($ghCmd) {
         Write-Host ""
         Write-Host " [!] ATENCION - AUTENTICACION DE GITHUB PENDIENTE:" -ForegroundColor Yellow
         Write-Host "     Tienes GitHub CLI instalado, pero aun no iniciaste sesion." -ForegroundColor White
-        Write-Host "     Para vincular tu cuenta con GitHub y clonar repositorios del curso, ejecuta:" -ForegroundColor White
+        Write-Host "     Para vincular tu cuenta con GitHub y clonar repositorios de tus proyectos, ejecuta:" -ForegroundColor White
         Write-Host "     gh auth login" -ForegroundColor Cyan
         Write-Host "     (Recomendado: GitHub.com -> HTTPS -> Yes -> Login with a web browser)" -ForegroundColor Gray
     }

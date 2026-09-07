@@ -1,5 +1,5 @@
 -- =====================================================================
---  Configuracion Oficial de Neovim para el Curso Cloud DevOps
+--  Configuracion de Neovim para DevOps Workspace
 --  Optimizada para correr DENTRO de paneles de Herdr (multiplexer).
 --
 --  Archivo de destino en Windows: %LOCALAPPDATA%\nvim\init.lua
@@ -71,11 +71,11 @@ opt.mouse = "a"
 opt.title = true
 opt.titlestring = "nvim: %t"
 
--- Forma del cursor. Al salir de Neovim se restaura el cursor de bloque:
+-- Forma de tus proyectosr. Al salir de Neovim se restaura el entornor de bloque:
 -- sin esto, el panel de Herdr queda con cursor de linea fina para siempre.
 opt.guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50"
 vim.api.nvim_create_autocmd("VimLeave", {
-  desc = "Restaurar el cursor de bloque al salir (evita cursor roto en Herdr)",
+  desc = "Restaurar el entornor de bloque al salir (evita cursor roto en Herdr)",
   callback = function()
     vim.opt.guicursor = "a:block"
   end,
@@ -219,7 +219,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Resaltar brevemente el texto copiado (util al proyectar en clase).
+-- Resaltar brevemente el texto copiado (util al proyectar o compartir pantalla).
 vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Destacar el yank",
   callback = function()
