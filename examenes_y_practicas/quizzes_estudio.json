@@ -1,0 +1,38 @@
+[
+  {
+    "clase": 1,
+    "pregunta": "¿Cuál de las siguientes afirmaciones describe mejor el objetivo de la métrica DORA 'Lead Time for Changes'?",
+    "opciones": [
+      "A) El tiempo que tarda el equipo de soporte en atender un ticket de cliente.",
+      "B) El tiempo que transcurre desde que un desarrollador hace commit hasta que el código corre exitosamente en producción.",
+      "C) La cantidad de despliegues que fallan durante el fin de semana.",
+      "D) El tiempo que tarda el servidor en reiniciar después de un corte de energía."
+    ],
+    "correcta": "B",
+    "justificacion": "Lead Time for Changes (LTTC) mide la velocidad del flujo de valor: el tiempo desde el primer commit de código hasta su entrega efectiva y operativa a los usuarios finales en producción."
+  },
+  {
+    "clase": 1,
+    "pregunta": "En el marco cultural CALMS de DevOps, ¿a qué hace referencia la letra 'S'?",
+    "opciones": [
+      "A) Software Security (Seguridad en el ciclo de desarrollo).",
+      "B) Speed (Velocidad de despliegue).",
+      "C) Sharing (Compartir responsabilidades, conocimientos y aprendizajes entre áreas).",
+      "D) Serverless (Arquitecturas sin servidor)."
+    ],
+    "correcta": "C",
+    "justificacion": "CALMS significa Culture, Automation, Lean, Measurement y Sharing. La 'S' de Sharing impulsa la transparencia, la eliminación de silos y el compartir tanto éxitos como lecciones aprendidas ante fallos."
+  },
+  {
+    "clase": 2,
+    "pregunta": "¿Cuál es la principal diferencia entre 'git merge' y 'git rebase' al integrar cambios de una rama secundaria?",
+    "opciones": [
+      "A) Merge borra la rama origen y rebase la duplica.",
+      "B) Merge preserva el historial creando un commit de unión (merge commit), mientras que rebase reescribe los commits colocándolos sobre la punta de la rama destino de forma lineal.",
+      "C) Rebase solo funciona con repositorios remotos en GitHub y merge en local.",
+      "D) No existe diferencia técnica, ambos realizan exactamente la misma operación."
+    ],
+    "correcta": "B",
+    "justificacion": "Git merge crea un 'merge commit' con dos padres manteniendo la topología histórica original. Git rebase trasplanta los commits uno a uno sobre la rama base generando nuevos hashes SHA y un historial completamente lineal."
+  }
+]

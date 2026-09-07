@@ -1,0 +1,36 @@
+# Configuración Oficial de Herdr para el Curso Cloud DevOps
+# Archivo de destino en Windows: %APPDATA%\herdr\config.toml
+
+[server]
+headless_cols = 160
+headless_rows = 45
+
+[ui]
+theme = "tokyo-night"
+sidebar_position = "left"
+show_agent_status = true
+show_pane_borders = true
+redraw_on_focus_gained = true
+
+[keys]
+# Atajos de navegación entre paneles y pestañas temáticas
+"Ctrl-h" = "pane:left"
+"Ctrl-l" = "pane:right"
+"Ctrl-k" = "pane:up"
+"Ctrl-j" = "pane:down"
+
+"Ctrl-1" = "workspace:select 1"  # Modulo 1: Cultura & Git
+"Ctrl-2" = "workspace:select 2"  # Modulo 2: Cloud & AWS
+"Ctrl-3" = "workspace:select 3"  # Modulo 3: IaC & Terraform
+"Ctrl-4" = "workspace:select 4"  # Modulo 4: Docker & Containers
+"Ctrl-5" = "workspace:select 5"  # Modulo 5: Kubernetes & Helm
+"Ctrl-6" = "workspace:select 6"  # Modulo 6: CI/CD & GitOps
+"Ctrl-7" = "workspace:select 7"  # Modulo 7: AI Assistant & AIOps
+
+"Ctrl-Shift-d" = "pane:split right"
+"Ctrl-Shift-s" = "pane:split down"
+"Ctrl-Shift-f" = "pane:zoom"
+
+# Cerrar panel usa Ctrl+Shift+W para no pisar Ctrl+W, que es el prefijo
+# nativo de ventanas de Neovim cuando se edita dentro de un panel.
+"Ctrl-Shift-w" = "pane:close"

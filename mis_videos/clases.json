@@ -1,0 +1,179 @@
+[
+  {
+    "clase": 1,
+    "titulo": "Clase 01: Introducción a DevOps, Cultura CALMS, Métricas DORA y Git",
+    "modulo": "M1: Cultura y Fundamentos DevOps",
+    "archivo_local": "Clase_01.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Cultura CALMS",
+      "Métricas DORA",
+      "Eliminación de Silos",
+      "Git init, add, commit, push",
+      "GitHub CLI gh"
+    ]
+  },
+  {
+    "clase": 2,
+    "titulo": "Clase 02: Git Avanzado, GitFlow vs Trunk-based, Pull Requests y Resolución de Conflictos",
+    "modulo": "M1: Cultura y Fundamentos DevOps",
+    "archivo_local": "Clase_02.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "GitFlow",
+      "Trunk-based development",
+      "Rebase vs Merge",
+      "Resolución de conflictos",
+      "Pull Requests"
+    ]
+  },
+  {
+    "clase": 3,
+    "titulo": "Clase 03: Fundamentos de Cloud AWS, Modelo de Responsabilidad Compartida, IAM y S3",
+    "modulo": "M2: Cloud Computing con Amazon Web Services",
+    "archivo_local": "Clase_03.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Modelo de responsabilidad compartida",
+      "AWS IAM (Users, Roles, Policies)",
+      "Principio de menor privilegio",
+      "Amazon S3 y Buckets"
+    ]
+  },
+  {
+    "clase": 4,
+    "titulo": "Clase 04: Cómputo en AWS (EC2), Redes VPC, Subnets, Route Tables y Security Groups",
+    "modulo": "M2: Cloud Computing con Amazon Web Services",
+    "archivo_local": "Clase_04.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Amazon EC2 y AMIs",
+      "VPC y CIDR blocks",
+      "Subnets públicas y privadas",
+      "Internet Gateways y NAT",
+      "Security Groups vs NACLs"
+    ]
+  },
+  {
+    "clase": 5,
+    "titulo": "Clase 05: Infraestructura como Código (IaC) con Terraform: Sintaxis HCL, Providers y Recursos",
+    "modulo": "M3: Infraestructura como Código con Terraform",
+    "archivo_local": "Clase_05.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "IaC declarativo vs imperativo",
+      "Sintaxis HCL",
+      "terraform init, plan, apply, destroy",
+      "Variables e Outputs",
+      "Terraform Registry"
+    ]
+  },
+  {
+    "clase": 6,
+    "titulo": "Clase 06: Terraform Avanzado: State Remoto en S3, State Locking con DynamoDB y LocalStack",
+    "modulo": "M3: Infraestructura como Código con Terraform",
+    "archivo_local": "Clase_06.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Terraform State file",
+      "Backend remoto S3",
+      "Locking con DynamoDB",
+      "Módulos reutilizables",
+      "LocalStack para emulación local"
+    ]
+  },
+  {
+    "clase": 7,
+    "titulo": "Clase 07: Contenerización con Docker: Docker Engine, Dockerfiles y Multi-Stage Builds",
+    "modulo": "M4: Contenedores con Docker",
+    "archivo_local": "Clase_07.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Imágenes vs Contenedores",
+      "Capas (Union File System)",
+      "Directivas Dockerfile (FROM, RUN, COPY, CMD)",
+      "Multi-Stage Builds",
+      "Docker Hub"
+    ]
+  },
+  {
+    "clase": 8,
+    "titulo": "Clase 08: Docker Compose Multi-Servicio, Redes, Volúmenes y Buenas Prácticas de Seguridad",
+    "modulo": "M4: Contenedores con Docker",
+    "archivo_local": "Clase_08.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "docker-compose.yml",
+      "Dependencias (depends_on)",
+      "Volúmenes para persistencia",
+      "Redes bridge personalizadas",
+      "Variables de entorno (.env)"
+    ]
+  },
+  {
+    "clase": 9,
+    "titulo": "Clase 09: Orquestación con Kubernetes: Arquitectura, Control Plane, Pods y Deployments",
+    "modulo": "M5: Orquestación con Kubernetes",
+    "archivo_local": "Clase_09.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Control Plane (API Server, etcd, Scheduler, Controller)",
+      "Worker Nodes (kubelet, kube-proxy, container runtime)",
+      "Pods y Deployments",
+      "Auto-healing y Replicas"
+    ]
+  },
+  {
+    "clase": 10,
+    "titulo": "Clase 10: Kubernetes Networking: Services (ClusterIP, NodePort, LoadBalancer), Ingress y Helm",
+    "modulo": "M5: Orquestación con Kubernetes",
+    "archivo_local": "Clase_10.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Kubernetes Services",
+      "ClusterIP vs NodePort vs LoadBalancer",
+      "Ingress Controller",
+      "ConfigMaps y Secrets",
+      "Helm Charts"
+    ]
+  },
+  {
+    "clase": 11,
+    "titulo": "Clase 11: Integración y Despliegue Continuo (CI/CD): GitHub Actions y GitOps con Argo CD",
+    "modulo": "M6: CI/CD y GitOps",
+    "archivo_local": "Clase_11.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "Pipeline de Integración Continua (CI)",
+      "Workflows de GitHub Actions (.github/workflows)",
+      "Triggers, Jobs, Steps y Actions",
+      "Concepto GitOps y reconciliación con Argo CD"
+    ]
+  },
+  {
+    "clase": 12,
+    "titulo": "Clase 12: Servicios de Contenedores en AWS (ECS / EKS), Monitoreo con CloudWatch y Cierre",
+    "modulo": "M7: Servicios Cloud y Cierre del Curso",
+    "archivo_local": "Clase_12.mp4",
+    "url_stream": "",
+    "duracion": "2h 30m",
+    "temas": [
+      "AWS ECS (Elastic Container Service)",
+      "AWS Fargate (Serverless Containers)",
+      "AWS EKS (Managed Kubernetes)",
+      "Monitoreo con CloudWatch",
+      "Cierre y entrega de proyectos"
+    ]
+  }
+]

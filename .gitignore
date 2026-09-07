@@ -1,0 +1,17 @@
+# GitIgnore para Alumnos
+.vscode/
+*.log
+__pycache__/
+*.pyc
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Videos grandes (los alumnos los colocan en local)
+mis_videos/*.mp4
+mis_videos/*.mkv
+mis_videos/*.webm
+mis_videos/*.avi
+!mis_videos/README.md
+!mis_videos/clases.json
