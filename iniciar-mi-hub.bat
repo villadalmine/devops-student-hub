@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
-title Cloud DevOps - Campus Personal del Alumno
+title DevOps Workspace & Knowledge Hub
 cd /d "%~dp0"
 
 echo ======================================================================
-echo    INICIANDO CAMPUS PERSONAL DEL ALUMNO (CLOUD DEVOPS 2026)
+echo    INICIANDO DEVOPS WORKSPACE & KNOWLEDGE HUB
 echo ======================================================================
 echo.
 
@@ -12,7 +12,7 @@ where python >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] No se encontro Python en tu sistema.
     echo Por favor instala Python o ejecuta:
-    echo powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloObligatorio
+    echo powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloBase
     pause
     exit /b 1
 )
