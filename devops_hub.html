@@ -104,7 +104,19 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-          <label class="text-xs text-slate-400 font-medium">Filtrar por Carpeta/Categoría:</label>
+          <label class="text-xs text-slate-400 font-medium">Motor IA:</label>
+          <select id="chatModel" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500 font-semibold text-cyan-300">
+            <option value="auto">⚡ Auto (Mejor disponible)</option>
+            <option value="agy">🚀 Antigravity CLI (agy)</option>
+            <option value="claude">🟣 Claude Code CLI (claude)</option>
+            <option value="gemini">✨ Google Gemini API</option>
+            <option value="ollama">🦙 Ollama Local</option>
+            <option value="search_only">🔍 Solo Búsqueda RAG</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <label class="text-xs text-slate-400 font-medium">Filtrar por Carpeta:</label>
           <select id="chatCategory" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500">
             <option value="all">Todas las Carpetas</option>
             <!-- Llenado dinámicamente con las categorías encontradas -->
@@ -502,6 +514,7 @@
 
       const mode = document.getElementById('chatMode').value;
       const cat = document.getElementById('chatCategory').value;
+      const model = document.getElementById('chatModel').value;
 
       // Renderizar mensaje del usuario
       agregarMensajeVisual('user', q);
@@ -514,7 +527,7 @@
         const resp = await fetch('/api/ask', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: q, mode: mode, category: cat })
+          body: JSON.stringify({ question: q, mode: mode, category: cat, model: model })
         });
 
         const data = await resp.json();
@@ -567,7 +580,7 @@
         if (sources && sources.length > 0) {
           const sourcesDiv = document.createElement('div');
           sourcesDiv.className = 'mt-2 pt-2 border-t border-slate-700/40 text-[11px] text-slate-400';
-          sourcesDiv.innerHTML = `<strong>Fuentes locales consultadas:</strong> ` + sources.map(s => `<span class="bg-slate-900 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-cyan-300 ml-1">${s.rel_path}</span>`).join('');
+          sourcesDiv.innerHTML = `<strong>Fuentes locales consultadas:</strong> ` + sources.map(s => `<a href="/api/file?path=${encodeURIComponent(s.rel_path)}" target="_blank" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500 px-1.5 py-0.5 rounded text-[10px] text-cyan-300 hover:text-white transition ml-1 inline-flex items-center gap-0.5" title="Abrir archivo"><span>📄</span><span>${s.rel_path}</span></a>`).join('');
           bubble.appendChild(sourcesDiv);
         }
       }

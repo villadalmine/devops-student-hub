@@ -55,6 +55,13 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
             pass
 
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.end_headers()
+
     def do_GET(self):
         url_parts = urllib.parse.urlparse(self.path)
         path = url_parts.path
@@ -82,13 +89,19 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.handle_get_saved_chats()
             return
 
-        # 5. Streaming de Videos Locales (/videos/<filename>)
+        # 5. API: Servir archivos locales de forma segura (/api/file?path=...)
+        elif path == "/api/file":
+            rel_file = query.get("path", [""])[0]
+            self.handle_api_file(rel_file)
+            return
+
+        # 6. Streaming de Videos Locales (/videos/<filename>)
         elif path.startswith("/videos/"):
             filename = urllib.parse.unquote(path[8:])
             self.handle_video_streaming(filename)
             return
 
-        # 6. Favicon 204
+        # 7. Favicon 204
         elif path == "/favicon.ico":
             self.send_response(204)
             self.end_headers()
@@ -257,6 +270,64 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             except (ConnectionResetError, ConnectionAbortedError):
                 pass
 
+    def handle_api_file(self, rel_path):
+        if not rel_path:
+            self.send_response(400)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b"Parametro 'path' requerido.")
+            return
+
+        clean_rel = os.path.normpath(rel_path).lstrip('\\/')
+        target_path = os.path.abspath(os.path.join(STUDENT_DIR, clean_rel))
+        
+        if not target_path.startswith(os.path.abspath(STUDENT_DIR)):
+            self.send_response(403)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b"Acceso denegado fuera del workspace.")
+            return
+
+        if not os.path.exists(target_path) or not os.path.isfile(target_path):
+            self.send_response(404)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b"Archivo no encontrado.")
+            return
+
+        ext = os.path.splitext(target_path)[1].lower()
+        mime_map = {
+            ".pdf": "application/pdf",
+            ".md": "text/markdown; charset=utf-8",
+            ".txt": "text/plain; charset=utf-8",
+            ".json": "application/json; charset=utf-8",
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".svg": "image/svg+xml",
+            ".yml": "text/yaml; charset=utf-8",
+            ".yaml": "text/yaml; charset=utf-8",
+            ".sh": "text/plain; charset=utf-8",
+            ".ps1": "text/plain; charset=utf-8",
+            ".tf": "text/plain; charset=utf-8"
+        }
+        content_type = mime_map.get(ext, "application/octet-stream")
+
+        try:
+            with open(target_path, "rb") as f:
+                data = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(data)
+        except Exception as e:
+            self.send_response(500)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(f"Error leyendo archivo: {e}".encode("utf-8"))
+
     def handle_api_search(self, query_str, category_filter=None):
         if not os.path.exists(DB_PATH) or not query_str.strip():
             self.send_json({"ok": True, "results": []})
@@ -269,6 +340,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         question = body.get("question", "").strip()
         mode = body.get("mode", "tutor")  # tutor | lab_assistant | quiz_practice | doc_qa
         cat_filter = body.get("category")
+        model = body.get("model", "auto")
 
         if not question:
             self.send_json({"ok": False, "error": "Pregunta vacía."})
@@ -281,14 +353,15 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         system_prompt = build_student_prompt(mode)
         context_text = build_context_snippet(results)
 
-        # 3. Invocación del Modelo (Gemini -> Ollama -> RAG Offline Fallback)
-        response_text, provider = execute_ai_query(system_prompt, question, context_text)
+        # 3. Invocación del Modelo (Antigravity CLI -> Claude Code -> Gemini -> Ollama -> RAG Offline)
+        response_text, provider = execute_ai_query(system_prompt, question, context_text, model_choice=model)
 
         self.send_json({
             "ok": True,
             "answer": response_text,
             "provider": provider,
             "mode": mode,
+            "model_requested": model,
             "sources": results
         })
 
@@ -333,6 +406,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
     def send_json(self, data, status=200):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
 
@@ -340,59 +414,119 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
 # MOTOR DE BÚSQUEDA RAG & PROMPTS
 # -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
+# MOTOR DE BÚSQUEDA RAG & PROMPTS
+# -----------------------------------------------------------------------------
+
+SPANISH_STOPWORDS = {
+    'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'de', 'del', 'a', 'al', 'en', 'para',
+    'por', 'con', 'sin', 'sobre', 'entre', 'hacia', 'desde', 'hasta', 'durante', 'mediante',
+    'que', 'cual', 'cuales', 'quien', 'quienes', 'cuyo', 'donde', 'cuando', 'como', 'porque',
+    'y', 'e', 'ni', 'o', 'u', 'pero', 'mas', 'sino', 'aunque', 'si', 'no', 'ya', 'tambien',
+    'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas', 'aquel', 'aquella',
+    'mi', 'tu', 'su', 'nuestro', 'vuestro', 'sus', 'mis', 'tus',
+    'yo', 'tu', 'el', 'ella', 'nosotros', 'vosotros', 'ellos', 'ellas', 'usted', 'ustedes',
+    'me', 'te', 'se', 'nos', 'os', 'le', 'les', 'lo', 'la', 'los', 'las',
+    'un', 'dos', 'tres', 'primer', 'primero', 'primera', 'segundo', 'segunda',
+    'hacer', 'haces', 'hace', 'hacen', 'haga', 'hagas', 'puedo', 'puedes', 'puede', 'podemos',
+    'quiero', 'necesito', 'sabes', 'saber', 'dime', 'decir', 'explica', 'explicame', 'analisis',
+    'ver', 'veo', 'dar', 'dame'
+}
+
+def clean_tokens(query_str):
+    q_norm = query_str.lower()
+    q_norm = re.sub(r'[^\w\s]', ' ', q_norm)
+    raw = [w for w in q_norm.split() if len(w) > 2]
+    keywords = [w for w in raw if w not in SPANISH_STOPWORDS and len(w) > 2]
+    return keywords or raw
+
 def search_in_db(query_str, category_filter=None, limit=6):
-    if not os.path.exists(DB_PATH):
+    if not os.path.exists(DB_PATH) or not query_str.strip():
         return []
 
-    clean_q = re.sub(r'[^\w\s]', ' ', query_str)
-    tokens = [w for w in clean_q.split() if len(w) > 2 and w.lower() not in ["como", "para", "este", "esta", "sobre", "cual", "quiero", "puedo"]]
-    if not tokens:
-        tokens = clean_q.split()
+    tokens = clean_tokens(query_str)
     if not tokens:
         return []
-
-    fts_match = " OR ".join(tokens)
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-
     results = []
+    seen_ids = set()
+
+    def add_row(row):
+        doc_id = row[0]
+        if doc_id not in seen_ids and len(results) < limit:
+            seen_ids.add(doc_id)
+            results.append({
+                "id": row[0],
+                "title": row[1],
+                "category": row[2],
+                "rel_path": row[3].replace('\\', '/'),
+                "content": row[4],
+                "score": round(row[5], 3) if len(row) > 5 and row[5] is not None else 0
+            })
+            return True
+        return False
+
+    # 1. Búsqueda estricta AND con todos los tokens clave
+    fts_and = " AND ".join(tokens)
     try:
+        sql = """
+            SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.content, rank
+            FROM course_docs_fts fts
+            JOIN course_docs cd ON fts.rowid = cd.id
+            WHERE course_docs_fts MATCH ?
+        """
+        params = [fts_and]
         if category_filter and category_filter != "all":
-            sql = """
-                SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.content, rank
-                FROM course_docs_fts fts
-                JOIN course_docs cd ON fts.rowid = cd.id
-                WHERE course_docs_fts MATCH ? AND cd.category = ?
-                ORDER BY rank
-                LIMIT ?;
-            """
-            c.execute(sql, (fts_match, category_filter, limit))
-        else:
+            sql += " AND cd.category = ?"
+            params.append(category_filter)
+        sql += " ORDER BY rank LIMIT ?;"
+        params.append(limit)
+        c.execute(sql, params)
+        for row in c.fetchall():
+            add_row(row)
+    except Exception:
+        pass
+
+    # 2. Búsqueda rankeada OR con BM25 si faltan resultados
+    if len(results) < limit:
+        fts_or = " OR ".join(tokens)
+        try:
             sql = """
                 SELECT cd.id, cd.title, cd.category, cd.rel_path, cd.content, rank
                 FROM course_docs_fts fts
                 JOIN course_docs cd ON fts.rowid = cd.id
                 WHERE course_docs_fts MATCH ?
-                ORDER BY rank
-                LIMIT ?;
             """
-            c.execute(sql, (fts_match, limit))
+            params = [fts_or]
+            if category_filter and category_filter != "all":
+                sql += " AND cd.category = ?"
+                params.append(category_filter)
+            sql += " ORDER BY rank LIMIT ?;"
+            params.append(limit - len(results))
+            c.execute(sql, params)
+            for row in c.fetchall():
+                add_row(row)
+        except Exception:
+            pass
 
-        for row in c.fetchall():
-            results.append({
-                "id": row[0],
-                "title": row[1],
-                "category": row[2],
-                "rel_path": row[3],
-                "content": row[4][:600],
-                "score": round(row[5], 3) if row[5] is not None else 0
-            })
-    except Exception as e:
-        print(f" [!] Error en búsqueda FTS5: {e}")
-    finally:
-        conn.close()
+    # 3. Fallback general si no hubo resultados
+    if len(results) == 0:
+        try:
+            sql = "SELECT id, title, category, rel_path, content, 0 FROM course_docs"
+            if category_filter and category_filter != "all":
+                sql += " WHERE category = ? LIMIT ?"
+                c.execute(sql, (category_filter, limit))
+            else:
+                sql += " ORDER BY id ASC LIMIT ?"
+                c.execute(sql, (limit,))
+            for row in c.fetchall():
+                add_row(row)
+        except Exception:
+            pass
 
+    conn.close()
     return results
 
 def build_student_prompt(mode):
@@ -428,51 +562,105 @@ def build_context_snippet(results):
         text += f"{r['content']}\n\n"
     return text
 
-def execute_ai_query(system_prompt, question, context_text):
-    full_prompt = f"{system_prompt}\n\n{context_text}\n\nConsulta:\n{question}\n\nRespuesta estructurada (usa formato Markdown claro con títulos, viñetas y bloques de código):"
+def execute_ai_query(system_prompt, question, context_text, model_choice="auto"):
+    full_prompt = (
+        f"{system_prompt}\n\n"
+        f"======================================================================\n"
+        f"CONTEXTO RECUPERADO DEL WORKSPACE (RAG):\n"
+        f"======================================================================\n"
+        f"{context_text}\n\n"
+        f"======================================================================\n"
+        f"CONSULTA DEL USUARIO:\n"
+        f"{question}\n\n"
+        f"RESPUESTA ESTRUCTURADA (Markdown claro, bloques de comandos y viñetas):"
+    )
 
-    # 1. Probar Google Gemini si existe GEMINI_API_KEY
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-    if gemini_key:
+    # Modo Solo Búsqueda RAG
+    if model_choice == "search_only":
+        return context_text, "Motor RAG Directo (Sin LLM)"
+
+    # 1. Antigravity CLI (agy)
+    if model_choice in ["agy", "antigravity"] or model_choice == "auto":
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}"
-            payload = {
-                "contents": [{"parts": [{"text": full_prompt}]}],
-                "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1500}
-            }
-            req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                text = data["candidates"][0]["content"]["parts"][0]["text"]
-                return text, "Google Gemini 2.0 Flash"
-        except Exception as e:
-            print(f" [!] Falló Gemini API: {e}")
+            direct_prompt = (
+                "IMPORTANTE: Responde directamente en Markdown estructurado usando el contexto RAG provisto. "
+                "NO intentes ejecutar herramientas de terminal ni scripts.\n\n"
+                + full_prompt
+            )
+            res = subprocess.run(
+                ["agy", "--dangerously-skip-permissions", "-p", direct_prompt],
+                capture_output=True, text=True, encoding="utf-8", timeout=90
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                return res.stdout.strip(), "Antigravity CLI (agy)"
+        except Exception:
+            if model_choice in ["agy", "antigravity"]:
+                return "⚠️ Antigravity CLI (agy) no está disponible o no respondió a tiempo. Verifica que 'agy' esté en tu PATH.", "Error CLI"
 
-    # 2. Probar Ollama Local si está corriendo
-    try:
-        ollama_url = "http://localhost:11434/api/generate"
-        payload = {
-            "model": "qwen2.5:latest",
-            "prompt": full_prompt,
-            "stream": False
-        }
-        req = urllib.request.Request(ollama_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["response"], "Ollama Local (qwen2.5)"
-    except Exception:
-        pass
+    # 2. Claude Code CLI (claude)
+    if model_choice in ["claude", "claude-code"] or model_choice == "auto":
+        try:
+            res = subprocess.run(
+                ["claude", "-p", full_prompt],
+                capture_output=True, text=True, encoding="utf-8", timeout=60
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                return res.stdout.strip(), "Claude Code CLI (claude)"
+        except Exception:
+            if model_choice in ["claude", "claude-code"]:
+                return "⚠️ Claude Code CLI (claude) no está disponible o no respondió a tiempo.", "Error CLI"
 
-    # 3. Fallback Inteligente RAG Offline
-    fallback_text = f"### 💡 Respuesta Basada en tu Documentación Local:\n\n"
-    fallback_text += f"He consultado tu base de datos SQLite y correlacionado los siguientes fragmentos para responder tu consulta sobre **'{question}'**:\n\n"
+    # 3. Google Gemini API (GEMINI_API_KEY)
+    if model_choice in ["gemini"] or model_choice == "auto":
+        gemini_key = os.environ.get("GEMINI_API_KEY")
+        if gemini_key:
+            for model_name in ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"]:
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+                    payload = {
+                        "contents": [{"parts": [{"text": full_prompt}]}],
+                        "generationConfig": {"temperature": 0.3, "maxOutputTokens": 2048}
+                    }
+                    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+                    with urllib.request.urlopen(req, timeout=15) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        text = data["candidates"][0]["content"]["parts"][0]["text"]
+                        return text, f"Google Gemini ({model_name})"
+                except Exception:
+                    continue
+            if model_choice == "gemini":
+                return "⚠️ La clave GEMINI_API_KEY configurada no pudo comunicarse con la API de Gemini.", "Error Gemini API"
+
+    # 4. Ollama Local
+    if model_choice in ["ollama"] or model_choice == "auto":
+        for ollama_model in ["qwen2.5:latest", "llama3.2:latest", "mistral:latest"]:
+            try:
+                ollama_url = "http://localhost:11434/api/generate"
+                payload = {
+                    "model": ollama_model,
+                    "prompt": full_prompt,
+                    "stream": False
+                }
+                req = urllib.request.Request(ollama_url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    if data.get("response"):
+                        return data["response"], f"Ollama Local ({ollama_model})"
+            except Exception:
+                continue
+        if model_choice == "ollama":
+            return "⚠️ No se pudo conectar a Ollama en http://localhost:11434. Asegúrate de ejecutar `ollama serve`.", "Error Ollama"
+
+    # 5. Fallback Inteligente RAG Offline
+    fallback_text = f"### 💡 Síntesis Basada en tu Documentación Local:\n\n"
+    fallback_text += f"He consultado tu base de datos SQLite y correlacionado los siguientes fragmentos para responder sobre **'{question}'**:\n\n"
     
     if "No se encontraron" in context_text:
         fallback_text += "No encontré notas específicas en tus carpetas para este término. Puedes crear notas en `apuntes/` o colocar material en `material/` y re-indexar con un clic.\n\n"
-        fallback_text += "> 💡 **Tip:** Puedes configurar una API Key gratuita de Gemini (`set GEMINI_API_KEY=...`) o ejecutar `ollama run qwen2.5` en tu máquina para habilitar razonamiento conversacional autónomo 100% offline."
+        fallback_text += "> 💡 **Tip:** Puedes configurar una API Key gratuita de Gemini (`set GEMINI_API_KEY=...`), tener `agy`/`claude` en tu sistema o ejecutar `ollama run qwen2.5` en tu máquina para habilitar razonamiento conversacional autónomo."
     else:
         fallback_text += context_text.replace("=== FUENTES DE DOCUMENTACION Y APUNTES LOCALES ===", "").strip()
-        fallback_text += "\n\n---\n*Para activar respuestas redactadas con modelos de lenguaje generativo, agrega tu `GEMINI_API_KEY` o inicia Ollama localmente.*"
+        fallback_text += "\n\n---\n*💡 Para activar respuestas redactadas con modelos de lenguaje generativo, ejecuta Antigravity CLI (`agy`), Claude Code (`claude`), agrega tu `GEMINI_API_KEY` o inicia Ollama localmente.*"
 
     return fallback_text, "Motor RAG Offline (SQLite FTS5)"
 
