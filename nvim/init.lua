@@ -71,11 +71,11 @@ opt.mouse = "a"
 opt.title = true
 opt.titlestring = "nvim: %t"
 
--- Forma de tus proyectosr. Al salir de Neovim se restaura el entornor de bloque:
+-- Forma del cursor. Al salir de Neovim se restaura el cursor de bloque:
 -- sin esto, el panel de Herdr queda con cursor de linea fina para siempre.
 opt.guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50"
 vim.api.nvim_create_autocmd("VimLeave", {
-  desc = "Restaurar el entornor de bloque al salir (evita cursor roto en Herdr)",
+  desc = "Restaurar el cursor de bloque al salir (evita cursor roto en Herdr)",
   callback = function()
     vim.opt.guicursor = "a:block"
   end,

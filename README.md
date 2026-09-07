@@ -6,7 +6,7 @@
 
 ## 💡 ¿Qué es este Repositorio?
 
-Este repositorio es una estación de trabajo completa pensada para ingenieros, desarrolladores y estudiantes de **Cloud DevOps e Infraestructura moderna**. 
+Este repositorio es una estación de trabajo completa pensada para ingenieros, arquitectos y desarrolladores de **Cloud DevOps e Infraestructura moderna**. 
 
 Está diseñado bajo dos principios fundamentales:
 1. **📦 Automatización de Software sin Fricción:** Provisiona y diagnostica en Windows todo el conjunto de herramientas esenciales de la industria (Git, GitHub CLI, Docker, Kubernetes, Terraform, Cloud CLIs de AWS y Azure, etc.) mediante scripts de PowerShell y **Windows Package Manager (Winget)**.
