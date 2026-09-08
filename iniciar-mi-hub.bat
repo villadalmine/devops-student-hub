@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
-title DevOps Workspace & Knowledge Hub
+title DevOps Workspace - Knowledge Hub
 cd /d "%~dp0"
 
 echo ======================================================================
-echo    INICIANDO DEVOPS WORKSPACE & KNOWLEDGE HUB
+echo    INICIANDO DEVOPS WORKSPACE ^& KNOWLEDGE HUB
 echo ======================================================================
 echo.
 
