@@ -1,88 +1,80 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevOps Workspace & Knowledge Hub</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Cloud DevOps Student Hub | Ecosistema & Software</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              700: '#0369a1',
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    .os-btn.active {
+      border-color: #06b6d4;
+      background: rgba(6, 182, 212, 0.15);
+      color: #ffffff;
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white">
 
-  <!-- HEADER -->
-  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+  <!-- CABECERA PRINCIPAL -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-4 lg:px-8 py-3.5 flex items-center justify-between sticky top-0 z-40">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-indigo-600 to-purple-600 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-500/20">
-        🚀
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
+        ☁️
       </div>
       <div>
-        <div class="flex items-center gap-2">
-          <h1 class="font-bold text-base md:text-lg text-white tracking-tight">DevOps Knowledge Hub</h1>
-          <span class="text-[10px] uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-semibold">Local Workspace & AI</span>
-        </div>
-        <p class="text-xs text-slate-400">Toolkit de Herramientas • Asistente RAG Autónomo • Base Libre</p>
+        <h1 class="font-bold text-sm md:text-base tracking-tight text-white flex items-center gap-2">
+          <span>Cloud DevOps Student Hub</span>
+          <span class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono font-semibold">Multi-OS</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">Toolkit Profesional, Diagnóstico y Recursos para Windows, Linux & macOS</p>
       </div>
     </div>
 
     <!-- ACCIONES DE CABECERA -->
     <div class="flex items-center gap-2 md:gap-3">
-      <button onclick="reindexarBase()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm" title="Re-escanear cualquier carpeta del repositorio">
-        <span>🔄</span>
-        <span class="hidden sm:inline">Actualizar Base</span>
-      </button>
-
-      <button onclick="cambiarTab('software')" class="flex items-center gap-1.5 bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-700/50 hover:border-indigo-500/60 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm">
-        <span>📦</span>
-        <span class="hidden sm:inline">Software DevOps</span>
+      <button onclick="cambiarTab('diagnostico')" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm">
+        <span>🩺</span>
+        <span class="hidden sm:inline">Diagnóstico</span>
       </button>
 
       <a href="/player/index.html" class="flex items-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shadow-md shadow-cyan-500/20">
         <span>▶</span>
-        <span>Reproductor</span>
+        <span>Reproductor Clases</span>
       </a>
     </div>
   </header>
 
-  <!-- PESTAÑAS DE NAVEGACIÓN PRINCIPAL -->
+  <!-- PESTAÑAS DE NAVEGACIÓN -->
   <nav class="border-b border-slate-800 bg-slate-900/40 px-4 lg:px-8 py-2 flex items-center gap-2 overflow-x-auto text-xs font-medium">
-    <button onclick="cambiarTab('chat')" id="tabBtn-chat" class="tab-btn active px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition bg-indigo-600 text-white shadow-sm">
-      <span>💬</span> <span>Tutor IA & Chat</span>
-    </button>
-    <button onclick="cambiarTab('explorador')" id="tabBtn-explorador" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
-      <span>📁</span> <span>Explorador de Carpetas & Notas</span>
-    </button>
-    <button onclick="cambiarTab('biblioteca')" id="tabBtn-biblioteca" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
-      <span>🔍</span> <span>Búsqueda RAG (SQLite)</span>
-    </button>
-    <button onclick="cambiarTab('software')" id="tabBtn-software" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+    <button onclick="cambiarTab('software')" id="tabBtn-software" class="tab-btn active px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition">
       <span>⚡</span> <span>Instalación & Software DevOps</span>
     </button>
+    <button onclick="cambiarTab('material')" id="tabBtn-material" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>📚</span> <span>Guías de Instalación & Apuntes</span>
+    </button>
+    <button onclick="cambiarTab('videos')" id="tabBtn-videos" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>🎥</span> <span>Videos Locales</span>
+    </button>
+    <button onclick="cambiarTab('diagnostico')" id="tabBtn-diagnostico" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>🩺</span> <span>Diagnóstico del Sistema</span>
+    </button>
     <button onclick="cambiarTab('telemetria')" id="tabBtn-telemetria" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
-      <span>📡</span> <span>Telemetría RAG & Logs</span>
+      <span>📡</span> <span>Logs & Telemetría</span>
     </button>
   </nav>
 
@@ -90,1061 +82,563 @@
   <main class="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
 
     <!-- ================================================================= -->
-    <!-- TAB 1: TUTOR IA & CHAT -->
+    <!-- TAB 1: INSTALACIÓN & SOFTWARE DEVOPS (MULTI-OS) -->
     <!-- ================================================================= -->
-    <section id="tab-chat" class="flex-1 flex flex-col gap-4">
+    <section id="tab-software" class="flex flex-col gap-6">
       
-      <!-- BARRA DE CONFIGURACIÓN DEL ASISTENTE -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-        <div class="flex items-center gap-2 flex-wrap">
-          <label class="text-xs text-slate-400 font-medium">Modo de Asistencia:</label>
-          <select id="chatMode" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500">
-            <option value="tutor">💡 Tutor DevOps (Arquitectura & Conceptos)</option>
-            <option value="lab_assistant">🛠️ Laboratorio & Terminal (Docker, K8s, Git, IaC)</option>
-            <option value="quiz_practice">🎯 Certificaciones & Entrevistas Técnicas</option>
-            <option value="doc_qa">📑 Preguntas de Documentación Local</option>
-          </select>
+      <!-- SELECTOR DE SISTEMA OPERATIVO & HEADER -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🛠️</span>
+            <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Ecosistema & Toolkit Cloud DevOps</h2>
+            <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono font-bold">31 Herramientas</span>
+          </div>
+          <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+            Instalador automatizado y modular para tu estación de trabajo. Elige tu sistema operativo abajo para ver las instrucciones y comandos adaptados automáticamente:
+          </p>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <label class="text-xs text-slate-400 font-medium">Motor IA:</label>
-          <select id="chatModel" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500 font-semibold text-cyan-300">
-            <option value="auto">⚡ Auto (Mejor disponible)</option>
-            <option value="agy">🚀 Antigravity CLI (agy)</option>
-            <option value="claude">🟣 Claude Code CLI (claude)</option>
-            <option value="gemini">✨ Google Gemini API</option>
-            <option value="ollama">🦙 Ollama Local</option>
-            <option value="search_only">🔍 Solo Búsqueda RAG</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2 flex-wrap">
-          <label class="text-xs text-slate-400 font-medium">Filtrar por Carpeta:</label>
-          <select id="chatCategory" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500">
-            <option value="all">Todas las Carpetas</option>
-            <!-- Llenado dinámicamente con las categorías encontradas -->
-          </select>
-
-          <button onclick="limpiarChat()" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 rounded transition ml-2" title="Limpiar historial visual">
-            🗑️ Limpiar
+        <!-- BOTONES SELECTORES DE SISTEMA OPERATIVO -->
+        <div class="flex items-center gap-2 bg-slate-950/90 border border-slate-800 p-1.5 rounded-xl shadow-inner shrink-0">
+          <button onclick="cambiarOS('win')" id="btnOS-win" class="os-btn active flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold border border-transparent transition">
+            <span>🪟</span> <span>Windows</span>
+          </button>
+          <button onclick="cambiarOS('linux')" id="btnOS-linux" class="os-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold border border-transparent transition text-slate-400 hover:text-white">
+            <span>🐧</span> <span>Linux</span>
+          </button>
+          <button onclick="cambiarOS('macos')" id="btnOS-macos" class="os-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold border border-transparent transition text-slate-400 hover:text-white">
+            <span>🍎</span> <span>macOS</span>
           </button>
         </div>
       </div>
 
-      <!-- VENTANA DE MENSAJES -->
-      <div id="chatMessages" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4 lg:p-6 flex-1 min-h-[440px] max-h-[600px] overflow-y-auto flex flex-col gap-4 shadow-inner">
-        <!-- Mensaje de Bienvenida Inicial -->
-        <div class="flex gap-3 items-start max-w-3xl">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
-            🤖
+      <!-- BANNER DE EJECUCIÓN DEL SCRIPT POR OS -->
+      <div id="scriptExecuteBanner" class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl" id="osBannerIcon">⚡</span>
+          <div>
+            <h3 class="text-xs md:text-sm font-bold text-white" id="osBannerTitle">Instalación Todo en Uno para Windows (PowerShell)</h3>
+            <p class="text-xs text-slate-400" id="osBannerSub">Abre PowerShell como Administrador y ejecuta:</p>
           </div>
-          <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl rounded-tl-none p-4 text-xs md:text-sm text-slate-200 leading-relaxed shadow-sm">
-            <p class="font-semibold text-cyan-400 mb-1">¡Hola! Soy tu Asistente y Mentor de Cloud DevOps.</p>
-            <p>Tengo indexado el contenido local de tus carpetas (apuntes, guías, libros en PDF, prácticas y videos). Puedes hacerme preguntas sobre:</p>
-            <ul class="list-disc list-inside mt-2 space-y-1 text-slate-300">
-              <li>Explicación de conceptos de infraestructura, CI/CD, GitOps y observabilidad.</li>
-              <li>Diagnóstico de comandos y errores en consola de Docker, Kubernetes, Terraform o AWS CLI.</li>
-              <li>Simulación de preguntas técnicas para entrevistas o exámenes de certificación.</li>
-              <li>Búsqueda y correlación instantánea sobre cualquier archivo de tu espacio de trabajo.</li>
-            </ul>
-            <div class="mt-3 pt-2 border-t border-slate-700/60 text-[11px] text-slate-400 flex items-center gap-2">
-              <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Motor RAG SQLite FTS5 activo localmente</span>
-            </div>
-          </div>
+        </div>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <code id="osBannerCmd" class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-lg text-xs font-mono text-cyan-300 select-all flex-1 md:flex-none">
+            powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloBase
+          </code>
+          <button onclick="copiarComandoBanner()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0" title="Copiar comando">
+            <span>📋</span> <span>Copiar</span>
+          </button>
         </div>
       </div>
 
-      <!-- CAJA DE ENTRADA DE PREGUNTAS -->
-      <form id="chatForm" onsubmit="enviarMensaje(event)" class="relative flex items-center">
-        <input 
-          type="text" 
-          id="chatInput" 
-          placeholder="Escribe tu consulta (ej: '¿Cómo configuro un pod con health check?' o 'Diferencia entre git rebase y merge')..." 
-          class="w-full bg-slate-900/90 border border-slate-700 text-slate-100 placeholder-slate-500 text-sm rounded-xl pl-4 pr-24 py-3.5 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition shadow-lg"
-          autocomplete="off"
-        >
-        <button 
-          type="submit" 
-          id="sendBtn"
-          class="absolute right-2 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1.5"
-        >
-          <span>Consultar</span>
-          <span>→</span>
+      <!-- FILTROS POR CATEGORÍA -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold" id="catPills">
+        <button onclick="filtrarCategoriaSoftware('ALL')" id="softpill-ALL" class="soft-pill px-3.5 py-1.5 rounded-lg border border-cyan-500 bg-cyan-600/20 text-cyan-200 transition">
+          Todas (31)
         </button>
-      </form>
+        <button onclick="filtrarCategoriaSoftware('BASE')" id="softpill-BASE" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
+          ⚙️ Core Esencial (12)
+        </button>
+        <button onclick="filtrarCategoriaSoftware('TERM')" id="softpill-TERM" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
+          💻 Terminales & Editores (6)
+        </button>
+        <button onclick="filtrarCategoriaSoftware('TUI')" id="softpill-TUI" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
+          🖥️ Herramientas TUI (5)
+        </button>
+        <button onclick="filtrarCategoriaSoftware('EBPF')" id="softpill-EBPF" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
+          🌐 Redes & eBPF (3)
+        </button>
+        <button onclick="filtrarCategoriaSoftware('LANG')" id="softpill-LANG" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
+          🐍 Lenguajes (2)
+        </button>
+        <button onclick="filtrarCategoriaSoftware('AI')" id="softpill-AI" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
+          🤖 Agentes IA (3)
+        </button>
+      </div>
+
+      <!-- CONTENEDOR DINÁMICO DE TARJETAS DE HERRAMIENTAS -->
+      <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Generado dinámicamente según el OS seleccionado -->
+      </div>
     </section>
 
     <!-- ================================================================= -->
-    <!-- TAB 2: EXPLORADOR DE CARPETAS & NOTAS -->
+    <!-- TAB 2: GUÍAS DE INSTALACIÓN & APUNTES -->
     <!-- ================================================================= -->
-    <section id="tab-explorador" class="hidden flex flex-col gap-6">
-      <div class="flex items-center justify-between flex-wrap gap-4 bg-slate-900/70 border border-slate-800 rounded-xl p-4">
+    <section id="tab-material" class="hidden flex flex-col gap-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <span>📁</span> Estructura Libre del Espacio de Trabajo
+            <span>📚</span> Documentación & Guías de Entorno
           </h2>
-          <p class="text-xs text-slate-400">Puedes crear cualquier directorio que quieras (<code class="text-cyan-400">apuntes/</code>, <code class="text-cyan-400">material/</code>, <code class="text-cyan-400">practicas/</code>, <code class="text-cyan-400">videos/</code>, <code class="text-cyan-400">certificaciones/</code>, etc.). El indexador lo integrará al vuelo.</p>
+          <p class="text-xs text-slate-400">Manuales paso a paso para Windows, Linux y macOS, apuntes y laboratorios</p>
         </div>
-        <button onclick="reindexarBase()" class="bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 text-xs px-3.5 py-1.5 rounded-lg font-medium transition">
-          Re-escanear Carpetas
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Guía Windows -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 hover:border-slate-700 transition">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🪟</span>
+              <h3 class="font-bold text-sm text-white">Guía Instalación Windows</h3>
+            </div>
+            <p class="text-xs text-slate-400">Configuración de winget, WSL2, Docker Desktop, Terraform y agentes IA en Windows 11.</p>
+          </div>
+          <button onclick="verDocumento('01-Guia-Completa-Instalacion-Windows.md')" class="bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/50 text-indigo-200 hover:text-white text-xs px-3.5 py-2 rounded-lg transition font-medium text-center">
+            Ver Guía Windows →
+          </button>
+        </div>
+
+        <!-- Guía Linux -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 hover:border-slate-700 transition">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🐧</span>
+              <h3 class="font-bold text-sm text-white">Guía Instalación Linux</h3>
+            </div>
+            <p class="text-xs text-slate-400">Instalación en Ubuntu, Debian, Fedora y Arch: Docker Engine, repositorios oficiales y herramientas TUI.</p>
+          </div>
+          <button onclick="verDocumento('02-Guia-Instalacion-Linux.md')" class="bg-cyan-600/30 hover:bg-cyan-600 border border-cyan-500/50 text-cyan-200 hover:text-white text-xs px-3.5 py-2 rounded-lg transition font-medium text-center">
+            Ver Guía Linux →
+          </button>
+        </div>
+
+        <!-- Guía macOS -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 hover:border-slate-700 transition">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🍎</span>
+              <h3 class="font-bold text-sm text-white">Guía Instalación macOS</h3>
+            </div>
+            <p class="text-xs text-slate-400">Homebrew, Apple Silicon (M1/M2/M3/M4), Docker Desktop y extensiones CLI para Mac.</p>
+          </div>
+          <button onclick="verDocumento('03-Guia-Instalacion-MacOS.md')" class="bg-purple-600/30 hover:bg-purple-600 border border-purple-500/50 text-purple-200 hover:text-white text-xs px-3.5 py-2 rounded-lg transition font-medium text-center">
+            Ver Guía macOS →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: VIDEOS LOCALES -->
+    <!-- ================================================================= -->
+    <section id="tab-videos" class="hidden flex flex-col gap-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🎥</span> Videos y Grabaciones Locales
+          </h2>
+          <p class="text-xs text-slate-400">Coloca tus archivos MP4 en la carpeta <code class="text-cyan-400 font-mono">videos/</code> para reproducirlos sin conexión con soporte de streaming</p>
+        </div>
+      </div>
+
+      <div id="videosListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="col-span-full text-center py-12 text-slate-400 text-xs">
+          Cargando catálogo de videos locales...
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: DIAGNÓSTICO EN VIVO -->
+    <!-- ================================================================= -->
+    <section id="tab-diagnostico" class="hidden flex flex-col gap-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🩺</span> Diagnóstico de Herramientas del Sistema
+          </h2>
+          <p class="text-xs text-slate-400">Escaneo automático de las 31 herramientas en tu PATH local</p>
+        </div>
+        <button onclick="ejecutarDiagnostico()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center gap-2">
+          <span>🔄</span> <span>Re-escanear Sistema</span>
         </button>
       </div>
 
-      <!-- LISTADO DE CATEGORIAS Y ARCHIVOS -->
-      <div id="foldersContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Renderizado dinámico -->
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 3: BIBLIOTECA & BUSQUEDA RAG -->
-    <!-- ================================================================= -->
-    <section id="tab-biblioteca" class="hidden flex flex-col gap-6">
-      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-4 flex flex-col gap-3">
-        <h2 class="text-base font-bold text-white flex items-center gap-2">
-          <span>🔍</span> Buscador en Toda tu Base de Conocimiento (SQLite FTS5)
-        </h2>
-        <div class="flex gap-2">
-          <input 
-            type="text" 
-            id="ragSearchInput" 
-            placeholder="Buscar cualquier término técnico (ej: Terraform state, Docker multi-stage, Kubernetes ingress)..."
-            class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyan-500"
-            onkeydown="if(event.key==='Enter') ejecutarBusquedaRAG()"
-          >
-          <button onclick="ejecutarBusquedaRAG()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition shrink-0">
-            Buscar
-          </button>
+      <!-- Barra de Progreso Global -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-3">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span class="text-slate-300">Estado de Cobertura del Toolkit:</span>
+          <span id="diagPercentText" class="text-cyan-400 font-mono">0% (0/31)</span>
+        </div>
+        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+          <div id="diagProgressBar" class="bg-gradient-to-r from-indigo-500 to-cyan-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
       </div>
 
-      <div id="ragSearchResults" class="flex flex-col gap-3">
-        <!-- Resultados RAG -->
-        <p class="text-xs text-slate-500 italic">Ingresa un término arriba para consultar fragmentos indexados de todas tus carpetas.</p>
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 4: SOFTWARE DEVOPS & DIAGNÓSTICO (ECOSISTEMA COMPLETO) -->
-    <!-- ================================================================= -->
-    <section id="tab-software" class="hidden flex flex-col gap-6">
-      <!-- CABECERA PRINCIPAL CON ACCIONES GLOBALES -->
-      <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span>⚡</span> Ecosistema de Software DevOps para Windows
-            </h2>
-            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
-              Instalación y diagnóstico automatizado con <strong>Windows Package Manager (Winget)</strong>, scripts PowerShell desatendidos e interactivos. Elige entre el Software Base obligatorio o despliega cualquiera de las 6 categorías del ecosistema.
-            </p>
-          </div>
-          <div class="flex items-center flex-wrap gap-2">
-            <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -SoloObligatorio')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition shadow-sm flex items-center gap-1.5" title="Instalar solo el software obligatorio de clases">
-              <span>📋</span> Copiar Base Obligatorio
-            </button>
-            <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Completo')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition shadow-sm flex items-center gap-1.5" title="Instalar todo el ecosistema (31 herramientas)">
-              <span>🚀</span> Copiar Ecosistema Completo
-            </button>
-            <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\verificar-tools.ps1')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium px-3.5 py-2 rounded-lg transition flex items-center gap-1.5" title="Verificar herramientas instaladas y versiones">
-              <span>🩺</span> Copiar Verificador
-            </button>
-          </div>
-        </div>
-
-        <!-- SELECTOR DE CATEGORÍAS (PILLS) -->
-        <div class="flex items-center gap-2 overflow-x-auto pt-4 mt-4 border-t border-slate-800/80 text-xs">
-          <button onclick="filtrarCategoriaSoftware('all')" id="softPill-all" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow-sm flex items-center gap-1.5">
-            <span>🌟</span> Todas (31)
-          </button>
-          <button onclick="filtrarCategoriaSoftware('BASE')" id="softPill-BASE" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-1.5">
-            <span>⚡</span> Base Core (12)
-          </button>
-          <button onclick="filtrarCategoriaSoftware('TERM')" id="softPill-TERM" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-1.5">
-            <span>💻</span> Terminales & Editores (6)
-          </button>
-          <button onclick="filtrarCategoriaSoftware('TUI')" id="softPill-TUI" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-1.5">
-            <span>🖥️</span> TUI & Productividad (5)
-          </button>
-          <button onclick="filtrarCategoriaSoftware('EBPF')" id="softPill-EBPF" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-1.5">
-            <span>🌐</span> Contenedores & eBPF (3)
-          </button>
-          <button onclick="filtrarCategoriaSoftware('LANG')" id="softPill-LANG" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-1.5">
-            <span>⚙️</span> Lenguajes & Runtimes (2)
-          </button>
-          <button onclick="filtrarCategoriaSoftware('AI')" id="softPill-AI" class="soft-pill px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 flex items-center gap-1.5">
-            <span>🤖</span> Agentes IA & CLI (3)
-          </button>
-        </div>
-      </div>
-
-      <!-- ==================== CATEGORÍA 1: BASE ==================== -->
-      <div class="soft-category-block bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4" data-cat="BASE">
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="text-cyan-400">⚡</span> Software Base Obligatorio
-              <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-mono font-semibold">12 Tools • BASE</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Herramientas esenciales requeridas para todas las clases prácticas del curso.</p>
-          </div>
-          <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -SoloObligatorio')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 font-mono">
-            <span>📋</span> .\instalar-tools-devops.ps1 -SoloObligatorio
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- Git -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-orange-600/20 text-orange-400 border border-orange-500/30 flex items-center justify-center font-bold text-xs shrink-0">git</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Git for Windows</h4>
-              <p class="text-[11px] text-slate-400">Control de versiones distribuido.</p>
-              <div onclick="copiarComando('winget install Git.Git')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Git.Git</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- GitHub CLI -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center font-bold text-xs shrink-0">gh</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">GitHub CLI (gh)</h4>
-              <p class="text-[11px] text-slate-400">Autenticación (<code>gh auth login</code>), PRs y repos.</p>
-              <div onclick="copiarComando('winget install GitHub.cli')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install GitHub.cli</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- VS Code -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs shrink-0">vs</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Visual Studio Code</h4>
-              <p class="text-[11px] text-slate-400">Editor principal de código e infraestructura.</p>
-              <div onclick="copiarComando('winget install Microsoft.VisualStudioCode')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Microsoft.VisualStudioCode</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Docker Desktop -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-xs shrink-0">🐳</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Docker Desktop</h4>
-              <p class="text-[11px] text-slate-400">Motor de contenerización Linux en Windows (WSL2).</p>
-              <div onclick="copiarComando('winget install Docker.DockerDesktop')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Docker.DockerDesktop</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Terraform -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs shrink-0">tf</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">HashiCorp Terraform</h4>
-              <p class="text-[11px] text-slate-400">Infraestructura como Código (IaC).</p>
-              <div onclick="copiarComando('winget install Hashicorp.Terraform')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Hashicorp.Terraform</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- AWS CLI -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs shrink-0">aws</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">AWS CLI (v2)</h4>
-              <p class="text-[11px] text-slate-400">CLI oficial para Amazon Web Services.</p>
-              <div onclick="copiarComando('winget install Amazon.AWSCLI')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Amazon.AWSCLI</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Azure CLI -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs shrink-0">az</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Azure CLI (az)</h4>
-              <p class="text-[11px] text-slate-400">CLI oficial para Microsoft Azure Cloud.</p>
-              <div onclick="copiarComando('winget install Microsoft.AzureCLI')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Microsoft.AzureCLI</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Kubectl -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center justify-center font-bold text-xs shrink-0">k8s</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Kubernetes CLI (kubectl)</h4>
-              <p class="text-[11px] text-slate-400">Control y despliegue de clusters Kubernetes.</p>
-              <div onclick="copiarComando('winget install Kubernetes.kubectl')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Kubernetes.kubectl</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Helm -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center font-bold text-xs shrink-0">helm</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Helm</h4>
-              <p class="text-[11px] text-slate-400">Gestor de paquetes para Kubernetes.</p>
-              <div onclick="copiarComando('winget install Helm.Helm')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Helm.Helm</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Minikube -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center justify-center font-bold text-xs shrink-0">mini</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Minikube</h4>
-              <p class="text-[11px] text-slate-400">Cluster local de Kubernetes para pruebas.</p>
-              <div onclick="copiarComando('winget install Kubernetes.minikube')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Kubernetes.minikube</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- jq -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-300 border border-teal-400/30 flex items-center justify-center font-bold text-xs shrink-0">jq</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">jq (JSON Processor)</h4>
-              <p class="text-[11px] text-slate-400">Procesador y filtro de JSON en scripts DevOps.</p>
-              <div onclick="copiarComando('winget install jqlang.jq')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install jqlang.jq</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Zoom -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs shrink-0">zoom</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Zoom Workplace</h4>
-              <p class="text-[11px] text-slate-400">Plataforma para clases sincrónicas en vivo.</p>
-              <div onclick="copiarComando('winget install Zoom.Zoom')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Zoom.Zoom</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== CATEGORÍA 2: TERM ==================== -->
-      <div class="soft-category-block bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4" data-cat="TERM">
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="text-pink-400">💻</span> Terminales, Comunicación y Editores Modernos
-              <span class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-mono font-semibold">6 Tools • TERM</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Terminales aceleradas por hardware, editores ligeros en Rust/C y mensajería segura.</p>
-          </div>
-          <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria TERM')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 font-mono">
-            <span>📋</span> .\instalar-tools-devops.ps1 -Categoria TERM
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- Gajim -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">xmpp</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Gajim (Cliente XMPP)</h4>
-              <p class="text-[11px] text-slate-400">Cliente de mensajería segura y cifrada OMEMO.</p>
-              <div onclick="copiarComando('winget install Gajim.Gajim')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Gajim.Gajim</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ghostty -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-slate-700/40 text-slate-200 border border-slate-600/50 flex items-center justify-center font-bold text-xs shrink-0">👻</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Ghostty Terminal</h4>
-              <p class="text-[11px] text-slate-400">Terminal nativa moderna acelerada por GPU.</p>
-              <div onclick="copiarComando('winget install AmanThanvi.winghostty')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install AmanThanvi.winghostty</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Zed -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-bold text-xs shrink-0">zed</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Zed Editor</h4>
-              <p class="text-[11px] text-slate-400">Editor ultra-rápido en Rust con soporte de IA.</p>
-              <div onclick="copiarComando('winget install ZedIndustries.Zed')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install ZedIndustries.Zed</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Herdr -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-violet-600/20 text-violet-400 border border-violet-500/30 flex items-center justify-center font-bold text-xs shrink-0">tmux</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Herdr (Multiplexer)</h4>
-              <p class="text-[11px] text-slate-400">Workspace manager temático para la terminal.</p>
-              <div onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria TERM')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>Instalar vía Script TERM</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Neovim -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">nvim</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Neovim (Modal Editor)</h4>
-              <p class="text-[11px] text-slate-400">Editor modal altamente extensible y configurable.</p>
-              <div onclick="copiarComando('winget install Neovim.Neovim')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Neovim.Neovim</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- VLC -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs shrink-0">🎬</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">VLC Media Player</h4>
-              <p class="text-[11px] text-slate-400">Reproductor universal para streams HLS y audios MP3.</p>
-              <div onclick="copiarComando('winget install VideoLAN.VLC')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install VideoLAN.VLC</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== CATEGORÍA 3: TUI ==================== -->
-      <div class="soft-category-block bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4" data-cat="TUI">
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="text-indigo-400">🖥️</span> Herramientas TUI y Productividad de Terminal
-              <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono font-semibold">5 Tools • TUI</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Interfaces de usuario en terminal (Terminal User Interfaces) para Git, Docker, Kubernetes y archivos.</p>
-          </div>
-          <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria TUI')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 font-mono">
-            <span>📋</span> .\instalar-tools-devops.ps1 -Categoria TUI
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- fzf -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-pink-600/20 text-pink-400 border border-pink-500/30 flex items-center justify-center font-bold text-xs shrink-0">fzf</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">fzf (Fuzzy Finder)</h4>
-              <p class="text-[11px] text-slate-400">Buscador interactivo difuso para comandos e historial.</p>
-              <div onclick="copiarComando('winget install junegunn.fzf')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install junegunn.fzf</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Lazygit -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-rose-600/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs shrink-0">lg</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Lazygit (TUI Git)</h4>
-              <p class="text-[11px] text-slate-400">Visor visual de consola interactivo para Git.</p>
-              <div onclick="copiarComando('winget install JesseDuffield.lazygit')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install JesseDuffield.lazygit</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Yazi -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-yellow-600/20 text-yellow-400 border border-yellow-500/30 flex items-center justify-center font-bold text-xs shrink-0">yz</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Yazi (TUI Files)</h4>
-              <p class="text-[11px] text-slate-400">Explorador de archivos TUI ultrarrápido en Rust.</p>
-              <div onclick="copiarComando('winget install sxyazi.yazi')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install sxyazi.yazi</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Lazydocker -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-xs shrink-0">ld</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Lazydocker (TUI Docker)</h4>
-              <p class="text-[11px] text-slate-400">Visor TUI de contenedores, logs y métricas Docker.</p>
-              <div onclick="copiarComando('winget install JesseDuffield.Lazydocker')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install JesseDuffield.Lazydocker</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- k9s -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs shrink-0">k9s</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">k9s (TUI Kubernetes)</h4>
-              <p class="text-[11px] text-slate-400">Monitor interactivo de Pods, Deployments y Services.</p>
-              <div onclick="copiarComando('winget install Derailed.k9s')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Derailed.k9s</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== CATEGORÍA 4: EBPF ==================== -->
-      <div class="soft-category-block bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4" data-cat="EBPF">
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="text-cyan-400">🌐</span> Contenedores Alternativos, Redes y eBPF
-              <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-mono font-semibold">3 Tools • EBPF</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Control de containerd directo y observabilidad profunda con Cilium eBPF.</p>
-          </div>
-          <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria EBPF')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 font-mono">
-            <span>📋</span> .\instalar-tools-devops.ps1 -Categoria EBPF
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- nerdctl -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-xs shrink-0">nerd</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">nerdctl (containerd CLI)</h4>
-              <p class="text-[11px] text-slate-400">CLI compatible con Docker para containerd directo.</p>
-              <div onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria EBPF')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>Instalar vía Script EBPF</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cilium CLI -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs shrink-0">cilium</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Cilium CLI (eBPF)</h4>
-              <p class="text-[11px] text-slate-400">CLI oficial de Cilium para networking y seguridad con eBPF.</p>
-              <div onclick="copiarComando('winget install Cilium.CiliumCLI')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Cilium.CiliumCLI</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Hubble CLI -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs shrink-0">🔭</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Hubble CLI (eBPF)</h4>
-              <p class="text-[11px] text-slate-400">Observabilidad de red en tiempo real en Kubernetes.</p>
-              <div onclick="copiarComando('winget install Cilium.Hubble')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Cilium.Hubble</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== CATEGORÍA 5: LANG ==================== -->
-      <div class="soft-category-block bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4" data-cat="LANG">
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="text-amber-400">⚙️</span> Lenguajes de Programación y Runtimes
-              <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-mono font-semibold">2 Tools • LANG</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Runtimes oficiales para extender pipelines, compilar binarios de K8s y scripts.</p>
-          </div>
-          <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria LANG')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 font-mono">
-            <span>📋</span> .\instalar-tools-devops.ps1 -Categoria LANG
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- Go -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-xs shrink-0">go</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Go (Golang)</h4>
-              <p class="text-[11px] text-slate-400">Lenguaje estándar de K8s, Docker, Terraform y eBPF.</p>
-              <div onclick="copiarComando('winget install GoLang.Go')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install GoLang.Go</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Python 3.12 -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-yellow-600/20 text-yellow-400 border border-yellow-500/30 flex items-center justify-center font-bold text-xs shrink-0">py</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Python 3.12</h4>
-              <p class="text-[11px] text-slate-400">Scripting DevOps, automatización y conectores cloud.</p>
-              <div onclick="copiarComando('winget install Python.Python.3.12')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>winget install Python.Python.3.12</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== CATEGORÍA 6: AI ==================== -->
-      <div class="soft-category-block bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4" data-cat="AI">
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="text-purple-400">🤖</span> Suite de Agentes de Inteligencia Artificial
-              <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-mono font-semibold">3 Tools • AI</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Agentes de terminal autónomos para acelerar IaC, debugging y generación de manifiestos.</p>
-          </div>
-          <button onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria AI')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 font-mono">
-            <span>📋</span> .\instalar-tools-devops.ps1 -Categoria AI
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- Claude Code -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-orange-600/20 text-orange-400 border border-orange-500/30 flex items-center justify-center font-bold text-xs shrink-0">claude</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">Claude Code CLI</h4>
-              <p class="text-[11px] text-slate-400">Agente autónomo de Anthropic en terminal.</p>
-              <div onclick="copiarComando('npm install -g @anthropic-ai/claude-code')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>npm install -g @anthropic-ai/claude-code</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shell GPT -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">sgpt</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">OpenAI GPT CLI (sgpt)</h4>
-              <p class="text-[11px] text-slate-400">CLI para consultas directas a OpenAI desde la terminal.</p>
-              <div onclick="copiarComando('pip install shell-gpt')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>pip install shell-gpt</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- OMP -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-start gap-3 hover:border-slate-600 transition">
-            <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center font-bold text-xs shrink-0">omp</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-white">OMP (Oh My Pi AI Agent)</h4>
-              <p class="text-[11px] text-slate-400">Agente de IA ligero para terminal (omp.sh).</p>
-              <div onclick="copiarComando('powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -Categoria AI')" class="cursor-pointer text-[10px] text-cyan-400 hover:text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1 font-mono">
-                <span>Instalar vía Script AI</span> <span>📋</span>
-              </div>
-            </div>
-          </div>
+      <!-- Resultados del Diagnóstico -->
+      <div id="diagResultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="col-span-full text-center py-8 text-slate-400 text-xs">
+          Ejecutando comprobación de herramientas en tu sistema...
         </div>
       </div>
     </section>
 
     <!-- ================================================================= -->
-    <!-- TAB 5: TELEMETRÍA RAG & LOGS EN VIVO -->
+    <!-- TAB 5: TELEMETRÍA Y LOGS -->
     <!-- ================================================================= -->
     <section id="tab-telemetria" class="hidden flex flex-col gap-4">
-      <div class="flex items-center justify-between flex-wrap gap-4 bg-slate-900/70 border border-slate-800 rounded-xl p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>📡</span> Telemetría y Logs del Motor RAG en Vivo
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>📡</span> Consola de Telemetría & Eventos Locales
           </h2>
-          <p class="text-xs text-slate-400 mt-0.5">Monitoreo en tiempo real de consultas, tokenización FTS5, recuperación y latencia de respuestas.</p>
+          <p class="text-xs text-slate-400">Registro en tiempo real de llamadas HTTP, streaming y diagnóstico</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-[11px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-full font-mono">● Auto-refresh (3s)</span>
-          <button onclick="cargarTelemetria()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 shadow-sm">
-            <span>🔄</span> Actualizar Logs
-          </button>
-        </div>
+        <button onclick="cargarTelemetria()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+          🔄 Actualizar Logs
+        </button>
       </div>
 
-      <div id="telemetryBox" class="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-slate-300 overflow-y-auto max-h-[600px] min-h-[350px] space-y-1.5">
-        <p class="text-slate-500 italic">[INIT] Iniciando monitor de telemetría...</p>
+      <div id="telemetryBox" class="bg-slate-950 border border-slate-800/90 rounded-xl p-4 font-mono text-[11px] leading-relaxed text-slate-300 h-96 overflow-y-auto space-y-1 select-text">
+        <p class="text-slate-500 italic">Esperando eventos del servidor...</p>
       </div>
     </section>
 
   </main>
 
+  <!-- MODAL VISOR DE DOCUMENTOS MARKDOWN -->
+  <div id="docViewerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-4xl h-[85vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <h3 id="docViewerTitle" class="text-sm font-bold text-cyan-300 font-mono truncate">Documento</h3>
+        <button onclick="cerrarVisorDoc()" class="text-slate-400 hover:text-white px-2 py-1 text-sm rounded-lg hover:bg-slate-800 transition">
+          ✕
+        </button>
+      </div>
+      <div id="docViewerBody" class="flex-1 p-6 overflow-y-auto prose prose-invert prose-xs max-w-none space-y-4">
+        <!-- Renderizado de Markdown -->
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ESTADO DE LA APLICACIÓN
-    let currentStats = null;
+    // DATOS DE LAS 31 HERRAMIENTAS POR OS
+    const TOOLS = [
+      // BASE (12)
+      { id: 1,  cat: "BASE", name: "Zoom Workplace", cmd: "zoom", icon: "📹", tipo: "Obligatorio", desc: "Videoconferencias y clases en vivo.",
+        win: "winget install Zoom.Zoom", linux: "sudo snap install zoom-client", mac: "brew install --cask zoom" },
+      { id: 2,  cat: "BASE", name: "Git", cmd: "git", icon: "🌿", tipo: "Obligatorio", desc: "Control de versiones distribuido.",
+        win: "winget install Git.Git", linux: "sudo apt install -y git", mac: "brew install git" },
+      { id: 3,  cat: "BASE", name: "GitHub CLI (gh)", cmd: "gh", icon: "🐙", tipo: "Obligatorio", desc: "CLI oficial para repositorios y GitHub auth.",
+        win: "winget install GitHub.cli", linux: "sudo apt install -y gh", mac: "brew install gh" },
+      { id: 4,  cat: "BASE", name: "Visual Studio Code", cmd: "code", icon: "📝", tipo: "Obligatorio", desc: "Editor de código e infraestructura.",
+        win: "winget install Microsoft.VisualStudioCode", linux: "sudo snap install --classic code", mac: "brew install --cask visual-studio-code" },
+      { id: 5,  cat: "BASE", name: "Docker Engine / Desktop", cmd: "docker", icon: "🐳", tipo: "Obligatorio", desc: "Motor de contenerización.",
+        win: "winget install Docker.DockerDesktop", linux: "curl -fsSL https://get.docker.com | sudo sh", mac: "brew install --cask docker" },
+      { id: 6,  cat: "BASE", name: "HashiCorp Terraform", cmd: "terraform", icon: "🧱", tipo: "Obligatorio", desc: "Infraestructura como Código (IaC).",
+        win: "winget install Hashicorp.Terraform", linux: "sudo apt install -y terraform", mac: "brew install terraform" },
+      { id: 7,  cat: "BASE", name: "AWS CLI (v2)", cmd: "aws", icon: "☁️", tipo: "Obligatorio", desc: "CLI oficial de Amazon Web Services.",
+        win: "winget install Amazon.AWSCLI", linux: "curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"aws.zip\" && unzip aws.zip && sudo ./aws/install", mac: "brew install awscli" },
+      { id: 8,  cat: "BASE", name: "Azure CLI (az)", cmd: "az", icon: "🔷", tipo: "Obligatorio", desc: "CLI oficial de Microsoft Azure Cloud.",
+        win: "winget install Microsoft.AzureCLI", linux: "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash", mac: "brew install azure-cli" },
+      { id: 9,  cat: "BASE", name: "Kubernetes CLI (kubectl)", cmd: "kubectl", icon: "☸️", tipo: "Obligatorio", desc: "Control y despliegue de clusters Kubernetes.",
+        win: "winget install Kubernetes.kubectl", linux: "curl -LO \"https://dl.k8s.io/release/stable.txt\" && sudo install -m 0755 kubectl /usr/local/bin/kubectl", mac: "brew install kubectl" },
+      { id: 10, cat: "BASE", name: "Helm", cmd: "helm", icon: "⛵", tipo: "Obligatorio", desc: "Gestor de paquetes para Kubernetes.",
+        win: "winget install Helm.Helm", linux: "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash", mac: "brew install helm" },
+      { id: 11, cat: "BASE", name: "Minikube", cmd: "minikube", icon: "📦", tipo: "Obligatorio", desc: "Cluster local de Kubernetes para pruebas.",
+        win: "winget install Kubernetes.minikube", linux: "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube", mac: "brew install minikube" },
+      { id: 12, cat: "BASE", name: "jq (JSON Processor)", cmd: "jq", icon: "🔍", tipo: "Obligatorio", desc: "Filtro y procesador de JSON para scripts.",
+        win: "winget install jqlang.jq", linux: "sudo apt install -y jq", mac: "brew install jq" },
+
+      // TERM (6)
+      { id: 13, cat: "TERM", name: "Gajim (Cliente XMPP)", cmd: "gajim", icon: "💬", tipo: "Optativo", desc: "Cliente de mensajería segura federada.",
+        win: "winget install Gajim.Gajim", linux: "sudo apt install -y gajim", mac: "brew install --cask gajim" },
+      { id: 14, cat: "TERM", name: "Ghostty Terminal", cmd: "ghostty", icon: "👻", tipo: "Optativo", desc: "Terminal rápida acelerada por GPU.",
+        win: "winget install AmanThanvi.winghostty", linux: "sudo snap install ghostty --classic", mac: "brew install --cask ghostty" },
+      { id: 15, cat: "TERM", name: "Zed Editor", cmd: "zed", icon: "⚡", tipo: "Optativo", desc: "Editor ultra-rápido en Rust con soporte IA.",
+        win: "winget install ZedIndustries.Zed", linux: "curl -f https://zed.dev/install.sh | sh", mac: "brew install --cask zed" },
+      { id: 16, cat: "TERM", name: "Herdr Multiplexer", cmd: "herdr", icon: "📑", tipo: "Optativo", desc: "Gestor de workspaces para terminal.",
+        win: "npm install -g herdr", linux: "sudo npm install -g herdr", mac: "npm install -g herdr" },
+      { id: 17, cat: "TERM", name: "Neovim (Modal Editor)", cmd: "nvim", icon: "💠", tipo: "Optativo", desc: "Editor modal ultra-ligero y extensible.",
+        win: "winget install Neovim.Neovim", linux: "sudo apt install -y neovim", mac: "brew install neovim" },
+      { id: 18, cat: "TERM", name: "VLC Media Player", cmd: "vlc", icon: "🎬", tipo: "Optativo", desc: "Reproductor para streams de video.",
+        win: "winget install VideoLAN.VLC", linux: "sudo apt install -y vlc", mac: "brew install --cask vlc" },
+
+      // TUI (5)
+      { id: 19, cat: "TUI", name: "fzf (Fuzzy Finder)", cmd: "fzf", icon: "⚡", tipo: "Optativo", desc: "Búsqueda interactiva en terminal.",
+        win: "winget install junegunn.fzf", linux: "sudo apt install -y fzf", mac: "brew install fzf" },
+      { id: 20, cat: "TUI", name: "Lazygit (TUI Git)", cmd: "lazygit", icon: "🗂️", tipo: "Optativo", desc: "Interfaz visual de terminal para Git.",
+        win: "winget install JesseDuffield.lazygit", linux: "sudo apt install -y lazygit", mac: "brew install lazygit" },
+      { id: 21, cat: "TUI", name: "Yazi (File Manager)", cmd: "yazi", icon: "📁", tipo: "Optativo", desc: "Explorador de archivos TUI en Rust.",
+        win: "winget install sxyazi.yazi", linux: "cargo install --locked yazi-fm yazi-cli", mac: "brew install yazi" },
+      { id: 22, cat: "TUI", name: "Lazydocker (TUI Docker)", cmd: "lazydocker", icon: "🐳", tipo: "Optativo", desc: "Monitoreo y gestión TUI de contenedores.",
+        win: "winget install JesseDuffield.Lazydocker", linux: "curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash", mac: "brew install jesseduffield/lazydocker/lazydocker" },
+      { id: 23, cat: "TUI", name: "k9s (Monitor K8s)", cmd: "k9s", icon: "🐕", tipo: "Optativo", desc: "Dashboard interactivo para clusters K8s.",
+        win: "winget install Derailed.k9s", linux: "brew install derailed/k9s/k9s", mac: "brew install derailed/k9s/k9s" },
+
+      // EBPF (3)
+      { id: 24, cat: "EBPF", name: "nerdctl (containerd)", cmd: "nerdctl", icon: "📦", tipo: "Optativo", desc: "CLI compatible con Docker para containerd.",
+        win: "winget install containerd.nerdctl", linux: "brew install nerdctl", mac: "brew install nerdctl" },
+      { id: 25, cat: "EBPF", name: "Cilium CLI", cmd: "cilium", icon: "🐝", tipo: "Optativo", desc: "Redes, observabilidad y eBPF en K8s.",
+        win: "winget install Cilium.CiliumCLI", linux: "curl -L https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz | sudo tar xz -C /usr/local/bin", mac: "brew install cilium-cli" },
+      { id: 26, cat: "EBPF", name: "Hubble CLI", cmd: "hubble", icon: "🔭", tipo: "Optativo", desc: "Inspección de flujos de red con eBPF.",
+        win: "winget install Cilium.Hubble", linux: "curl -L https://github.com/cilium/hubble/releases/latest/download/hubble-linux-amd64.tar.gz | sudo tar xz -C /usr/local/bin", mac: "brew install hubble" },
+
+      // LANG (2)
+      { id: 27, cat: "LANG", name: "Go (Golang)", cmd: "go", icon: "🐹", tipo: "Optativo", desc: "Runtime para herramientas cloud nativas.",
+        win: "winget install GoLang.Go", linux: "sudo apt install -y golang-go", mac: "brew install go" },
+      { id: 28, cat: "LANG", name: "Python 3", cmd: "python", icon: "🐍", tipo: "Optativo", desc: "Lenguaje de scripting y automatización.",
+        win: "winget install Python.Python.3.12", linux: "sudo apt install -y python3 python3-pip", mac: "brew install python@3.12" },
+
+      // AI (3)
+      { id: 29, cat: "AI", name: "Claude Code CLI", cmd: "claude", icon: "🟣", tipo: "Optativo", desc: "Agente autónomo de Anthropic en terminal.",
+        win: "npm install -g @anthropic-ai/claude-code", linux: "sudo npm install -g @anthropic-ai/claude-code", mac: "npm install -g @anthropic-ai/claude-code" },
+      { id: 30, cat: "AI", name: "Shell-GPT (sgpt)", cmd: "sgpt", icon: "🧠", tipo: "Optativo", desc: "Consultas de IA en tu línea de comandos.",
+        win: "pip install shell-gpt", linux: "pip install --user shell-gpt", mac: "pip3 install --user shell-gpt" },
+      { id: 31, cat: "AI", name: "OMP (Oh My Pi)", cmd: "omp", icon: "🤖", tipo: "Optativo", desc: "Agente de IA para terminal linux/windows.",
+        win: "irm omp.sh/install.ps1 | iex", linux: "curl -fsSL https://omp.sh | bash", mac: "curl -fsSL https://omp.sh | bash" }
+    ];
+
+    let currentOS = "win";
+    let currentCatFilter = "ALL";
 
     // INICIALIZACIÓN
-    window.addEventListener('DOMContentLoaded', () => {
-      cargarEstadisticas();
+    document.addEventListener("DOMContentLoaded", () => {
+      renderizarHerramientas();
+      cargarVideos();
+      cargarTelemetria();
+      setInterval(cargarTelemetria, 4000);
     });
 
-    let telemetryTimer = null;
+    // CAMBIO DE SISTEMA OPERATIVO
+    function cambiarOS(os) {
+      currentOS = os;
+      document.querySelectorAll('.os-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`btnOS-${os}`).classList.add('active');
 
-    // PESTAÑAS
-    function cambiarTab(tabName) {
-      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
-        btn.classList.add('text-slate-400');
+      const icon = document.getElementById('osBannerIcon');
+      const title = document.getElementById('osBannerTitle');
+      const sub = document.getElementById('osBannerSub');
+      const cmd = document.getElementById('osBannerCmd');
+
+      if (os === 'win') {
+        icon.textContent = "🪟";
+        title.textContent = "Instalación Automatizada para Windows (PowerShell)";
+        sub.textContent = "Abre PowerShell como Administrador y ejecuta:";
+        cmd.textContent = "powershell -ExecutionPolicy Bypass -File .\\scripts\\instalar-tools-devops.ps1 -SoloBase";
+      } else if (os === 'linux') {
+        icon.textContent = "🐧";
+        title.textContent = "Instalación Automatizada para Linux (Ubuntu, Debian, Fedora, Arch)";
+        sub.textContent = "Abre tu terminal Bash y ejecuta:";
+        cmd.textContent = "chmod +x scripts/*.sh && ./scripts/instalar-tools-linux.sh --base";
+      } else if (os === 'macos') {
+        icon.textContent = "🍎";
+        title.textContent = "Instalación Automatizada para macOS (Homebrew)";
+        sub.textContent = "Abre Terminal de macOS y ejecuta:";
+        cmd.textContent = "chmod +x scripts/*.sh && ./scripts/instalar-tools-macos.sh --base";
+      }
+
+      renderizarHerramientas();
+    }
+
+    function copiarComandoBanner() {
+      const text = document.getElementById('osBannerCmd').textContent.trim();
+      navigator.clipboard.writeText(text);
+      alert("Comando copiado al portapapeles:\n" + text);
+    }
+
+    // FILTRO DE CATEGORÍAS
+    function filtrarCategoriaSoftware(cat) {
+      currentCatFilter = cat;
+      document.querySelectorAll('.soft-pill').forEach(p => {
+        p.classList.remove('border-cyan-500', 'bg-cyan-600/20', 'text-cyan-200');
+        p.classList.add('border-slate-800', 'bg-slate-900/80', 'text-slate-400');
+      });
+      const activePill = document.getElementById(`softpill-${cat}`);
+      if (activePill) {
+        activePill.classList.remove('border-slate-800', 'bg-slate-900/80', 'text-slate-400');
+        activePill.classList.add('border-cyan-500', 'bg-cyan-600/20', 'text-cyan-200');
+      }
+      renderizarHerramientas();
+    }
+
+    // RENDERIZADO DE LAS 31 TARJETAS
+    function renderizarHerramientas() {
+      const grid = document.getElementById('toolsGrid');
+      if (!grid) return;
+
+      const filtradas = currentCatFilter === 'ALL' 
+        ? TOOLS 
+        : TOOLS.filter(t => t.cat === currentCatFilter);
+
+      grid.innerHTML = filtradas.map(t => {
+        const installCmd = t[currentOS] || t.win;
+        const isReq = t.tipo === "Obligatorio";
+        const badgeColor = isReq ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-slate-800 text-slate-400 border-slate-700";
+
+        return `
+          <div class="bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-xl p-4 flex flex-col justify-between gap-3 transition shadow-sm">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">${t.icon}</span>
+                  <div>
+                    <h4 class="text-xs font-bold text-white tracking-tight">${t.name}</h4>
+                    <span class="text-[10px] font-mono text-slate-400">cmd: ${t.cmd}</span>
+                  </div>
+                </div>
+                <span class="text-[9px] border px-2 py-0.5 rounded-full font-semibold ${badgeColor}">
+                  ${t.tipo}
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-300 leading-snug">${t.desc}</p>
+            </div>
+
+            <div class="pt-2 border-t border-slate-800/80">
+              <div onclick="copiarComando('${installCmd.replace(/'/g, "\\'")}')" class="cursor-pointer group bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-lg flex items-center justify-between gap-2 transition" title="Clic para copiar comando">
+                <code class="text-[10px] font-mono text-cyan-300 truncate">${installCmd}</code>
+                <span class="text-xs text-slate-500 group-hover:text-cyan-400 shrink-0">📋</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copiarComando(cmd) {
+      navigator.clipboard.writeText(cmd);
+      alert("Comando copiado al portapapeles:\n" + cmd);
+    }
+
+    // GESTIÓN DE PESTAÑAS
+    function cambiarTab(tabId) {
+      const tabs = ['software', 'material', 'videos', 'diagnostico', 'telemetria'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (el) el.classList.toggle('hidden', t !== tabId);
+        if (btn) btn.classList.toggle('active', t === tabId);
       });
 
-      const activeSec = document.getElementById(`tab-${tabName}`);
-      if (activeSec) activeSec.classList.remove('hidden');
-
-      const activeBtn = document.getElementById(`tabBtn-${tabName}`);
-      if (activeBtn) {
-        activeBtn.classList.remove('text-slate-400');
-        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
-      }
-
-      if (tabName === 'explorador') {
-        cargarExplorador();
-      }
-
-      if (tabName === 'telemetria') {
-        cargarTelemetria();
-        if (!telemetryTimer) {
-          telemetryTimer = setInterval(cargarTelemetria, 3000);
-        }
-      } else {
-        if (telemetryTimer) {
-          clearInterval(telemetryTimer);
-          telemetryTimer = null;
-        }
+      if (tabId === 'diagnostico') {
+        ejecutarDiagnostico();
       }
     }
 
-    // FILTRADO DE CATEGORÍAS DE SOFTWARE
-    function filtrarCategoriaSoftware(cat) {
-      const pills = document.querySelectorAll('.soft-pill');
-      pills.forEach(p => {
-        p.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
-        p.classList.add('text-slate-400');
-      });
+    // DIAGNÓSTICO EN VIVO VIA /api/diagnostico
+    async function ejecutarDiagnostico() {
+      const container = document.getElementById('diagResultsContainer');
+      const bar = document.getElementById('diagProgressBar');
+      const text = document.getElementById('diagPercentText');
+      if (!container) return;
 
-      const activePill = document.getElementById(`softPill-${cat}`);
-      if (activePill) {
-        activePill.classList.remove('text-slate-400');
-        activePill.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
-      }
+      container.innerHTML = '<div class="col-span-full text-center py-8 text-cyan-400 text-xs animate-pulse">Escaneando herramientas instaladas en tu sistema...</div>';
 
-      const blocks = document.querySelectorAll('.soft-category-block');
-      blocks.forEach(b => {
-        if (cat === 'all' || b.getAttribute('data-cat') === cat) {
-          b.classList.remove('hidden');
-        } else {
-          b.classList.add('hidden');
+      try {
+        const resp = await fetch('/api/diagnostico');
+        const data = await resp.json();
+
+        if (data.ok && data.tools) {
+          const percent = Math.round((data.installed_count / data.total_tools) * 100);
+          bar.style.width = `${percent}%`;
+          text.textContent = `${percent}% (${data.installed_count}/${data.total_tools} instaladas)`;
+
+          container.innerHTML = data.tools.map(t => {
+            const statusBadge = t.installed 
+              ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><span>✓</span> <span>Instalado</span></span>`
+              : `<span class="text-[10px] bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><span>✗</span> <span>Falta</span></span>`;
+
+            return `
+              <div class="bg-slate-900 border ${t.installed ? 'border-emerald-500/30' : 'border-slate-800'} rounded-xl p-3 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="text-lg">${t.installed ? '✅' : '⚪'}</span>
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-white truncate">${t.name}</h4>
+                    <span class="text-[10px] font-mono text-slate-400">${t.cmd} • [${t.cat}]</span>
+                  </div>
+                </div>
+                <div class="shrink-0">
+                  ${statusBadge}
+                </div>
+              </div>
+            `;
+          }).join('');
         }
-      });
+      } catch (e) {
+        container.innerHTML = `<div class="col-span-full text-red-400 text-xs p-4">Error conectando con diagnóstico: ${e.message}</div>`;
+      }
+    }
+
+    // CARGAR VIDEOS LOCALES
+    async function cargarVideos() {
+      const container = document.getElementById('videosListContainer');
+      if (!container) return;
+
+      try {
+        const resp = await fetch('/api/videos');
+        const data = await resp.json();
+
+        if (data.ok && data.videos && data.videos.length > 0) {
+          container.innerHTML = data.videos.map(v => `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-3 hover:border-slate-700 transition">
+              <div>
+                <h4 class="text-xs font-bold text-white mb-1">${v.titulo}</h4>
+                <p class="text-[10px] text-slate-400 font-mono">${v.archivo} • ${v.tamano_mb} MB</p>
+              </div>
+              <a href="/player/index.html" class="bg-cyan-600/20 hover:bg-cyan-600 border border-cyan-500/40 text-cyan-200 hover:text-white text-xs px-3 py-1.5 rounded-lg transition font-medium text-center">
+                Reproducir Video →
+              </a>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `
+            <div class="col-span-full text-center py-12 text-slate-400 text-xs border border-dashed border-slate-800 rounded-2xl p-6">
+              <p class="text-lg mb-1">📁</p>
+              <p class="font-semibold text-slate-300">No hay videos en la carpeta videos/</p>
+              <p class="text-[11px] text-slate-500 mt-1">Coloca aquí tus grabaciones MP4 y aparecerán automáticamente.</p>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.warn("No se pudieron cargar videos:", e);
+      }
     }
 
     // TELEMETRÍA EN VIVO
     async function cargarTelemetria() {
       const box = document.getElementById('telemetryBox');
       if (!box) return;
+
       try {
         const resp = await fetch('/api/telemetry');
         const logs = await resp.json();
-        if (!logs || logs.length === 0) {
-          box.innerHTML = '<p class="text-slate-500 italic">[INIT] No hay logs registrados aún.</p>';
-          return;
+        if (logs && logs.length > 0) {
+          box.innerHTML = logs.map(l => {
+            let color = "text-slate-300";
+            if (l.includes("[INIT]") || l.includes("[SERVER]")) color = "text-cyan-400 font-semibold";
+            else if (l.includes("[STREAM]")) color = "text-emerald-400";
+            else if (l.includes("[ERROR]")) color = "text-red-400 font-bold";
+            return `<div class="${color}">${l}</div>`;
+          }).join('');
+          box.scrollTop = box.scrollHeight;
         }
-        box.innerHTML = logs.map(l => {
-          let badgeColor = "text-slate-400";
-          if (l.includes("[INIT]")) badgeColor = "text-emerald-400 font-bold";
-          else if (l.includes("[USER]")) badgeColor = "text-cyan-400 font-bold";
-          else if (l.includes("[RAG]")) badgeColor = "text-indigo-400 font-semibold";
-          else if (l.includes("[CLI]") || l.includes("[AI]")) badgeColor = "text-amber-400";
-          else if (l.includes("[DONE]")) badgeColor = "text-emerald-300 font-bold";
-          else if (l.includes("[WARN]")) badgeColor = "text-yellow-400 font-bold";
-          else if (l.includes("[ERROR]")) badgeColor = "text-rose-400 font-bold";
-          else if (l.includes("[MAINT]") || l.includes("[SEARCH]")) badgeColor = "text-purple-400";
-          return `<div class="${badgeColor} leading-relaxed">${escapeHtml(l)}</div>`;
-        }).join('');
-        box.scrollTop = box.scrollHeight;
-      } catch (e) {
-        console.error("Error cargando telemetría:", e);
-      }
+      } catch (e) {}
     }
 
-    function escapeHtml(str) {
-      if (!str) return "";
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+    // VISOR DE MARKDOWN MODAL
+    async function verDocumento(relPath) {
+      const modal = document.getElementById('docViewerModal');
+      const title = document.getElementById('docViewerTitle');
+      const body = document.getElementById('docViewerBody');
 
-    // CARGAR ESTADÍSTICAS Y CATEGORÍAS
-    async function cargarEstadisticas() {
-      try {
-        const resp = await fetch('/api/stats');
-        const data = await resp.json();
-        if (data.ok) {
-          currentStats = data;
-          actualizarSelectorCategorias(data.categories);
-        }
-      } catch (e) {
-        console.error("Error al cargar estadísticas:", e);
-      }
-    }
-
-    function actualizarSelectorCategorias(categories) {
-      const sel = document.getElementById('chatCategory');
-      if (!sel || !categories) return;
-      sel.innerHTML = '<option value="all">Todas las Carpetas</option>';
-      for (const [cat, cnt] of Object.entries(categories)) {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = `Carpeta: ${cat} (${cnt} fragmentos)`;
-        sel.appendChild(opt);
-      }
-    }
-
-    // CARGAR EXPLORADOR DINÁMICO DE CARPETAS
-    async function cargarExplorador() {
-      const container = document.getElementById('foldersContainer');
-      if (!container) return;
-      container.innerHTML = '<div class="col-span-full text-center py-8 text-slate-400 text-xs">Cargando carpetas y documentos...</div>';
+      title.textContent = relPath;
+      body.innerHTML = '<p class="text-xs text-slate-400 italic">Cargando documento...</p>';
+      modal.classList.remove('hidden');
 
       try {
-        const resp = await fetch('/api/search?q=a');
-        const data = await resp.json();
-        
-        if (!currentStats || !currentStats.categories) {
-          await cargarEstadisticas();
-        }
-
-        const cats = currentStats && currentStats.categories ? currentStats.categories : {};
-        if (Object.keys(cats).length === 0) {
-          container.innerHTML = '<div class="col-span-full text-center py-8 text-slate-400 text-xs">No hay documentos indexados. Haz clic en "Actualizar Base".</div>';
-          return;
-        }
-
-        container.innerHTML = '';
-        for (const [cat, cnt] of Object.entries(cats)) {
-          const card = document.createElement('div');
-          card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-3 hover:border-slate-700 transition shadow-sm';
-          card.innerHTML = `
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="font-bold text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <span>📂</span> <span>${cat}</span>
-                </span>
-                <span class="text-[10px] bg-slate-800 border border-slate-700 text-cyan-400 px-2 py-0.5 rounded-full font-semibold">
-                  ${cnt} chunks
-                </span>
-              </div>
-              <p class="text-xs text-slate-400">Directorio de tu espacio de trabajo indexado en SQLite FTS5.</p>
-            </div>
-            <button onclick="buscarPorCategoria('${cat}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg transition font-medium text-left flex items-center justify-between">
-              <span>Explorar fragmentos</span>
-              <span>→</span>
-            </button>
-          `;
-          container.appendChild(card);
-        }
+        const resp = await fetch(`/api/file?path=${encodeURIComponent(relPath)}`);
+        const text = await resp.text();
+        body.innerHTML = marked.parse(text);
       } catch (e) {
-        container.innerHTML = `<div class="col-span-full text-red-400 text-xs p-4">Error cargando explorador: ${e.message}</div>`;
+        body.innerHTML = `<p class="text-xs text-red-400">Error cargando archivo: ${e.message}</p>`;
       }
     }
 
-    function buscarPorCategoria(cat) {
-      cambiarTab('biblioteca');
-      const input = document.getElementById('ragSearchInput');
-      if (input) {
-        input.value = cat;
-        ejecutarBusquedaRAG();
-      }
-    }
-
-    // BÚSQUEDA RAG (SQLITE FTS5)
-    async function ejecutarBusquedaRAG() {
-      const q = document.getElementById('ragSearchInput').value.trim();
-      const resultsDiv = document.getElementById('ragSearchResults');
-      if (!q) return;
-
-      resultsDiv.innerHTML = '<p class="text-xs text-slate-400 italic">Buscando en SQLite FTS5...</p>';
-
-      try {
-        const resp = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-        const data = await resp.json();
-
-        if (!data.results || data.results.length === 0) {
-          resultsDiv.innerHTML = `<p class="text-xs text-amber-400">No se encontraron coincidencias para "${q}".</p>`;
-          return;
-        }
-
-        resultsDiv.innerHTML = '';
-        data.results.forEach(r => {
-          const item = document.createElement('div');
-          item.className = 'bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-2 hover:border-slate-700 transition';
-          item.innerHTML = `
-            <div class="flex items-center justify-between gap-2 flex-wrap">
-              <h4 class="font-bold text-sm text-cyan-300">${r.title}</h4>
-              <span class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded">
-                Carpeta: ${r.category} | ${r.rel_path}
-              </span>
-            </div>
-            <p class="text-xs text-slate-300 leading-relaxed font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 whitespace-pre-wrap">${r.content}</p>
-          `;
-          resultsDiv.appendChild(item);
-        });
-      } catch (e) {
-        resultsDiv.innerHTML = `<p class="text-xs text-red-400">Error: ${e.message}</p>`;
-      }
-    }
-
-    // ENVÍO DE MENSAJES AL CHATBOT
-    async function enviarMensaje(e) {
-      if (e) e.preventDefault();
-      const input = document.getElementById('chatInput');
-      const q = input.value.trim();
-      if (!q) return;
-
-      const mode = document.getElementById('chatMode').value;
-      const cat = document.getElementById('chatCategory').value;
-      const model = document.getElementById('chatModel').value;
-
-      // Renderizar mensaje del usuario
-      agregarMensajeVisual('user', q);
-      input.value = '';
-
-      // Indicador de carga
-      const loadingId = agregarMensajeVisual('ai', 'Consultando base de conocimiento y generando respuesta...', true);
-
-      try {
-        const resp = await fetch('/api/ask', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: q, mode: mode, category: cat, model: model })
-        });
-
-        const data = await resp.json();
-        quitarMensaje(loadingId);
-
-        if (data.ok) {
-          agregarMensajeVisual('ai', data.answer, false, data.provider, data.sources);
-        } else {
-          agregarMensajeVisual('ai', `⚠️ Error: ${data.error || 'No se pudo procesar la consulta'}`);
-        }
-      } catch (err) {
-        quitarMensaje(loadingId);
-        agregarMensajeVisual('ai', `⚠️ Error de conexión: ${err.message}`);
-      }
-    }
-
-    function agregarMensajeVisual(sender, text, isLoading = false, provider = null, sources = null) {
-      const box = document.getElementById('chatMessages');
-      const msgId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
-
-      const wrapper = document.createElement('div');
-      wrapper.id = msgId;
-      wrapper.className = `flex gap-3 items-start max-w-3xl ${sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`;
-
-      const avatar = document.createElement('div');
-      avatar.className = `w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold shrink-0 ${
-        sender === 'user' ? 'bg-indigo-600' : 'bg-gradient-to-tr from-cyan-600 to-indigo-600'
-      }`;
-      avatar.textContent = sender === 'user' ? '👤' : '🤖';
-
-      const bubble = document.createElement('div');
-      bubble.className = `p-4 text-xs md:text-sm leading-relaxed shadow-sm rounded-2xl ${
-        sender === 'user' 
-          ? 'bg-indigo-600 text-white rounded-tr-none' 
-          : 'bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none'
-      }`;
-
-      if (isLoading) {
-        bubble.innerHTML = `<span class="animate-pulse flex items-center gap-2"><span>⏳</span> <span>${text}</span></span>`;
-      } else {
-        bubble.innerHTML = formatearMarkdown(text);
-
-        if (provider) {
-          const provDiv = document.createElement('div');
-          provDiv.className = 'mt-3 pt-2 border-t border-slate-700/60 text-[10px] text-slate-400 flex items-center justify-between';
-          provDiv.innerHTML = `<span>Proveedor: <strong class="text-cyan-400">${provider}</strong></span>`;
-          bubble.appendChild(provDiv);
-        }
-
-        if (sources && sources.length > 0) {
-          const sourcesDiv = document.createElement('div');
-          sourcesDiv.className = 'mt-2 pt-2 border-t border-slate-700/40 text-[11px] text-slate-400';
-          sourcesDiv.innerHTML = `<strong>Fuentes locales consultadas:</strong> ` + sources.map(s => `<a href="/api/file?path=${encodeURIComponent(s.rel_path)}" target="_blank" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500 px-1.5 py-0.5 rounded text-[10px] text-cyan-300 hover:text-white transition ml-1 inline-flex items-center gap-0.5" title="Abrir archivo"><span>📄</span><span>${s.rel_path}</span></a>`).join('');
-          bubble.appendChild(sourcesDiv);
-        }
-      }
-
-      wrapper.appendChild(avatar);
-      wrapper.appendChild(bubble);
-      box.appendChild(wrapper);
-      box.scrollTop = box.scrollHeight;
-
-      return msgId;
-    }
-
-    function quitarMensaje(msgId) {
-      const el = document.getElementById(msgId);
-      if (el) el.remove();
-    }
-
-    function limpiarChat() {
-      const box = document.getElementById('chatMessages');
-      box.innerHTML = '';
-    }
-
-    // FORMATEO BÁSICO DE MARKDOWN
-    function formatearMarkdown(text) {
-      if (!text) return '';
-      let html = text
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-        .replace(/### (.*?)\n/g, '<h4 class="font-bold text-cyan-300 text-sm mt-2 mb-1">$1</h4>')
-        .replace(/## (.*?)\n/g, '<h3 class="font-bold text-cyan-200 text-base mt-3 mb-1.5">$1</h3>')
-        .replace(/# (.*?)\n/g, '<h2 class="font-extrabold text-white text-lg mt-3 mb-2">$1</h2>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>')
-        .replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[11px] font-mono text-cyan-200 my-2 overflow-x-auto"><code>$1</code></pre>')
-        .replace(/`(.*?)`/g, '<code class="bg-slate-950 px-1.5 py-0.5 rounded text-cyan-300 font-mono text-[11px]">$1</code>')
-        .replace(/\n\n/g, '<p class="my-2"></p>')
-        .replace(/\n/g, '<br>');
-      return html;
-    }
-
-    // RE-INDEXACIÓN
-    async function reindexarBase() {
-      try {
-        const resp = await fetch('/api/reindex', { method: 'POST' });
-        const data = await resp.json();
-        if (data.ok) {
-          alert("🎉 Base de conocimiento actualizada correctamente con todos los archivos.");
-          cargarEstadisticas();
-        } else {
-          alert("Error re-indexando: " + data.error);
-        }
-      } catch (e) {
-        alert("Error de conexión: " + e.message);
-      }
-    }
-
-    // COPIAR COMANDO AL PORTAPAPELES
-    function copiarComando(cmd) {
-      navigator.clipboard.writeText(cmd);
-      alert("Copiado al portapapeles:\n" + cmd);
+    function cerrarVisorDoc() {
+      document.getElementById('docViewerModal').classList.add('hidden');
     }
   </script>
 </body>

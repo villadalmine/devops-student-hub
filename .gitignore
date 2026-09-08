@@ -12,6 +12,8 @@ __pycache__/
 mis_videos/*.mp4
 mis_videos/*.mkv
 mis_videos/*.webm
-mis_videos/*.avi
-!mis_videos/README.md
-!mis_videos/videos.json
+# Base de datos local
+*.db
+*.sqlite
+data/
+chats_guardados.json

@@ -1,139 +1,130 @@
-# 🚀 Cloud DevOps Workspace & Automation Hub
+# 🚀 Cloud DevOps Workspace & Student Hub
 
-> **Entorno Profesional DevOps para Windows:** Instalador automatizado de herramientas con Winget, base de conocimiento RAG local y asistente de IA de arquitectura abierta y agnóstica.
+> **Entorno Profesional DevOps Multiplataforma:** Automatización de software, diagnóstico y toolkit para **Windows**, **Linux** y **macOS**.
 
 ---
 
 ## 💡 ¿Qué es este Repositorio?
 
-Este repositorio es una estación de trabajo completa pensada para ingenieros, arquitectos y desarrolladores de **Cloud DevOps e Infraestructura moderna**. 
+Este repositorio es una estación de trabajo completa pensada para estudiantes y profesionales de **Cloud DevOps e Infraestructura moderna**.
 
-Está diseñado bajo dos principios fundamentales:
-1. **📦 Automatización de Software sin Fricción:** Provisiona y diagnostica en Windows todo el conjunto de herramientas esenciales de la industria (Git, GitHub CLI, Docker, Kubernetes, Terraform, Cloud CLIs de AWS y Azure, etc.) mediante scripts de PowerShell y **Windows Package Manager (Winget)**.
-2. **🧠 Espacio de Conocimiento Libre y Agnóstico (Second Brain + RAG):** **Arquitectura 100% modular y abierta.** Puedes crear libremente cualquier carpeta que necesites (apuntes/, material/, practicas/, videos/, certificaciones/, docker/, kubernetes/, etc.). El motor local indexa automáticamente tus notas Markdown, guías y PDFs en una base de datos **SQLite FTS5** y te brinda un **Tutor de IA interactivo** que responde citando tus propios documentos.
+Está diseñado bajo tres pilares fundamentales:
+1. **📦 Automatización de Software Multi-OS:** Provisiona y diagnostica en Windows (`winget` + PowerShell), Linux (`apt`/`dnf`/`pacman` + Bash) y macOS (`brew` + Bash) el conjunto de las **31 herramientas del curso** organizadas en 6 categorías modulares.
+2. **🩺 Diagnóstico del Sistema en Vivo:** Herramientas de escaneo para validar que tus CLIs, variables de entorno `PATH` y binarios estén 100% listos antes de cada laboratorio.
+3. **🌐 Student Hub Web Local:** Un panel de control visual en `http://localhost:8080` con visor interactivo de apuntes, manuales técnicos y reproductor local de clases en video (`HTTP Range 206`).
 
 ---
 
-## ⚡ 1. Instalación y Diagnóstico del Software DevOps
+## ⚡ 1. Instalación Rápida por Sistema Operativo
 
-Todo el proceso de instalación es automatizado, idempotente y utiliza herramientas oficiales de Microsoft y de los creadores de cada tecnología.
+Elige tu sistema operativo y ejecuta el instalador automatizado correspondiente:
 
-### Paso A: Instalar el Software Base (Core Esencial)
-Abre **PowerShell como Administrador** en la raíz de este repositorio y ejecuta:
+### 🪟 Windows (PowerShell)
+Abre **PowerShell como Administrador** en la carpeta del repositorio y ejecuta:
 
 ```powershell
+# Opción A: Instalar solo el Core Esencial (12 herramientas base)
 powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloBase
-```
 
-Este comando instala el conjunto core recomendado:
-* **Control de Versiones & Colaboración:** `Git for Windows`, `GitHub CLI (gh)`.
-* **Editor & Entorno:** `Visual Studio Code`.
-* **Contenedores & Virtualización:** `Docker Desktop` (con WSL2 backend).
-* **Infraestructura como Código (IaC):** `HashiCorp Terraform`.
-* **Nubes Públicas:** `AWS CLI (v2)`, `Azure CLI (az)`.
-* **Orquestación de Contenedores:** `Kubernetes CLI (kubectl)`, `Helm`, `Minikube`.
-* **Procesamiento de Datos:** `jq` (filtro de respuestas JSON para scripts y pipelines).
+# Opción B: Menú interactivo completo (las 31 herramientas)
+powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1
 
-*(Si deseas un menú interactivo con herramientas optativas adicionales como Ansible, Vagrant, Packer, K9s o Trivy, ejecuta simplemente `.\scripts\instalar-tools-devops.ps1`).*
-
----
-
-### Paso B: Autenticarte con GitHub CLI (gh)
-Para vincular tu cuenta de GitHub, clonar repositorios y sincronizar tus cambios:
-
-```powershell
-gh auth login
-```
-> Elige: `GitHub.com` ➔ `HTTPS` ➔ `Yes` (autenticar Git credential helper) ➔ `Login with a web browser` e introduce el código de un solo uso que te muestra la terminal.
-
----
-
-### Paso C: Verificar y Diagnosticar tu Entorno
-Comprueba que todos los comandos, variables de entorno `PATH` y servicios estén 100% operativos:
-
-```powershell
+# Verificar instalación:
 powershell -ExecutionPolicy Bypass -File .\scripts\verificar-tools.ps1
 ```
+*Guía detallada:* [`01-Guia-Completa-Instalacion-Windows.md`](01-Guia-Completa-Instalacion-Windows.md)
 
 ---
 
-## 🌐 2. Knowledge Hub & Asistente IA Local
+### 🐧 Linux (Ubuntu, Debian, Fedora, Arch)
+Abre tu terminal en la carpeta del repositorio y ejecuta:
 
-El repositorio incluye un servidor web local y un panel de control con motor RAG (Retrieval-Augmented Generation).
+```bash
+chmod +x ./scripts/instalar-tools-linux.sh ./scripts/verificar-tools.sh
 
-### Iniciar el Hub en 1 Clic
+# Opción A: Instalar Core Esencial (12 herramientas base)
+./scripts/instalar-tools-linux.sh --base
+
+# Opción B: Instalar todo el ecosistema (31 herramientas)
+./scripts/instalar-tools-linux.sh --all
+
+# Verificar instalación:
+./scripts/verificar-tools.sh
+```
+*Guía detallada:* [`02-Guia-Instalacion-Linux.md`](02-Guia-Instalacion-Linux.md)
+
+---
+
+### 🍎 macOS (Apple Silicon M1/M2/M3/M4 & Intel)
+Abre tu Terminal de macOS y ejecuta:
+
+```bash
+chmod +x ./scripts/instalar-tools-macos.sh ./scripts/verificar-tools.sh
+
+# Opción A: Instalar Core Esencial con Homebrew
+./scripts/instalar-tools-macos.sh --base
+
+# Opción B: Instalar todo el ecosistema
+./scripts/instalar-tools-macos.sh --all
+
+# Verificar instalación:
+./scripts/verificar-tools.sh
+```
+*Guía detallada:* [`03-Guia-Instalacion-MacOS.md`](03-Guia-Instalacion-MacOS.md)
+
+---
+
+## 🛠️ 2. El Toolkit de 31 Herramientas (6 Categorías)
+
+| Categoría | Cantidad | Herramientas Incluidas |
+| :--- | :---: | :--- |
+| **⚙️ BASE (Core Esencial)** | 12 | Zoom, Git, GitHub CLI (`gh`), VS Code, Docker, Terraform, AWS CLI, Azure CLI, kubectl, Helm, Minikube, jq |
+| **💻 TERM (Terminales & Editores)** | 6 | Gajim (XMPP), Ghostty Terminal, Zed Editor, Herdr Multiplexer, Neovim (`nvim`), VLC |
+| **🖥️ TUI (Productividad de Consola)** | 5 | fzf, Lazygit, Yazi (File Manager), Lazydocker, k9s |
+| **🌐 EBPF (Redes & Observabilidad)** | 3 | nerdctl (containerd), Cilium CLI, Hubble CLI |
+| **🐍 LANG (Lenguajes & Runtimes)** | 2 | Go (Golang), Python 3 |
+| **🤖 AI (Agentes Inteligentes)** | 3 | Claude Code CLI, Shell-GPT (`sgpt`), OMP (Oh My Pi) |
+
+---
+
+## 🌐 3. Iniciar el Student Hub Local
+
+El repositorio cuenta con una interfaz web local para consultar comandos, documentación y reproducir videos:
+
+### En Windows:
 Haz doble clic sobre:
 ```text
 ▶ iniciar-mi-hub.bat
 ```
-*(O ejecuta `python scripts/servidor_asistente.py`).*  
-Se abrirá automáticamente tu navegador en **`http://localhost:8080`**.
+*(O ejecuta `python scripts\servidor_asistente.py`).*
 
-### Características del Hub:
-* **💬 Tutor IA DevOps:** Un asistente pedagógico con 4 modos:
-  * *Tutor DevOps:* Conceptos de arquitectura cloud, Twelve-Factor App, DORA metrics y GitOps.
-  * *Laboratorio & Terminal:* Depuración de errores en consola, sintaxis de Dockerfiles, Terraform HCL y manifests de K8s.
-  * *Certificaciones & Entrevistas:* Simulador de preguntas técnicas (AWS, CKA, Docker, Terraform).
-  * *Documentación Local:* Preguntas que se responden consultando directamente tus notas locales.
-* **📁 Explorador Dinámico:** Muestra y agrupa en tarjetas todas las carpetas y documentos que vayas agregando.
-* **🔍 Buscador RAG SQLite FTS5:** Búsqueda a texto completo ultrarrápida sobre todos tus apuntes y PDFs.
-* **🎬 Reproductor de Video Local:** Transmite de forma fluida (`HTTP Range 206`) cualquier video que coloques en la carpeta `videos/`.
-
----
-
-## 📂 Organización de Carpetas (Flexible y Libre)
-
-Puedes estructurar tus directorios como mejor se adapte a tu flujo de trabajo. Una estructura sugerida:
-
-```text
-├── apuntes/                 # Notas técnicas en Markdown (.md)
-│   ├── 01_Fundamentos_DevOps_y_Git.md
-│   └── README.md
-├── material/                # Libros, diapositivas, PDFs oficiales y cheat sheets
-│   └── README.md
-├── practicas/               # Dockerfiles, docker-compose, scripts bash/powershell, Terraform HCL
-│   └── README.md
-├── videos/                  # Grabaciones y sesiones, talleres o tutoriales (.mp4, .mkv, .webm)
-│   └── README.md
-├── data/                    # Base de datos SQLite FTS5 (devops_knowledge.db)
-├── scripts/                 # Scripts PowerShell de instalación y motor RAG en Python
-│   ├── instalar-tools-devops.ps1
-│   ├── verificar-tools.ps1
-│   ├── crear_indice_rag.py
-│   └── servidor_asistente.py
-├── devops_hub.html          # Panel Web interactivo
-├── player/                  # Reproductor de video local
-├── iniciar-mi-hub.bat       # Lanzador en 1 clic
-└── actualizar-mi-base.bat   # Re-indexador en 1 clic
+### En Linux / macOS:
+```bash
+python3 scripts/servidor_asistente.py
 ```
 
-> **¿Quieres agregar una nueva carpeta?**  
-> Simplemente crea carpetas como `certificaciones/`, `aws-solutions-architect/`, `docker-labs/`, guarda archivos `.md` o `.pdf` dentro, y haz clic en **"Actualizar Base"** (o ejecuta `actualizar-mi-base.bat`). El sistema la detectará e indexará automáticamente.
+Tu navegador se abrirá en **`http://localhost:8080`**.
 
 ---
 
-## 🔄 Cómo Actualizar la Base de Conocimiento
+## 📁 4. Estructura del Repositorio
 
-Cada vez que agregues nuevos apuntes o descargues un libro/PDF:
-1. Haz doble clic en **`actualizar-mi-base.bat`** (o pulsa el botón **"Actualizar Base"** en la interfaz web).
-2. El script `scripts/crear_indice_rag.py` escaneará recursivamente todas tus carpetas y actualizará el índice de búsqueda en segundos.
-
----
-
-## 🤖 Proveedores de IA Soportados
-
-El Asistente RAG funciona **100% offline out-of-the-box** recuperando citas textuales y correlacionando fuentes locales desde SQLite. Si deseas habilitar redacción y razonamiento conversacional con LLMs generativos:
-
-* **Opción A: Google Gemini (Gratuito)**  
-  Genera una clave gratuita en [Google AI Studio](https://aistudio.google.com/) y configúrala en PowerShell:
-  ```powershell
-  [System.Environment]::SetEnvironmentVariable("GEMINI_API_KEY", "tu-clave-aqui", "User")
-  ```
-* **Opción B: Ollama Local (100% Privado y Offline)**  
-  Instala [Ollama](https://ollama.com/) y ejecuta tu modelo preferido (ej: `ollama run qwen2.5`). El servidor lo detectará automáticamente en el puerto 11434.
-
----
-
-## 📄 Licencia
-
-Código abierto bajo licencia MIT. ¡Siéntete libre de adaptarlo, bifurcarlo y utilizarlo para tu propio aprendizaje continuo!
+```text
+dist_alumnos/
+├── 01-Guia-Completa-Instalacion-Windows.md # Manual paso a paso para Windows
+├── 02-Guia-Instalacion-Linux.md           # Manual paso a paso para Linux
+├── 03-Guia-Instalacion-MacOS.md           # Manual paso a paso para macOS
+├── devops_hub.html                        # Portal web interactivo multi-OS
+├── iniciar-mi-hub.bat                     # Lanzador en 1 clic para Windows
+├── apuntes/                               # Tus notas y resúmenes personales
+├── material/                              # Guías y documentación descargable
+├── practicas/                             # Laboratorios prácticos del curso
+├── videos/                                # Reproductor de videos MP4 locales
+└── scripts/
+    ├── instalar-tools-devops.ps1          # Instalador Windows (PowerShell/Winget)
+    ├── instalar-tools-linux.sh            # Instalador Linux (apt/dnf/pacman)
+    ├── instalar-tools-macos.sh            # Instalador macOS (Homebrew)
+    ├── verificar-tools.ps1                # Diagnóstico en Windows
+    ├── verificar-tools.sh                 # Diagnóstico en Linux / macOS
+    └── servidor_asistente.py              # Servidor HTTP local y API diagnóstico
+```

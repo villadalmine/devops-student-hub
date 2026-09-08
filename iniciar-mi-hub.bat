@@ -17,12 +17,6 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo [*] Verificando base de datos de conocimiento SQLite...
-if not exist "data\devops_knowledge.db" (
-    echo [*] Primera ejecucion detectada: construyendo indice RAG local...
-    python scripts\crear_indice_rag.py
-)
-
 echo [*] Lanzando servidor local en http://localhost:8080 ...
 start "" "http://localhost:8080/devops_hub.html"
 python scripts\servidor_asistente.py
