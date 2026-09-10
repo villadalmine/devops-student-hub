@@ -96,11 +96,14 @@ chmod +x ./scripts/*.sh ./iniciar-mi-hub.sh
 El portal puede iniciarse de dos formas: **como binario nativo compilado** (`student-hub.exe`, **sin requerir Python en tu PC**) o mediante el script Python estándar:
 
 ### En Windows:
-Haz doble clic sobre:
+Puedes descargarlo directamente como ejecutable sin necesidad de instalar Python:
+👉 **[⬇️ Descargar student-hub.exe (Release v1.0.0)](https://github.com/villadalmine/devops-student-hub/releases/latest/download/student-hub.exe)**
+
+O si ya clonaste/descargaste la carpeta, haz doble clic sobre:
 ```text
 ▶ iniciar-mi-hub.bat
 ```
-*O simplemente ejecuta directamente el binario nativo:*
+*O ejecuta directamente el binario nativo:*
 ```text
 ▶ student-hub.exe
 ```
