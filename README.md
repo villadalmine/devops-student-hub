@@ -93,14 +93,18 @@ chmod +x ./scripts/*.sh ./iniciar-mi-hub.sh
 
 ## 🌐 3. Iniciar el Student Hub Local (Puerto 8081)
 
-El repositorio incluye un servidor HTTP multihilo ligero en Python que no requiere librerías externas:
+El portal puede iniciarse de dos formas: **como binario nativo compilado** (`student-hub.exe`, **sin requerir Python en tu PC**) o mediante el script Python estándar:
 
 ### En Windows:
 Haz doble clic sobre:
 ```text
 ▶ iniciar-mi-hub.bat
 ```
-*(O ejecuta en PowerShell: `.\iniciar-mi-hub.ps1` o `python scripts\servidor_asistente.py 8081`).*
+*O simplemente ejecuta directamente el binario nativo:*
+```text
+▶ student-hub.exe
+```
+*(Si no tienes Python instalado, `student-hub.exe` o `iniciar-mi-hub.bat` arrancarán el entorno de inmediato).*
 
 ### En Linux / macOS:
 ```bash
@@ -117,7 +121,8 @@ Tu navegador se abrirá automáticamente en: **`http://localhost:8081/devops_hub
 3. **🌐 Glosario & Labs Interactivos:** Buscador reactivo, simuladores de terminal en el navegador y 17 conceptos clave con botones **📋 Copiar para Chat** para Zoom/Discord.
 4. **🎥 Videos Locales:** Catálogo y reproductor integrado de clases con soporte de streaming `HTTP Range 206`.
 5. **🩺 Diagnóstico del Sistema:** Escaneo en tiempo real de las 33 herramientas en tu `%PATH%` con barra de cobertura porcentual y botón para instalar herramientas faltantes.
-6. **📡 Logs & Telemetría:** Monitor de eventos, llamadas a la API y estado del servidor.
+6. **🎒 Mis Aportes & Notas:** Editor personal de notas (`mis_apuntes/`) y botón **"📥 Exportar Mis Aportes (.ZIP)"** en 1-clic para descargar tu trabajo y compartirlo con el docente.
+7. **📡 Logs & Telemetría:** Monitor de eventos en vivo, llamadas a la API y estado del servidor.
 
 ---
 

@@ -1,0 +1,42 @@
+{
+  "curso_id": "DEVO07",
+  "codigo": "84214",
+  "institucion": "EducacionIT",
+  "titulo": "Cloud DevOps: Automatizacion y Despliegue",
+  "descripcion": "Estacion de trabajo profesional para provisionamiento, diagnostico, contenedores, CI/CD y observabilidad.",
+  "total_clases": 12,
+  "total_horas": 30,
+  "herramientas_count": 33,
+  "categorias": [
+    {
+      "id": "BASE",
+      "nombre": "Core Esencial DevOps",
+      "tools_count": 12
+    },
+    {
+      "id": "TERM",
+      "nombre": "Terminales, Editores y Mensajeria",
+      "tools_count": 6
+    },
+    {
+      "id": "TUI",
+      "nombre": "Productividad TUI de Consola",
+      "tools_count": 5
+    },
+    {
+      "id": "EBPF",
+      "nombre": "Contenedores, Redes, Seguridad y eBPF",
+      "tools_count": 4
+    },
+    {
+      "id": "LANG",
+      "nombre": "Lenguajes y Runtimes",
+      "tools_count": 3
+    },
+    {
+      "id": "AI",
+      "nombre": "Suite de Agentes IA",
+      "tools_count": 3
+    }
+  ]
+}

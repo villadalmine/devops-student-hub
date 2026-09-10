@@ -2,56 +2,84 @@
 # -*- coding: utf-8 -*-
 """
 ===============================================================================
-   SERVIDOR ASISTENTE & HUB DEVOPS UNIVERSAL (ALUMNOS)
+   SERVIDOR ASISTENTE & HUB DEVOPS UNIVERSAL (ALUMNOS & PLATAFORMA EDUCATIVA)
 ===============================================================================
 Servidor local multihilo ligero y seguro que provee:
   1. Interfaz Web DevOps Hub: devops_hub.html y visor interactivo de apuntes.
-  2. Streaming de Videos Locales (videos/*.mp4 con soporte HTTP Range 206).
-  3. Diagnóstico en vivo de las 31 herramientas DevOps en tu sistema.
-  4. Telemetría y visor de logs del entorno.
+  2. Detección y Carga Dinámica de Curso (curso.json) para cualquier materia.
+  3. Gestor de Notas y Aportes del Alumno (/mis_apuntes, /practicas).
+  4. Exportación en 1-clic a paquete .ZIP para compartir con el docente.
+  5. Streaming de Videos Locales (videos/*.mp4 con soporte HTTP Range 206).
+  6. Diagnóstico en vivo de herramientas en tu sistema (Multi-OS).
+  7. Telemetría y visor de logs del entorno.
+  8. Ejecución Standalone binaria (.exe) o con Python estándar.
 ===============================================================================
 """
 
 import os
 import sys
 import re
+import io
 import json
 import time
 import shutil
+import zipfile
+import threading
 import subprocess
+import webbrowser
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
 # Configurar salida UTF-8 segura en Windows
-if sys.platform == "win32" and hasattr(sys.stdout, 'reconfigure'):
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
     try:
-        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 8081
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
+
+# Resolucion inteligente de rutas para soporte binario PyInstaller (sys.frozen) y script normal
+if getattr(sys, "frozen", False):
+    # Ejecutandose como binario compilado (.exe)
+    base_exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+    if not os.path.exists(os.path.join(base_exe_dir, "devops_hub.html")) and os.path.exists(os.path.join(os.path.dirname(base_exe_dir), "devops_hub.html")):
+        STUDENT_DIR = os.path.dirname(base_exe_dir)
+        SCRIPT_DIR = base_exe_dir
+    else:
+        STUDENT_DIR = base_exe_dir
+        SCRIPT_DIR = os.path.join(STUDENT_DIR, "scripts")
+else:
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
+
 VIDEOS_DIR = os.path.join(STUDENT_DIR, "videos")
+MIS_APUNTES_DIR = os.path.join(STUDENT_DIR, "mis_apuntes")
+PRACTICAS_DIR = os.path.join(STUDENT_DIR, "practicas")
 
 os.makedirs(VIDEOS_DIR, exist_ok=True)
+os.makedirs(MIS_APUNTES_DIR, exist_ok=True)
+os.makedirs(PRACTICAS_DIR, exist_ok=True)
 
 SYSTEM_LOGS = []
 
 def log_event(level, msg):
-    timestamp = time.strftime('%H:%M:%S')
+    timestamp = time.strftime("%H:%M:%S")
     log_entry = f"[{timestamp}] [{level}] {msg}"
     print(log_entry, flush=True)
     SYSTEM_LOGS.append(log_entry)
     if len(SYSTEM_LOGS) > 200:
         SYSTEM_LOGS.pop(0)
 
-log_event("INIT", f"Servidor DevOps Hub Alumnos inicializado en {STUDENT_DIR}")
+log_event("INIT", f"Servidor Hub Universal Alumnos iniciado en {STUDENT_DIR}")
+if getattr(sys, "frozen", False):
+    log_event("INIT", f"Modo: Standalone Binario Compilado ({sys.executable})")
+else:
+    log_event("INIT", f"Modo: Python Script ({sys.version.split()[0]})")
 
-# Catálogo completo de las 33 herramientas del curso
+# Catalogo completo de las 33 herramientas DevOps del curso
 TOOLS_CATALOG = [
-    # BASE (12)
     {"id": 1,  "cat": "BASE", "name": "Zoom Workplace", "cmd": "zoom", "tipo": "Obligatorio"},
     {"id": 2,  "cat": "BASE", "name": "Git", "cmd": "git", "tipo": "Obligatorio"},
     {"id": 3,  "cat": "BASE", "name": "GitHub CLI (gh)", "cmd": "gh", "tipo": "Obligatorio"},
@@ -64,29 +92,24 @@ TOOLS_CATALOG = [
     {"id": 10, "cat": "BASE", "name": "Helm", "cmd": "helm", "tipo": "Obligatorio"},
     {"id": 11, "cat": "BASE", "name": "Minikube", "cmd": "minikube", "tipo": "Obligatorio"},
     {"id": 12, "cat": "BASE", "name": "jq (JSON Processor)", "cmd": "jq", "tipo": "Obligatorio"},
-    # TERM (6)
     {"id": 13, "cat": "TERM", "name": "Gajim (XMPP)", "cmd": "gajim", "tipo": "Optativo"},
     {"id": 14, "cat": "TERM", "name": "Ghostty Terminal", "cmd": "ghostty", "tipo": "Optativo"},
     {"id": 15, "cat": "TERM", "name": "Zed Editor", "cmd": "zed", "tipo": "Optativo"},
     {"id": 16, "cat": "TERM", "name": "Herdr Multiplexer", "cmd": "herdr", "tipo": "Optativo"},
     {"id": 17, "cat": "TERM", "name": "Neovim", "cmd": "nvim", "tipo": "Optativo"},
     {"id": 18, "cat": "TERM", "name": "VLC Media Player", "cmd": "vlc", "tipo": "Optativo"},
-    # TUI (5)
     {"id": 19, "cat": "TUI", "name": "fzf (Fuzzy Finder)", "cmd": "fzf", "tipo": "Optativo"},
     {"id": 20, "cat": "TUI", "name": "Lazygit", "cmd": "lazygit", "tipo": "Optativo"},
     {"id": 21, "cat": "TUI", "name": "Yazi (File Manager)", "cmd": "yazi", "tipo": "Optativo"},
     {"id": 22, "cat": "TUI", "name": "Lazydocker", "cmd": "lazydocker", "tipo": "Optativo"},
     {"id": 23, "cat": "TUI", "name": "k9s (K8s Monitor)", "cmd": "k9s", "tipo": "Optativo"},
-    # EBPF & Seguridad (4)
     {"id": 24, "cat": "EBPF", "name": "nerdctl (containerd)", "cmd": "nerdctl", "tipo": "Optativo"},
     {"id": 25, "cat": "EBPF", "name": "Cilium CLI", "cmd": "cilium", "tipo": "Optativo"},
     {"id": 26, "cat": "EBPF", "name": "Hubble CLI", "cmd": "hubble", "tipo": "Optativo"},
     {"id": 27, "cat": "EBPF", "name": "Trivy (Security Scanner)", "cmd": "trivy", "tipo": "Optativo"},
-    # LANG (3)
     {"id": 28, "cat": "LANG", "name": "Go (Golang)", "cmd": "go", "tipo": "Optativo"},
     {"id": 29, "cat": "LANG", "name": "Python 3", "cmd": "python", "tipo": "Optativo"},
     {"id": 30, "cat": "LANG", "name": "Rust (Cargo)", "cmd": "rustc", "tipo": "Optativo"},
-    # AI (3)
     {"id": 31, "cat": "AI", "name": "Claude Code CLI", "cmd": "claude", "tipo": "Optativo"},
     {"id": 32, "cat": "AI", "name": "Shell-GPT (sgpt)", "cmd": "sgpt", "tipo": "Optativo"},
     {"id": 33, "cat": "AI", "name": "OMP (Oh My Pi)", "cmd": "omp", "tipo": "Optativo"}
@@ -95,8 +118,6 @@ TOOLS_CATALOG = [
 def check_local_tool(t):
     cmd = t["cmd"]
     found = shutil.which(cmd) is not None
-
-    # Verificaciones adicionales en Windows para rutas estándar
     if not found and sys.platform == "win32":
         if cmd == "az":
             found = os.path.exists(r"C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd")
@@ -126,7 +147,7 @@ def check_local_tool(t):
     return found
 
 def launch_in_terminal(command, as_admin=False, cwd=None):
-    """Abre una nueva ventana de terminal independiente para ejecutar comandos de instalación."""
+    """Abre una nueva ventana de terminal independiente para ejecutar comandos."""
     if not cwd:
         cwd = STUDENT_DIR
 
@@ -136,7 +157,6 @@ def launch_in_terminal(command, as_admin=False, cwd=None):
         temp_dir = os.path.join(os.environ.get("TEMP", cwd), "devops_hub_scripts")
         os.makedirs(temp_dir, exist_ok=True)
         ps_file = os.path.join(temp_dir, "ejecutar_instalacion.ps1")
-
         mode_str = "ADMINISTRADOR (ELEVADO)" if as_admin else "USUARIO ESTANDAR"
         mode_color = "Green" if as_admin else "Cyan"
 
@@ -152,7 +172,7 @@ if (Test-Path $goPath) {{ $env:Path += ";$goPath" }}
 
 Write-Host ""
 Write-Host "======================================================================" -ForegroundColor Cyan
-Write-Host "   DEVOPS WORKSPACE - INSTALADOR EN TERMINAL" -ForegroundColor Yellow
+Write-Host "   DEVOPS WORKSPACE - COMANDO EN TERMINAL" -ForegroundColor Yellow
 Write-Host "   Comando : {command}" -ForegroundColor White
 Write-Host "   Modo    : {mode_str}" -ForegroundColor {mode_color}
 Write-Host "======================================================================" -ForegroundColor Cyan
@@ -168,7 +188,6 @@ Write-Host "====================================================================
         with open(ps_file, "w", encoding="utf-8-sig") as f:
             f.write(full_script)
 
-        # Lanzar terminal garantizada y visible en Windows
         launched = False
         if as_admin:
             try:
@@ -185,7 +204,6 @@ Write-Host "====================================================================
                 log_event("WARN", f"Fallo al invocar elevación UAC: {e}")
 
         if not launched:
-            # Si no es admin o si UAC es rechazado, abrir consola visible con CREATE_NEW_CONSOLE
             subprocess.Popen(
                 ["powershell.exe", "-NoExit", "-ExecutionPolicy", "Bypass", "-File", ps_file],
                 creationflags=subprocess.CREATE_NEW_CONSOLE
@@ -197,7 +215,7 @@ Write-Host "====================================================================
         os.makedirs(temp_dir, exist_ok=True)
         sh_file = os.path.join(temp_dir, "ejecutar_instalacion.sh")
         with open(sh_file, "w", encoding="utf-8") as f:
-            f.write(f"#!/usr/bin/env bash\ncd '{cwd}'\necho '=== DEVOPS WORKSPACE - INSTALADOR ==='\necho 'Comando: {command}'\necho ''\n{command}\necho ''\necho '=== FINALIZADO ==='\nexec bash\n")
+            f.write(f"#!/usr/bin/env bash\ncd '{cwd}'\necho '=== DEVOPS WORKSPACE ==='\necho 'Comando: {command}'\necho ''\n{command}\necho ''\necho '=== FINALIZADO ==='\nexec bash\n")
         os.chmod(sh_file, 0o755)
         for term in ["x-terminal-emulator", "gnome-terminal", "konsole", "xterm"]:
             if shutil.which(term):
@@ -244,8 +262,10 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         path = url_parts.path
         query = urllib.parse.parse_qs(url_parts.query)
 
-        # 1. API: Diagnóstico en vivo de herramientas instaladas
-        if path == "/api/diagnostico":
+        if path == "/api/curso":
+            self.handle_api_curso()
+            return
+        elif path == "/api/diagnostico":
             results = []
             installed_count = 0
             for t in TOOLS_CATALOG:
@@ -268,46 +288,39 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                 "tools": results
             })
             return
-
-        # 2. API: Catálogo dinámico de videos locales
         elif path == "/api/videos":
             self.handle_api_videos()
             return
-
-        # 3. API: Servir archivos locales de forma segura (/api/file?path=...)
+        elif path == "/api/mis_apuntes":
+            self.handle_api_mis_apuntes()
+            return
+        elif path == "/api/exportar_aportes":
+            self.handle_exportar_aportes()
+            return
         elif path == "/api/file":
             rel_file = query.get("path", [""])[0]
             self.handle_api_file(rel_file)
             return
-
-        # 4. API: Telemetría y logs en vivo (/api/telemetry)
         elif path == "/api/telemetry":
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps(SYSTEM_LOGS, ensure_ascii=False).encode('utf-8'))
+            self.wfile.write(json.dumps(SYSTEM_LOGS, ensure_ascii=False).encode("utf-8"))
             return
-
-        # 5. Streaming de Videos Locales (/videos/<filename>)
         elif path.startswith("/videos/"):
             filename = urllib.parse.unquote(path[8:])
             self.handle_video_streaming(filename)
             return
-
-        # Favicon 204
         elif path == "/favicon.ico":
             self.send_response(204)
             self.end_headers()
             return
-
-        # Redirigir raíz al portal principal
         if path in ["/", "/index.html"]:
             self.send_response(302)
             self.send_header("Location", "/devops_hub.html")
             self.end_headers()
             return
-
         super().do_GET()
 
     def do_POST(self):
@@ -315,20 +328,17 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         path = url_parts.path
 
         if path == "/api/ejecutar":
-            content_length = int(self.headers.get('Content-Length', 0))
-            post_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else "{}"
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
                 body = json.loads(post_data)
             except Exception:
                 body = {}
-
             command = body.get("command", "").strip()
             as_admin = bool(body.get("admin", False))
-
             if not command:
                 self.send_json({"ok": False, "error": "No se especificó ningún comando para ejecutar."}, status=400)
                 return
-
             ok = launch_in_terminal(command, as_admin=as_admin, cwd=STUDENT_DIR)
             self.send_json({
                 "ok": ok,
@@ -338,6 +348,35 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             })
             return
 
+        elif path == "/api/guardar_apunte":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            try:
+                body = json.loads(post_data)
+            except Exception:
+                body = {}
+            nombre = body.get("nombre", "").strip()
+            contenido = body.get("contenido", "")
+            if not nombre:
+                self.send_json({"ok": False, "error": "Nombre de archivo obligatorio."}, status=400)
+                return
+            if not nombre.endswith((".md", ".txt", ".json", ".yaml", ".yml", ".sh", ".ps1")):
+                nombre += ".md"
+            safe_name = os.path.basename(nombre)
+            target_path = os.path.join(MIS_APUNTES_DIR, safe_name)
+            try:
+                with open(target_path, "w", encoding="utf-8") as f:
+                    f.write(contenido)
+                log_event("NOTE", f"Apunte guardado: mis_apuntes/{safe_name}")
+                self.send_json({
+                    "ok": True,
+                    "rel_path": f"mis_apuntes/{safe_name}",
+                    "mensaje": f"Archivo '{safe_name}' guardado correctamente en tus apuntes."
+                })
+            except Exception as e:
+                self.send_json({"ok": False, "error": f"Error escribiendo archivo: {str(e)}"}, status=500)
+            return
+
         self.send_json({"error": "Endpoint no encontrado"}, status=404)
 
     def send_json(self, data, status=200):
@@ -345,18 +384,104 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
+
+    def handle_api_curso(self):
+        """Devuelve los metadatos del curso actual leyendo curso.json o esqueleto genérico."""
+        curso_file = os.path.join(STUDENT_DIR, "curso.json")
+        if os.path.exists(curso_file):
+            try:
+                with open(curso_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                self.send_json({"ok": True, "curso": data})
+                return
+            except Exception as e:
+                log_event("ERROR", f"Error parseando curso.json: {e}")
+        self.send_json({
+            "ok": True,
+            "curso": {
+                "curso_id": "MODULAR_HUB",
+                "titulo": "Plataforma Educativa Universal",
+                "institucion": "Comunidad DevOps",
+                "descripcion": "Chasis educativo modular adaptable a cualquier materia.",
+                "total_clases": 0,
+                "total_horas": 0,
+                "herramientas_count": len(TOOLS_CATALOG),
+                "categorias": []
+            }
+        })
+
+    def handle_api_mis_apuntes(self):
+        """Lista los archivos en mis_apuntes/ y practicas/."""
+        apuntes_list = []
+        for carpeta in ["mis_apuntes", "practicas", "aportes"]:
+            folder_p = os.path.join(STUDENT_DIR, carpeta)
+            if os.path.exists(folder_p):
+                for root, _, files in os.walk(folder_p):
+                    for f in sorted(files):
+                        abs_p = os.path.join(root, f)
+                        rel_p = os.path.relpath(abs_p, STUDENT_DIR).replace("\\", "/")
+                        size_kb = round(os.path.getsize(abs_p) / 1024, 2)
+                        apuntes_list.append({
+                            "archivo": f,
+                            "rel_path": rel_p,
+                            "tamano_kb": size_kb,
+                            "carpeta": carpeta
+                        })
+        self.send_json({"ok": True, "apuntes": apuntes_list})
+
+    def handle_exportar_aportes(self):
+        """Genera un archivo ZIP con todos los apuntes y prácticas del alumno para compartir."""
+        log_event("EXPORT", "Generando paquete ZIP de aportes del alumno...")
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            meta = {
+                "plataforma": "DevOps Student Hub Universal",
+                "exportado_el": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "os": sys.platform
+            }
+            curso_file = os.path.join(STUDENT_DIR, "curso.json")
+            if os.path.exists(curso_file):
+                try:
+                    with open(curso_file, "r", encoding="utf-8") as cf:
+                        meta["curso"] = json.load(cf)
+                except Exception:
+                    pass
+            zip_file.writestr("info_exportacion.json", json.dumps(meta, indent=2, ensure_ascii=False))
+            carpetas_a_incluir = ["mis_apuntes", "practicas", "aportes", "apuntes"]
+            archivos_agregados = 0
+            for carpeta in carpetas_a_incluir:
+                folder_path = os.path.join(STUDENT_DIR, carpeta)
+                if os.path.exists(folder_path) and os.path.isdir(folder_path):
+                    for root, _, files in os.walk(folder_path):
+                        for f in files:
+                            full_p = os.path.join(root, f)
+                            rel_p = os.path.relpath(full_p, STUDENT_DIR)
+                            zip_file.write(full_p, arcname=rel_p)
+                            archivos_agregados += 1
+            if archivos_agregados == 0:
+                zip_file.writestr("mis_apuntes/ejemplo_notas.md", "# Mis Notas DevOps\n\nAquí puedes escribir tus apuntes y soluciones de ejercicios.")
+        zip_data = zip_buffer.getvalue()
+        filename = f"aportes_alumno_{time.strftime('%Y%m%d_%H%M%S')}.zip"
+        self.send_response(200)
+        self.send_header("Content-Type", "application/zip")
+        self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.send_header("Content-Length", str(len(zip_data)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(zip_data)
+        log_event("EXPORT", f"Paquete exportado exitosamente: {filename} ({len(zip_data)} bytes)")
 
     def handle_api_videos(self):
         videos_list = []
         if os.path.exists(VIDEOS_DIR):
             for root, _, files in os.walk(VIDEOS_DIR):
                 for f in sorted(files):
-                    if f.lower().endswith(('.mp4', '.mkv', '.webm', '.mov', '.avi')):
+                    if f.lower().endswith((".mp4", ".mkv", ".webm", ".mov", ".avi")):
                         abs_p = os.path.join(root, f)
-                        rel_p = os.path.relpath(abs_p, VIDEOS_DIR).replace('\\', '/')
+                        rel_p = os.path.relpath(abs_p, VIDEOS_DIR).replace("\\", "/")
                         size_mb = round(os.path.getsize(abs_p) / (1024 * 1024), 2)
-                        clean_title = os.path.splitext(f)[0].replace('_', ' ').replace('-', ' ').title()
+                        clean_title = os.path.splitext(f)[0].replace("_", " ").replace("-", " ").title()
                         videos_list.append({
                             "id": rel_p,
                             "titulo": clean_title,
@@ -374,48 +499,40 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Video no encontrado.")
             return
-
         file_size = os.path.getsize(video_path)
         range_header = self.headers.get("Range")
-
         content_type = "video/mp4"
         if filename.endswith(".mkv"):
             content_type = "video/x-matroska"
         elif filename.endswith(".webm"):
             content_type = "video/webm"
-
         if range_header:
             m = re.search(r"bytes=(\d+)-(\d*)", range_header)
             if m:
                 start = int(m.group(1))
                 end = int(m.group(2)) if m.group(2) else file_size - 1
                 length = end - start + 1
-
                 self.send_response(206)
                 self.send_header("Content-Type", content_type)
                 self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
                 self.send_header("Content-Length", str(length))
                 self.send_header("Accept-Ranges", "bytes")
                 self.end_headers()
-
                 with open(video_path, "rb") as f:
                     f.seek(start)
                     self.wfile.write(f.read(length))
                 return
-
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(file_size))
         self.send_header("Accept-Ranges", "bytes")
         self.end_headers()
-
         with open(video_path, "rb") as f:
             shutil.copyfileobj(f, self.wfile)
 
     def handle_api_file(self, rel_path):
         clean_rel = os.path.normpath(rel_path).lstrip("\\/.")
         target_path = os.path.join(STUDENT_DIR, clean_rel)
-
         if os.path.exists(target_path) and os.path.isfile(target_path):
             ext = os.path.splitext(target_path)[1].lower()
             mime_type = "text/plain; charset=utf-8"
@@ -429,7 +546,6 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                 mime_type = "image/jpeg"
             elif ext == ".json":
                 mime_type = "application/json; charset=utf-8"
-
             self.send_response(200)
             self.send_header("Content-Type", mime_type)
             self.send_header("Access-Control-Allow-Origin", "*")
@@ -440,12 +556,22 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.send_response(404)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": f"Archivo no encontrado: {rel_path}"}).encode('utf-8'))
+            self.wfile.write(json.dumps({"error": f"Archivo no encontrado: {rel_path}"}).encode("utf-8"))
+
+def open_browser_after_start():
+    time.sleep(1.0)
+    url = f"http://localhost:{PORT}/devops_hub.html"
+    try:
+        webbrowser.open(url)
+        log_event("BROWSER", f"Navegador abierto en {url}")
+    except Exception as e:
+        log_event("WARN", f"Aviso abriendo navegador: {e}")
 
 def run_server():
-    server_address = ('', PORT)
+    server_address = ("", PORT)
     httpd = ThreadedHTTPServer(server_address, StudentHubHandler)
     log_event("SERVER", f"Servidor Alumnos activo en http://localhost:{PORT}")
+    threading.Thread(target=open_browser_after_start, daemon=True).start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

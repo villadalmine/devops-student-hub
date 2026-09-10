@@ -38,10 +38,10 @@
       </div>
       <div>
         <h1 class="font-bold text-sm md:text-base tracking-tight text-white flex items-center gap-2">
-          <span>Cloud DevOps Student Hub</span>
-          <span class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono font-semibold">Multi-OS</span>
+          <span id="cursoTituloHeader">Cloud DevOps Student Hub</span>
+          <span id="cursoCodeBadge" class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono font-semibold">Multi-OS</span>
         </h1>
-        <p class="text-[11px] text-slate-400">Toolkit Profesional, Diagnóstico y Recursos para Windows, Linux & macOS</p>
+        <p id="cursoDescHeader" class="text-[11px] text-slate-400">Toolkit Profesional, Diagnóstico y Recursos para Windows, Linux & macOS</p>
       </div>
     </div>
 
@@ -75,6 +75,9 @@
     </button>
     <button onclick="cambiarTab('diagnostico')" id="tabBtn-diagnostico" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>🩺</span> <span>Diagnóstico del Sistema</span>
+    </button>
+    <button onclick="cambiarTab('aportes')" id="tabBtn-aportes" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>🎒</span> <span>Mis Aportes & Notas</span>
     </button>
     <button onclick="cambiarTab('telemetria')" id="tabBtn-telemetria" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>📡</span> <span>Logs & Telemetría</span>
@@ -358,6 +361,63 @@
       </div>
     </section>
 
+    <!-- ================================================================= -->
+    <!-- TAB 6: MIS APORTES, NOTAS & EXPORTACIÓN -->
+    <!-- ================================================================= -->
+    <section id="tab-aportes" class="hidden flex flex-col gap-6">
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🎒</span>
+            <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Mis Aportes, Laboratorios y Notas</h2>
+            <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full font-mono font-bold">Workspace Alumno</span>
+          </div>
+          <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+            Tus apuntes, resoluciones y scripts se guardan localmente en tu máquina. Cuando tengas material valioso, descárgalo con el botón <strong>Exportar Mis Aportes (.ZIP)</strong> y compártelo con el docente para que pueda incorporarlo al material oficial.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/api/exportar_aportes" download class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+            <span>📥</span> <span>Exportar Mis Aportes (.ZIP)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- EDITOR RÁPIDO DE NOTAS & LISTA DE APUNTES -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna 1: Editor rápido -->
+        <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+              <span>✍️</span> <span>Nuevo Apunte o Solución de Lab</span>
+            </h3>
+            <span class="text-[11px] text-slate-400 font-mono">Guarda en mis_apuntes/</span>
+          </div>
+          <input id="noteFilename" type="text" placeholder="ej: solucion_lab_docker.md" class="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+          <textarea id="noteContent" rows="12" placeholder="# Mis Notas de Clase&#10;&#10;Escribe tus comandos, reflexiones o soluciones aquí..." class="bg-slate-950 border border-slate-700 rounded-xl p-4 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition resize-y"></textarea>
+          <div class="flex items-center justify-between">
+            <span id="noteStatusMsg" class="text-xs text-slate-400"></span>
+            <button onclick="guardarMiApunte()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md shadow-cyan-500/20">
+              <span>💾</span> <span>Guardar Apunte</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Columna 2: Mis Archivos de Aportes -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+              <span>📁</span> <span>Mis Archivos Locales</span>
+            </h3>
+            <button onclick="cargarMisApuntes()" class="text-slate-400 hover:text-white text-xs transition" title="Refrescar">🔄</button>
+          </div>
+          <div id="misApuntesContainer" class="flex flex-col gap-2 overflow-y-auto max-h-96">
+            <p class="text-xs text-slate-400 italic">Cargando tus archivos...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL VISOR DE DOCUMENTOS MARKDOWN -->
@@ -529,6 +589,7 @@
 
     // INICIALIZACIÓN
     document.addEventListener("DOMContentLoaded", () => {
+      cargarCursoInfo();
       renderizarHerramientas();
       cargarVideos();
       cargarTelemetria();
@@ -746,7 +807,7 @@
 
     // GESTIÓN DE PESTAÑAS
     function cambiarTab(tabId) {
-      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'telemetria'];
+      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'telemetria'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
@@ -756,6 +817,103 @@
 
       if (tabId === 'diagnostico') {
         ejecutarDiagnostico();
+      } else if (tabId === 'aportes') {
+        cargarMisApuntes();
+      }
+    }
+
+    // CARGA DINÁMICA DE INFORMACIÓN DEL CURSO (/api/curso)
+    async function cargarCursoInfo() {
+      try {
+        const resp = await fetch('/api/curso');
+        const data = await resp.json();
+        if (data.ok && data.curso) {
+          const c = data.curso;
+          if (c.titulo) {
+            document.title = `${c.titulo} | Student Hub`;
+            const h = document.getElementById('cursoTituloHeader');
+            if (h) h.textContent = c.titulo;
+          }
+          if (c.codigo) {
+            const b = document.getElementById('cursoCodeBadge');
+            if (b) b.textContent = `${c.institucion || 'DevOps'} • #${c.codigo}`;
+          }
+          if (c.descripcion) {
+            const d = document.getElementById('cursoDescHeader');
+            if (d) d.textContent = c.descripcion;
+          }
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar curso.json dinámico:", e);
+      }
+    }
+
+    // GESTIÓN DE MIS APUNTES Y APORTES
+    async function cargarMisApuntes() {
+      const container = document.getElementById('misApuntesContainer');
+      if (!container) return;
+      try {
+        const resp = await fetch('/api/mis_apuntes');
+        const data = await resp.json();
+        if (data.ok && data.apuntes && data.apuntes.length > 0) {
+          container.innerHTML = data.apuntes.map(a => `
+            <div class="bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-2.5 flex items-center justify-between gap-2 transition">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-white truncate cursor-pointer hover:text-cyan-400" onclick="verDocumento('${a.rel_path}')">${a.archivo}</p>
+                <p class="text-[10px] text-slate-400 font-mono">${a.carpeta} • ${a.tamano_kb} KB</p>
+              </div>
+              <button onclick="verDocumento('${a.rel_path}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] px-2 py-1 rounded transition shrink-0">
+                Ver
+              </button>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `
+            <div class="text-center py-6 text-slate-500 text-xs">
+              <p class="text-xl mb-1">📝</p>
+              <p>Aún no has guardado notas.</p>
+              <p class="text-[10px] mt-1">Usa el editor de la izquierda para empezar.</p>
+            </div>
+          `;
+        }
+      } catch (e) {
+        container.innerHTML = `<div class="text-red-400 text-xs p-2">Error cargando apuntes: ${e.message}</div>`;
+      }
+    }
+
+    async function guardarMiApunte() {
+      const fnInput = document.getElementById('noteFilename');
+      const ctInput = document.getElementById('noteContent');
+      const statusMsg = document.getElementById('noteStatusMsg');
+
+      const nombre = fnInput.value.trim();
+      const contenido = ctInput.value;
+
+      if (!nombre) {
+        showToast("Por favor ingresa un nombre para el apunte", "error");
+        return;
+      }
+
+      statusMsg.textContent = "Guardando...";
+      try {
+        const resp = await fetch('/api/guardar_apunte', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre: nombre, contenido: contenido })
+        });
+        const data = await resp.json();
+        if (data.ok) {
+          showToast(data.mensaje || "Apunte guardado correctamente", "success");
+          statusMsg.textContent = "Guardado con éxito.";
+          setTimeout(() => { statusMsg.textContent = ""; }, 3000);
+          cargarMisApuntes();
+        } else {
+          showToast(data.error || "Error al guardar", "error");
+          statusMsg.textContent = "Error al guardar.";
+        }
+      } catch (e) {
+        showToast("Error de conexión al guardar: " + e.message, "error");
+        statusMsg.textContent = "Error de conexión.";
       }
     }
 
