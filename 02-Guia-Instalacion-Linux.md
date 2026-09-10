@@ -7,7 +7,7 @@
 
 ## 🚀 Método Rápido y Automatizado
 
-Hemos preparado un script inteligente que detecta tu distribución automáticamente e instala las 31 herramientas del curso clasificadas en 6 categorías:
+Hemos preparado un script inteligente que detecta tu distribución automáticamente e instala las 32 herramientas del curso clasificadas en 6 categorías:
 
 ```bash
 # 1. Dar permisos de ejecución al script
@@ -114,13 +114,24 @@ rm -rf aws awscliv2.zip
   sudo tar xzvfC hubble-linux-amd64.tar.gz /usr/local/bin
   rm hubble-linux-amd64.tar.gz
   ```
+* **Trivy (Aqua Security Scanner):**
+  ```bash
+  sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+  wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+  sudo apt-get update -y && sudo apt-get install -y trivy
+  ```
 
 ---
 
-### 5. 🐍 Categoría LANG (Lenguajes y Runtimes)
+### 5. 🐍 Categoría LANG (Lenguajes y Runtimes: Go, Python & Rust)
 
 ```bash
-sudo apt install -y golang-go python3 python3-pip python3-venv nodejs npm
+# Instalación de Go, Python, Node.js y Rust vía apt:
+sudo apt install -y golang-go python3 python3-pip python3-venv nodejs npm rustc cargo
+
+# O bien instalar la última versión oficial de Rust con rustup:
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ```
 
 ---
@@ -148,3 +159,18 @@ Ejecuta en cualquier momento para comprobar el estado de tus herramientas:
 ```bash
 ./scripts/verificar-tools.sh
 ```
+
+---
+
+## 🐧 Uso de Linux: Linux Nativo vs. WSL 2 en Windows
+
+Si ejecutas tu entorno Linux a través de **WSL 2** (Windows Subsystem for Linux en Windows 10/11):
+1. **Systemd Habilitado:** Para que Docker Engine, containerd y otros servicios arranquen automáticamente como en un servidor Linux real, asegúrate de configurar `/etc/wsl.conf` con:
+   ```ini
+   [boot]
+   systemd=true
+   ```
+   Luego ejecuta `wsl --shutdown` desde Windows PowerShell y vuelve a abrir tu terminal Ubuntu.
+2. **Rendimiento de Disco:** Almacena siempre tus proyectos y repositorios dentro del sistema de archivos nativo de Linux (ej. `~/proyectos` o `/home/usuario/clase`), **evitando** trabajar sobre montajes de Windows como `/mnt/c/Users/...`, ya que el rendimiento de I/O en ext4 nativo es hasta 10 veces más rápido.
+3. **Docker Engine vs. Docker Desktop:** En WSL 2 puedes instalar Docker Engine puro (`sudo apt install docker-ce` o vía script oficial) de manera 100% gratuita y sin restricciones de licencias corporativas, consumiendo menos de 500 MB de RAM frente a los más de 2 GB de Docker Desktop.
+

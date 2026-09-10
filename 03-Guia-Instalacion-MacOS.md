@@ -2,7 +2,7 @@
 
 > **Arquitecturas Soportadas:** Apple Silicon (M1, M2, M3, M4) e Intel Mac  
 > **Gestor Principal:** Homebrew (`brew`)  
-> **Objetivo:** Configurar una estación de trabajo completa para Cloud DevOps con las 31 herramientas del curso.
+> **Objetivo:** Configurar una estación de trabajo completa para Cloud DevOps con las 32 herramientas del curso.
 
 ---
 
@@ -76,15 +76,15 @@ brew install derailed/k9s/k9s
 ### 4. 🌐 Categoría EBPF (Redes y Observabilidad en K8s)
 
 ```bash
-brew install cilium-cli hubble nerdctl
+brew install cilium-cli hubble nerdctl trivy
 ```
 
 ---
 
-### 5. 🐍 Categoría LANG (Lenguajes y Runtimes)
+### 5. 🐍 Categoría LANG (Lenguajes y Runtimes: Go, Python & Rust)
 
 ```bash
-brew install go python@3.12 node
+brew install go python@3.12 node rust
 ```
 
 ---

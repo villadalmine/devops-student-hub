@@ -67,6 +67,9 @@
     <button onclick="cambiarTab('material')" id="tabBtn-material" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>📚</span> <span>Guías de Instalación & Apuntes</span>
     </button>
+    <button onclick="cambiarTab('glosario')" id="tabBtn-glosario" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>🌐</span> <span>Glosario & Labs</span>
+    </button>
     <button onclick="cambiarTab('videos')" id="tabBtn-videos" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>🎥</span> <span>Videos Locales</span>
     </button>
@@ -92,7 +95,7 @@
           <div class="flex items-center gap-2">
             <span class="text-xl">🛠️</span>
             <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Ecosistema & Toolkit Cloud DevOps</h2>
-            <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono font-bold">31 Herramientas</span>
+            <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full font-mono font-bold">33 Herramientas</span>
           </div>
           <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
             Instalador automatizado y modular para tu estación de trabajo. Elige tu sistema operativo abajo para ver las instrucciones y comandos adaptados automáticamente:
@@ -114,19 +117,25 @@
       </div>
 
       <!-- BANNER DE EJECUCIÓN DEL SCRIPT POR OS -->
-      <div id="scriptExecuteBanner" class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div id="scriptExecuteBanner" class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <span class="text-2xl" id="osBannerIcon">⚡</span>
           <div>
-            <h3 class="text-xs md:text-sm font-bold text-white" id="osBannerTitle">Instalación Todo en Uno para Windows (PowerShell)</h3>
+            <h3 class="text-xs md:text-sm font-bold text-white" id="osBannerTitle">Instalación Automatizada para Windows (PowerShell)</h3>
             <p class="text-xs text-slate-400" id="osBannerSub">Abre PowerShell como Administrador y ejecuta:</p>
           </div>
         </div>
-        <div class="flex items-center gap-2 w-full md:w-auto">
-          <code id="osBannerCmd" class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-lg text-xs font-mono text-cyan-300 select-all flex-1 md:flex-none">
+        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <code id="osBannerCmd" class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-lg text-xs font-mono text-cyan-300 select-all flex-1 lg:flex-none">
             powershell -ExecutionPolicy Bypass -File .\scripts\instalar-tools-devops.ps1 -SoloBase
           </code>
-          <button onclick="copiarComandoBanner()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0" title="Copiar comando">
+          <button onclick="ejecutarBannerEnTerminal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-emerald-950/40 shrink-0" title="Abre terminal con elevación de Administrador (UAC)">
+            <span>🛡️</span> <span>Instalar (Admin)</span>
+          </button>
+          <button onclick="ejecutarBannerEnTerminal(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-slate-700 shrink-0" title="Abre terminal con tu usuario estándar">
+            <span>👤</span> <span>Normal</span>
+          </button>
+          <button onclick="copiarComandoBanner()" class="bg-cyan-700/40 hover:bg-cyan-600 border border-cyan-500/50 text-cyan-200 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0" title="Copiar comando">
             <span>📋</span> <span>Copiar</span>
           </button>
         </div>
@@ -135,7 +144,7 @@
       <!-- FILTROS POR CATEGORÍA -->
       <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold" id="catPills">
         <button onclick="filtrarCategoriaSoftware('ALL')" id="softpill-ALL" class="soft-pill px-3.5 py-1.5 rounded-lg border border-cyan-500 bg-cyan-600/20 text-cyan-200 transition">
-          Todas (31)
+          Todas (33)
         </button>
         <button onclick="filtrarCategoriaSoftware('BASE')" id="softpill-BASE" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
           ⚙️ Core Esencial (12)
@@ -147,10 +156,10 @@
           🖥️ Herramientas TUI (5)
         </button>
         <button onclick="filtrarCategoriaSoftware('EBPF')" id="softpill-EBPF" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
-          🌐 Redes & eBPF (3)
+          🌐 Redes & Seguridad (4)
         </button>
         <button onclick="filtrarCategoriaSoftware('LANG')" id="softpill-LANG" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
-          🐍 Lenguajes (2)
+          🐍 Lenguajes (3)
         </button>
         <button onclick="filtrarCategoriaSoftware('AI')" id="softpill-AI" class="soft-pill px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white transition">
           🤖 Agentes IA (3)
@@ -219,6 +228,50 @@
           </button>
         </div>
       </div>
+
+      <!-- Libro Ilustrado Kubernetes CNCF -->
+      <div class="bg-gradient-to-r from-slate-900 via-cyan-950/20 to-slate-900 border border-cyan-500/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🐳</span>
+            <h3 class="font-bold text-sm text-white">The Illustrated Children's Guide to Kubernetes (CNCF)</h3>
+            <span class="text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono font-bold">Oficial CNCF</span>
+          </div>
+          <p class="text-xs text-slate-400">El célebre cuento ilustrado de Phippy la Jirafa y el Capitán Kube explicando Pods, ReplicaSets, Deployments y Services de manera visual e inolvidable.</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <a href="material/The-Illustrated-Childrens-Guide-to-Kubernetes.pdf" target="_blank" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs px-3.5 py-2 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
+            <span>📖</span> <span>Ver PDF Local (15 MB)</span>
+          </a>
+          <a href="https://www.cncf.io/wp-content/uploads/2020/08/The-Illustrated-Childrens-Guide-to-Kubernetes.pdf" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs px-3.5 py-2 rounded-lg transition font-medium flex items-center gap-1.5">
+            <span>🌐</span> <span>CNCF Online</span> <span>↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB: GLOSARIO & LABS INTERACTIVOS -->
+    <!-- ================================================================= -->
+    <section id="tab-glosario" class="hidden flex flex-col gap-4">
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🌐</span>
+            <h2 class="text-base font-bold text-white">Glosario DevOps, Conceptos de Clase y Labs Interactivos</h2>
+            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono font-bold">16 Conceptos • 16 Labs & Recursos</span>
+          </div>
+          <p class="text-xs text-slate-400">Simuladores de terminal en navegador (iximiuz Labs, Killercoda, SadServers), blogs de arquitectura y definiciones con botón de copiado rápido para chat.</p>
+        </div>
+        <a href="glosario_recursos_devops.html" target="_blank" class="shrink-0 flex items-center gap-1.5 bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/40 hover:border-indigo-400 text-indigo-200 hover:text-white px-3.5 py-2 rounded-lg text-xs font-semibold transition shadow-md">
+          <span>↗</span>
+          <span>Abrir en Pestaña Completa</span>
+        </a>
+      </div>
+
+      <div class="w-full h-[78vh] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl bg-slate-950">
+        <iframe src="glosario_recursos_devops.html" class="w-full h-full border-0" title="Glosario y Recursos DevOps"></iframe>
+      </div>
     </section>
 
     <!-- ================================================================= -->
@@ -250,18 +303,26 @@
           <h2 class="text-base font-bold text-white flex items-center gap-2">
             <span>🩺</span> Diagnóstico de Herramientas del Sistema
           </h2>
-          <p class="text-xs text-slate-400">Escaneo automático de las 31 herramientas en tu PATH local</p>
+          <p class="text-xs text-slate-400">Escaneo automático de las 33 herramientas en tu PATH local</p>
         </div>
-        <button onclick="ejecutarDiagnostico()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center gap-2">
-          <span>🔄</span> <span>Re-escanear Sistema</span>
-        </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="instalarFaltantesDiagnostico(true)" id="btnInstalarFaltantes" class="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-amber-950/40">
+            <span>⚡</span> <span id="lblInstalarFaltantes">Instalar Faltantes (Admin)</span>
+          </button>
+          <button onclick="ejecutarBannerEnTerminal(true)" class="bg-emerald-700/50 hover:bg-emerald-600 border border-emerald-500/50 text-emerald-200 hover:text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+            <span>📦</span> <span>Instalar Base (Admin)</span>
+          </button>
+          <button onclick="ejecutarDiagnostico()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5">
+            <span>🔄</span> <span>Re-escanear</span>
+          </button>
+        </div>
       </div>
 
       <!-- Barra de Progreso Global -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-3">
         <div class="flex items-center justify-between text-xs font-semibold">
           <span class="text-slate-300">Estado de Cobertura del Toolkit:</span>
-          <span id="diagPercentText" class="text-cyan-400 font-mono">0% (0/31)</span>
+          <span id="diagPercentText" class="text-cyan-400 font-mono">0% (0/33)</span>
         </div>
         <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
           <div id="diagProgressBar" class="bg-gradient-to-r from-indigo-500 to-cyan-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -313,6 +374,73 @@
       </div>
     </div>
   </div>
+
+  <!-- MODAL DE INSTALACIÓN EN TERMINAL (ADMIN O NORMAL) -->
+  <div id="installTerminalModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">⚡</span>
+          <h3 id="modalToolTitle" class="text-sm font-bold text-white">Instalar Herramienta en Terminal</h3>
+        </div>
+        <button onclick="cerrarModalInstalacion()" class="text-slate-400 hover:text-white px-2 py-1 text-sm rounded-lg hover:bg-slate-800 transition">
+          ✕
+        </button>
+      </div>
+      
+      <div class="p-6 space-y-5">
+        <div>
+          <label class="text-xs font-semibold text-slate-400 block mb-1.5">Comando que se ejecutará en la terminal:</label>
+          <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3">
+            <code id="modalToolCmd" class="text-xs font-mono text-emerald-400 break-all select-all font-semibold">winget install ...</code>
+            <button onclick="copiarComandoModal()" class="text-slate-400 hover:text-cyan-400 p-1.5 rounded transition shrink-0" title="Copiar al portapapeles">
+              📋
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-xs font-semibold text-slate-300">Elige el modo de ejecución para la terminal:</p>
+          
+          <!-- Opción Administrador -->
+          <button onclick="confirmarEjecucionTerminal(true)" class="w-full text-left bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/40 hover:border-emerald-500 rounded-xl p-3.5 transition group flex items-start gap-3 shadow-sm">
+            <span class="text-2xl mt-0.5">🛡️</span>
+            <div>
+              <div class="text-xs font-bold text-emerald-300 group-hover:text-white flex items-center gap-2">
+                <span>Abrir Terminal como Administrador</span>
+                <span class="text-[10px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded font-mono font-bold">Recomendado</span>
+              </div>
+              <p class="text-[11px] text-slate-400 group-hover:text-emerald-100 mt-1 leading-snug">
+                Abre PowerShell con privilegios elevados (UAC). Necesario para Winget, Docker, WSL2 o registrar variables de entorno globales.
+              </p>
+            </div>
+          </button>
+
+          <!-- Opción Usuario Normal -->
+          <button onclick="confirmarEjecucionTerminal(false)" class="w-full text-left bg-slate-800/80 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-xl p-3.5 transition group flex items-start gap-3">
+            <span class="text-2xl mt-0.5">👤</span>
+            <div>
+              <div class="text-xs font-bold text-slate-200 group-hover:text-white">
+                Abrir Terminal como Usuario Estándar
+              </div>
+              <p class="text-[11px] text-slate-400 group-hover:text-slate-300 mt-1 leading-snug">
+                Abre PowerShell con tu usuario habitual sin solicitar elevación de permisos de Administrador.
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+      
+      <div class="px-6 py-3.5 bg-slate-950/60 border-t border-slate-800 flex justify-end">
+        <button onclick="cerrarModalInstalacion()" class="text-xs text-slate-400 hover:text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICACIONES -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
     // DATOS DE LAS 31 HERRAMIENTAS POR OS
@@ -369,26 +497,30 @@
       { id: 23, cat: "TUI", name: "k9s (Monitor K8s)", cmd: "k9s", icon: "🐕", tipo: "Optativo", desc: "Dashboard interactivo para clusters K8s.",
         win: "winget install Derailed.k9s", linux: "brew install derailed/k9s/k9s", mac: "brew install derailed/k9s/k9s" },
 
-      // EBPF (3)
+      // EBPF & Seguridad (4)
       { id: 24, cat: "EBPF", name: "nerdctl (containerd)", cmd: "nerdctl", icon: "📦", tipo: "Optativo", desc: "CLI compatible con Docker para containerd.",
         win: "winget install containerd.nerdctl", linux: "brew install nerdctl", mac: "brew install nerdctl" },
       { id: 25, cat: "EBPF", name: "Cilium CLI", cmd: "cilium", icon: "🐝", tipo: "Optativo", desc: "Redes, observabilidad y eBPF en K8s.",
         win: "winget install Cilium.CiliumCLI", linux: "curl -L https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz | sudo tar xz -C /usr/local/bin", mac: "brew install cilium-cli" },
       { id: 26, cat: "EBPF", name: "Hubble CLI", cmd: "hubble", icon: "🔭", tipo: "Optativo", desc: "Inspección de flujos de red con eBPF.",
         win: "winget install Cilium.Hubble", linux: "curl -L https://github.com/cilium/hubble/releases/latest/download/hubble-linux-amd64.tar.gz | sudo tar xz -C /usr/local/bin", mac: "brew install hubble" },
+      { id: 27, cat: "EBPF", name: "Trivy (Security Scanner)", cmd: "trivy", icon: "🛡️", tipo: "Optativo", desc: "Escáner de seguridad y CVEs para contenedores e IaC.",
+        win: "winget install AquaSecurity.Trivy", linux: "sudo apt install -y trivy", mac: "brew install trivy" },
 
-      // LANG (2)
-      { id: 27, cat: "LANG", name: "Go (Golang)", cmd: "go", icon: "🐹", tipo: "Optativo", desc: "Runtime para herramientas cloud nativas.",
+      // LANG (3)
+      { id: 28, cat: "LANG", name: "Go (Golang)", cmd: "go", icon: "🐹", tipo: "Optativo", desc: "Runtime para herramientas cloud nativas.",
         win: "winget install GoLang.Go", linux: "sudo apt install -y golang-go", mac: "brew install go" },
-      { id: 28, cat: "LANG", name: "Python 3", cmd: "python", icon: "🐍", tipo: "Optativo", desc: "Lenguaje de scripting y automatización.",
+      { id: 29, cat: "LANG", name: "Python 3", cmd: "python", icon: "🐍", tipo: "Optativo", desc: "Lenguaje de scripting y automatización.",
         win: "winget install Python.Python.3.12", linux: "sudo apt install -y python3 python3-pip", mac: "brew install python@3.12" },
+      { id: 30, cat: "LANG", name: "Rust (Cargo)", cmd: "rustc", icon: "🦀", tipo: "Optativo", desc: "Lenguaje de sistemas para herramientas Cloud y CLI de alto rendimiento.",
+        win: "winget install Rustlang.Rustup", linux: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y", mac: "brew install rust" },
 
       // AI (3)
-      { id: 29, cat: "AI", name: "Claude Code CLI", cmd: "claude", icon: "🟣", tipo: "Optativo", desc: "Agente autónomo de Anthropic en terminal.",
+      { id: 31, cat: "AI", name: "Claude Code CLI", cmd: "claude", icon: "🟣", tipo: "Optativo", desc: "Agente autónomo de Anthropic en terminal.",
         win: "npm install -g @anthropic-ai/claude-code", linux: "sudo npm install -g @anthropic-ai/claude-code", mac: "npm install -g @anthropic-ai/claude-code" },
-      { id: 30, cat: "AI", name: "Shell-GPT (sgpt)", cmd: "sgpt", icon: "🧠", tipo: "Optativo", desc: "Consultas de IA en tu línea de comandos.",
+      { id: 32, cat: "AI", name: "Shell-GPT (sgpt)", cmd: "sgpt", icon: "🧠", tipo: "Optativo", desc: "Consultas de IA en tu línea de comandos.",
         win: "pip install shell-gpt", linux: "pip install --user shell-gpt", mac: "pip3 install --user shell-gpt" },
-      { id: 31, cat: "AI", name: "OMP (Oh My Pi)", cmd: "omp", icon: "🤖", tipo: "Optativo", desc: "Agente de IA para terminal linux/windows.",
+      { id: 33, cat: "AI", name: "OMP (Oh My Pi)", cmd: "omp", icon: "🤖", tipo: "Optativo", desc: "Agente de IA para terminal linux/windows.",
         win: "irm omp.sh/install.ps1 | iex", linux: "curl -fsSL https://omp.sh | bash", mac: "curl -fsSL https://omp.sh | bash" }
     ];
 
@@ -455,7 +587,108 @@
       renderizarHerramientas();
     }
 
-    // RENDERIZADO DE LAS 31 TARJETAS
+    // VARIABLES Y CONTROLADORES DE TERMINAL
+    let currentModalCmd = "";
+    let currentModalTitle = "";
+    let ultimasHerramientasFaltantes = [];
+
+    function abrirModalInstalacion(nombre, comando) {
+      currentModalTitle = nombre;
+      currentModalCmd = comando;
+      const titleEl = document.getElementById('modalToolTitle');
+      const cmdEl = document.getElementById('modalToolCmd');
+      if (titleEl) titleEl.textContent = `Instalar: ${nombre}`;
+      if (cmdEl) cmdEl.textContent = comando;
+      const modal = document.getElementById('installTerminalModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function cerrarModalInstalacion() {
+      const modal = document.getElementById('installTerminalModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copiarComandoModal() {
+      if (currentModalCmd) {
+        navigator.clipboard.writeText(currentModalCmd);
+        showToast("Comando copiado al portapapeles", "info");
+      }
+    }
+
+    async function confirmarEjecucionTerminal(asAdmin) {
+      cerrarModalInstalacion();
+      await ejecutarComandoDirecto(currentModalCmd, asAdmin, currentModalTitle);
+    }
+
+    async function ejecutarComandoDirecto(cmd, asAdmin = true, titulo = "") {
+      const modoTexto = asAdmin ? "Administrador (UAC)" : "Usuario estándar";
+      showToast(`Abriendo terminal en modo ${modoTexto}...`);
+      try {
+        const resp = await fetch('/api/ejecutar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            command: cmd,
+            admin: asAdmin
+          })
+        });
+        const data = await resp.json();
+        if (data.ok) {
+          showToast(`Terminal iniciada: ${titulo || cmd.substring(0, 30)}`, "success");
+        } else {
+          showToast(`Error: ${data.error || 'No se pudo abrir la terminal'}`, "error");
+        }
+      } catch (err) {
+        showToast(`Error de conexión con servidor: ${err.message}`, "error");
+      }
+    }
+
+    async function ejecutarBannerEnTerminal(asAdmin = true) {
+      const cmd = document.getElementById('osBannerCmd').textContent.trim();
+      const titulo = document.getElementById('osBannerTitle').textContent.trim();
+      await ejecutarComandoDirecto(cmd, asAdmin, titulo);
+    }
+
+    async function instalarFaltantesDiagnostico(asAdmin = true) {
+      if (!ultimasHerramientasFaltantes || ultimasHerramientasFaltantes.length === 0) {
+        showToast("¡Felicitaciones! Todas las herramientas ya están instaladas.", "success");
+        return;
+      }
+
+      // Agrupar comandos de instalación para todas las herramientas faltantes
+      const comandos = ultimasHerramientasFaltantes.map(t => {
+        const info = TOOLS.find(x => x.cmd === t.cmd || x.name === t.name || x.id === t.id);
+        return info ? (info[currentOS] || info.win) : `winget install ${t.cmd}`;
+      });
+
+      // En PowerShell / Bash los encadenamos
+      const separator = currentOS === 'win' ? ' ; ' : ' && ';
+      const scriptUnificado = comandos.join(separator);
+      const total = ultimasHerramientasFaltantes.length;
+      await ejecutarComandoDirecto(scriptUnificado, asAdmin, `Instalando ${total} herramientas faltantes`);
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-red-600/95 text-white border-red-400' :
+                 type === 'success' ? 'bg-emerald-600/95 text-white border-emerald-400' :
+                 'bg-slate-800/95 text-slate-100 border-slate-600';
+      toast.className = `${bg} border px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 pointer-events-auto transition-all transform duration-300 translate-y-2 opacity-0 backdrop-blur-md z-50`;
+      const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : '⚡';
+      toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4500);
+    }
+
+    // RENDERIZADO DE LAS 33 TARJETAS DE SOFTWARE
     function renderizarHerramientas() {
       const grid = document.getElementById('toolsGrid');
       if (!grid) return;
@@ -473,24 +706,32 @@
           <div class="bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-xl p-4 flex flex-col justify-between gap-3 transition shadow-sm">
             <div>
               <div class="flex items-start justify-between gap-2 mb-2">
-                <div class="flex items-center gap-2">
-                  <span class="text-xl">${t.icon}</span>
-                  <div>
-                    <h4 class="text-xs font-bold text-white tracking-tight">${t.name}</h4>
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-xl shrink-0">${t.icon}</span>
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-white tracking-tight truncate">${t.name}</h4>
                     <span class="text-[10px] font-mono text-slate-400">cmd: ${t.cmd}</span>
                   </div>
                 </div>
-                <span class="text-[9px] border px-2 py-0.5 rounded-full font-semibold ${badgeColor}">
+                <span class="text-[9px] border px-2 py-0.5 rounded-full font-semibold shrink-0 ${badgeColor}">
                   ${t.tipo}
                 </span>
               </div>
               <p class="text-[11px] text-slate-300 leading-snug">${t.desc}</p>
             </div>
 
-            <div class="pt-2 border-t border-slate-800/80">
-              <div onclick="copiarComando('${installCmd.replace(/'/g, "\\'")}')" class="cursor-pointer group bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-lg flex items-center justify-between gap-2 transition" title="Clic para copiar comando">
-                <code class="text-[10px] font-mono text-cyan-300 truncate">${installCmd}</code>
-                <span class="text-xs text-slate-500 group-hover:text-cyan-400 shrink-0">📋</span>
+            <div class="pt-2 border-t border-slate-800/80 space-y-2">
+              <div class="bg-slate-950 border border-slate-800/90 px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-2">
+                <code class="text-[10px] font-mono text-cyan-300 truncate select-all">${installCmd}</code>
+                <button onclick="copiarComando('${installCmd.replace(/'/g, "\\'")}')" class="text-slate-500 hover:text-cyan-400 text-xs shrink-0 p-1" title="Copiar comando">📋</button>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="abrirModalInstalacion('${t.name.replace(/'/g, "\\'")}', '${installCmd.replace(/'/g, "\\'")}')" class="flex-1 bg-emerald-600/25 hover:bg-emerald-600 border border-emerald-500/40 hover:border-emerald-500 text-emerald-300 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm" title="Abrir terminal para instalar (con opción Admin o Normal)">
+                  <span>⚡</span> <span>Instalar</span>
+                </button>
+                <button onclick="ejecutarComandoDirecto('${installCmd.replace(/'/g, "\\'")}', true, '${t.name.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-emerald-700/50 border border-slate-700 hover:border-emerald-500 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 shrink-0" title="Abrir terminal directamente como Administrador">
+                  <span>🛡️</span> <span>Admin</span>
+                </button>
               </div>
             </div>
           </div>
@@ -500,12 +741,12 @@
 
     function copiarComando(cmd) {
       navigator.clipboard.writeText(cmd);
-      alert("Comando copiado al portapapeles:\n" + cmd);
+      showToast("Comando copiado al portapapeles:\n" + cmd, "info");
     }
 
     // GESTIÓN DE PESTAÑAS
     function cambiarTab(tabId) {
-      const tabs = ['software', 'material', 'videos', 'diagnostico', 'telemetria'];
+      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'telemetria'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
@@ -523,6 +764,8 @@
       const container = document.getElementById('diagResultsContainer');
       const bar = document.getElementById('diagProgressBar');
       const text = document.getElementById('diagPercentText');
+      const btnFaltantes = document.getElementById('btnInstalarFaltantes');
+      const lblFaltantes = document.getElementById('lblInstalarFaltantes');
       if (!container) return;
 
       container.innerHTML = '<div class="col-span-full text-center py-8 text-cyan-400 text-xs animate-pulse">Escaneando herramientas instaladas en tu sistema...</div>';
@@ -536,22 +779,45 @@
           bar.style.width = `${percent}%`;
           text.textContent = `${percent}% (${data.installed_count}/${data.total_tools} instaladas)`;
 
+          ultimasHerramientasFaltantes = data.tools.filter(t => !t.installed);
+
+          if (btnFaltantes && lblFaltantes) {
+            if (ultimasHerramientasFaltantes.length > 0) {
+              btnFaltantes.classList.remove('hidden');
+              lblFaltantes.textContent = `Instalar Faltantes (${ultimasHerramientasFaltantes.length}) [Admin]`;
+            } else {
+              lblFaltantes.textContent = `Todo Instalado (100%)`;
+            }
+          }
+
           container.innerHTML = data.tools.map(t => {
-            const statusBadge = t.installed 
-              ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><span>✓</span> <span>Instalado</span></span>`
-              : `<span class="text-[10px] bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><span>✗</span> <span>Falta</span></span>`;
+            const toolInfo = TOOLS.find(x => x.cmd === t.cmd || x.name === t.name || x.id === t.id);
+            const installCmd = toolInfo ? (toolInfo[currentOS] || toolInfo.win) : `winget install ${t.cmd}`;
+
+            const actionButtons = t.installed 
+              ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold flex items-center gap-1 shrink-0">
+                   <span>✓</span> <span>Instalado</span>
+                 </span>`
+              : `<div class="flex items-center gap-1.5 shrink-0">
+                   <button onclick="abrirModalInstalacion('${t.name.replace(/'/g, "\\'")}', '${installCmd.replace(/'/g, "\\'")}')" class="bg-amber-500/20 hover:bg-amber-500 border border-amber-500/40 hover:border-amber-400 text-amber-300 hover:text-slate-950 text-xs font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 shadow-md shadow-amber-950/30" title="Instalar en terminal">
+                     <span>⚡</span> <span>Instalar</span>
+                   </button>
+                   <span class="text-[10px] bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                     <span>✗</span> <span>Falta</span>
+                   </span>
+                 </div>`;
 
             return `
-              <div class="bg-slate-900 border ${t.installed ? 'border-emerald-500/30' : 'border-slate-800'} rounded-xl p-3 flex items-center justify-between gap-3">
+              <div class="bg-slate-900 border ${t.installed ? 'border-slate-800 hover:border-slate-700' : 'border-amber-500/40 bg-amber-950/10'} rounded-xl p-3 flex items-center justify-between gap-3 transition">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="text-lg">${t.installed ? '✅' : '⚪'}</span>
+                  <span class="text-lg shrink-0">${t.installed ? '✅' : '⚪'}</span>
                   <div class="min-w-0">
                     <h4 class="text-xs font-bold text-white truncate">${t.name}</h4>
                     <span class="text-[10px] font-mono text-slate-400">${t.cmd} • [${t.cat}]</span>
                   </div>
                 </div>
                 <div class="shrink-0">
-                  ${statusBadge}
+                  ${actionButtons}
                 </div>
               </div>
             `;

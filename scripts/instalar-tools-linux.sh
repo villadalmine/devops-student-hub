@@ -276,18 +276,45 @@ install_ebpf() {
         rm -f "hubble-linux-${H_ARCH}.tar.gz"
     fi
 
+    if ! command -v trivy &>/dev/null; then
+        print_info "Instalando Trivy (Aqua Security Scanner)..."
+        if [ "$PM" == "apt" ]; then
+            $SUDO apt-get install -y wget apt-transport-https gnupg lsb-release
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | $SUDO tee /usr/share/keyrings/trivy.gpg > /dev/null
+            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | $SUDO tee /etc/apt/sources.list.d/trivy.list
+            $SUDO apt-get update -y && $SUDO apt-get install -y trivy
+        elif [ "$PM" == "dnf" ]; then
+            cat << 'EOF' | $SUDO tee /etc/yum.repos.d/trivy.repo
+[trivy]
+name=Trivy repository
+baseurl=https://aquasecurity.github.io/trivy-repo/rpm/releases/$basearch/
+gpgcheck=0
+enabled=1
+EOF
+            $SUDO dnf install -y trivy
+        elif [ "$PM" == "pacman" ]; then
+            $SUDO pacman -S --noconfirm trivy
+        fi
+    fi
+
     print_success "Categoría EBPF instalada exitosamente."
 }
 
 install_lang() {
-    print_header "INSTALANDO LENGUAJES Y RUNTIMES (GO & PYTHON)"
+    print_header "INSTALANDO LENGUAJES Y RUNTIMES (GO, PYTHON & RUST)"
 
     if [ "$PM" == "apt" ]; then
-        $SUDO apt-get install -y golang-go python3 python3-pip python3-venv nodejs npm
+        $SUDO apt-get install -y golang-go python3 python3-pip python3-venv nodejs npm rustc cargo || true
     elif [ "$PM" == "dnf" ]; then
-        $SUDO dnf install -y golang python3 python3-pip nodejs npm
+        $SUDO dnf install -y golang python3 python3-pip nodejs npm rust cargo || true
     elif [ "$PM" == "pacman" ]; then
-        $SUDO pacman -S --noconfirm go python python-pip nodejs npm
+        $SUDO pacman -S --noconfirm go python python-pip nodejs npm rust || true
+    fi
+
+    if ! command -v rustc &>/dev/null; then
+        print_info "Instalando Rust via rustup oficial..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || true
+        [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
     fi
 
     print_success "Categoría LANG instalada exitosamente."

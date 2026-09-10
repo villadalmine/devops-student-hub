@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glosario DevOps, Labs Interactivos & Links de Referencia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+      color: #ffffff;
+      border-color: #06b6d4;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white">
+
+  <!-- CABECERA -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-4 lg:px-8 py-4 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-cyan-500/20">
+          🌐
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg tracking-tight text-white flex items-center gap-2">
+            <span>Glosario DevOps & Directorio de Labs</span>
+            <span class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono font-semibold">Live Resources</span>
+          </h1>
+          <p class="text-xs text-slate-400">Playgrounds interactivos, blogs visuales, Kernel internals y definiciones para el aula</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <a href="devops_hub.html" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-medium transition shadow-sm">
+          <span>←</span> <span>Volver al Hub Alumnos</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+
+    <!-- HERO & BUSCADOR REACTIVO -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col gap-5">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+            <span>📚 Recursos Seleccionados & Glosario de Conceptos</span>
+          </h2>
+          <p class="text-xs text-slate-300 mt-1">
+            Utiliza el buscador en tiempo real o los filtros para encontrar rápidamente links de laboratorios, artículos con gráficos y definiciones listas para copiar y pegar en el chat de clase.
+          </p>
+        </div>
+        
+        <!-- STATS -->
+        <div class="flex items-center gap-3 shrink-0 text-xs">
+          <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl text-center">
+            <span class="font-bold text-cyan-400 font-mono block text-sm" id="statLabsCount">8</span>
+            <span class="text-[10px] text-slate-400">Labs Online</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl text-center">
+            <span class="font-bold text-indigo-400 font-mono block text-sm" id="statConceptsCount">16</span>
+            <span class="text-[10px] text-slate-400">Conceptos SRE</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl text-center">
+            <span class="font-bold text-emerald-400 font-mono block text-sm" id="statBlogsCount">8</span>
+            <span class="text-[10px] text-slate-400">Blogs & Guías</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT DE BÚSQUEDA Y BOTONES DE FILTRO -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div class="relative flex-1">
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">🔍</span>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Buscar por concepto o enlace (ej: iximiuz, cgroups, DORA, Toil, overlayfs, killercoda)..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+            oninput="filtrarRecursos()"
+          />
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <button onclick="setFiltro('TODOS')" id="btnFilter-TODOS" class="filter-btn active px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold transition shrink-0">Todos</button>
+          <button onclick="setFiltro('LAB')" id="btnFilter-LAB" class="filter-btn px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 text-xs font-semibold transition shrink-0">🧪 Labs Interactivos</button>
+          <button onclick="setFiltro('BLOG')" id="btnFilter-BLOG" class="filter-btn px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 text-xs font-semibold transition shrink-0">📊 Blogs & Fanzines</button>
+          <button onclick="setFiltro('GLOSARIO')" id="btnFilter-GLOSARIO" class="filter-btn px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 text-xs font-semibold transition shrink-0">📖 Glosario de Conceptos</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: LABORATORIOS INTERACTIVOS EN LA WEB -->
+    <section id="sec-labs" class="flex flex-col gap-3">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>🧪</span> <span>Plataformas de Laboratorios Interactivos (En el Navegador)</span>
+        </h3>
+        <span class="text-[11px] text-slate-400">Sin instalar nada en la máquina local</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gridLabs">
+        <!-- RENDER DINÁMICO -->
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: BLOGS VISUALES, INFOGRAFÍAS Y REFERENTES -->
+    <section id="sec-blogs" class="flex flex-col gap-3 mt-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>📊</span> <span>Blogs Visuales, Arquitectura y Fanzines de Sistemas</span>
+        </h3>
+        <span class="text-[11px] text-slate-400">Diagramas e ilustraciones explicativas</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gridBlogs">
+        <!-- RENDER DINÁMICO -->
+      </div>
+    </section>
+
+    <!-- SECCIÓN 3: GLOSARIO DE CONCEPTOS DE LA CLASE 1 -->
+    <section id="sec-glosario" class="flex flex-col gap-3 mt-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>📖</span> <span>Glosario Técnico de Clase 1 (Definiciones Listas para Compartir)</span>
+        </h3>
+        <span class="text-[11px] text-slate-400">Haz clic en 📋 para copiar al chat del alumno</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="gridGlosario">
+        <!-- RENDER DINÁMICO -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <footer class="border-t border-slate-800/80 bg-slate-900/40 py-4 px-4 text-center text-xs text-slate-500 mt-8">
+    Cloud DevOps Automatización y Despliegue · DEVO07 · EducaciónIT · Glosario & Hub de Recursos
+  </footer>
+
+  <!-- SCRIPT DE DATOS Y RENDERIZADO -->
+  <script>
+    // ==========================================
+    // 1. BASE DE DATOS DE LABORATORIOS ONLINE
+    // ==========================================
+    const LABS = [
+      {
+        id: "iximiuz-labs",
+        name: "iximiuz Labs (Ivan Velichko)",
+        url: "https://labs.iximiuz.com/",
+        tag: "Recomendado",
+        color: "cyan",
+        desc: "Playgrounds interactivos sobre microVMs reales de Linux en el navegador. Excelente para construir un contenedor desde cero con unshare, cgroups, network namespaces y probar veth pairs.",
+        features: ["MicroVMs reales en el browser", "Labs de Docker y K8s", "Ejercicios de Networking de Linux"]
+      },
+      {
+        id: "killercoda",
+        name: "Killercoda Interactive Scenarios",
+        url: "https://killercoda.com/",
+        tag: "Gratis",
+        color: "blue",
+        desc: "El sucesor oficial de Katacoda. Proporciona terminales Linux Ubuntu completas y gratuitas en el navegador con escenarios prácticos de Docker, Kubernetes, CKA, CKS y Git.",
+        features: ["Terminal real de Ubuntu", "Escenarios paso a paso", "Preparación para certificaciones K8s"]
+      },
+      {
+        id: "sadservers",
+        name: "SadServers ('LeetCode for Linux')",
+        url: "https://sadservers.com/",
+        tag: "Troubleshooting",
+        color: "amber",
+        desc: "Te dan acceso a un servidor Linux roto con un problema del mundo real (disco lleno, puerto bloqueado, app caída) y debes diagnosticarlo y resolverlo con comandos.",
+        features: ["Resolución de incidentes reales", "Evaluación automática", "Ideal para prácticas SRE"]
+      },
+      {
+        id: "play-with-docker",
+        name: "Play with Docker (PWD)",
+        url: "https://labs.play-with-docker.com/",
+        tag: "Oficial",
+        color: "indigo",
+        desc: "Laboratorio oficial de Docker gratuito en la nube. Te permite crear hasta 5 instancias de Docker Swarm o clusters en el navegador durante sesiones de 4 horas.",
+        features: ["Docker oficial en la nube", "Soporte multi-nodo", "Acceso con cuenta Docker Hub"]
+      },
+      {
+        id: "play-with-k8s",
+        name: "Play with Kubernetes (PWK)",
+        url: "https://labs.play-with-k8s.com/",
+        tag: "Oficial K8s",
+        color: "purple",
+        desc: "Entorno interactivo para inicializar clusters de Kubernetes completos con kubeadm en el navegador sin consumir recursos de tu máquina física.",
+        features: ["Kubeadm interactivo", "Multi-nodo en el browser", "Sesiones de 4 horas gratis"]
+      },
+      {
+        id: "linux-kernel-labs",
+        name: "Linux Kernel Teaching Labs",
+        url: "https://linux-kernel-labs.github.io/",
+        tag: "Bajo Nivel",
+        color: "emerald",
+        desc: "Laboratorios académicos sobre el Kernel de Linux, llamadas al sistema (syscalls), arquitectura de procesos, memoria virtual y módulos del kernel.",
+        features: ["Código fuente del Kernel", "Explicación de llamadas clone() y fork()", "Estructura task_struct"]
+      },
+      {
+        id: "containerlab",
+        name: "Containerlab",
+        url: "https://containerlab.dev/",
+        tag: "Redes",
+        color: "rose",
+        desc: "Herramienta moderna para orquestar topologías de red complejas basadas en contenedores Docker y Linux Network Namespaces de forma declarativa.",
+        features: ["Topologías de red virtuales", "Routers y switches en Docker", "YAML declarativo"]
+      },
+      {
+        id: "redhat-dev-sandbox",
+        name: "Red Hat Developer Sandbox",
+        url: "https://developers.redhat.com/developer-sandbox",
+        tag: "Enterprise",
+        color: "red",
+        desc: "Sandbox en la nube gratuito de Red Hat que da acceso a OpenShift y Kubernetes gestionado para desplegar microservicios y contenedores.",
+        features: ["OpenShift gestionado", "CI/CD con Tekton", "30 días de acceso renovable"]
+      }
+    ];
+
+    // ==========================================
+    // 2. BASE DE DATOS DE BLOGS VISUALES
+    // ==========================================
+    const BLOGS = [
+      {
+        id: "iximiuz-blog",
+        name: "iximiuz Blog (Ivan Velichko)",
+        url: "https://iximiuz.com/",
+        badge: "Infografías Top",
+        color: "cyan",
+        desc: "El blog más reconocido para entender la arquitectura de contenedores. Ilustra magistralmente cómo se diferencian VMs y Contenedores, el rol de runc, containerd y el OCI spec.",
+        links: [
+          { title: "Containers vs. VMs: A Practical Comparison", url: "https://iximiuz.com/en/posts/container-vs-vm/" },
+          { title: "Not containers, but processes", url: "https://iximiuz.com/en/posts/not-containers-processes/" },
+          { title: "From container image to execution", url: "https://iximiuz.com/en/posts/journey-from-container-to-execution/" }
+        ]
+      },
+      {
+        id: "julia-evans",
+        name: "Julia Evans (Wizard Zines / jvns.ca)",
+        url: "https://jvns.ca/",
+        badge: "Fanzines Ilustrados",
+        color: "amber",
+        desc: "Dibujos e infografías explicativas a mano sobre cómo funciona el DNS, los contenedores, Git, las llamadas al sistema de Linux y el comando strace.",
+        links: [
+          { title: "Wizard Zines (Comics técnicos)", url: "https://wizardzines.com/" },
+          { title: "¿Cómo funciona un contenedor?", url: "https://jvns.ca/categories/containers/" }
+        ]
+      },
+      {
+        id: "brendan-gregg",
+        name: "Brendan Gregg (Systems Performance)",
+        url: "https://www.brendangregg.com/",
+        badge: "Observabilidad SRE",
+        color: "emerald",
+        desc: "El referente mundial en rendimiento de sistemas y eBPF (trabaja en Intel/Netflix). Creador de los Flame Graphs y los métodos de análisis USE y RED.",
+        links: [
+          { title: "Linux Performance Tools Map", url: "https://www.brendangregg.com/linuxperf.html" },
+          { title: "Flame Graphs Tutorial", url: "https://www.brendangregg.com/flamegraphs.html" }
+        ]
+      },
+      {
+        id: "liz-rice",
+        name: "Liz Rice (Containers from Scratch)",
+        url: "https://www.youtube.com/watch?v=8fi7uSYlOdc",
+        badge: "Video Clásico",
+        color: "purple",
+        desc: "La famosa charla donde Liz Rice programa en vivo un clon de Docker en 60 líneas de código Go usando solo clone(), namespaces y chroot.",
+        links: [
+          { title: "Ver charla en YouTube (Containers from Scratch)", url: "https://www.youtube.com/watch?v=8fi7uSYlOdc" },
+          { title: "Código en GitHub", url: "https://github.com/lizrice/containers-from-scratch" }
+        ]
+      },
+      {
+        id: "google-sre",
+        name: "Google SRE Books (Gratis Online)",
+        url: "https://sre.google/books/",
+        badge: "Libro Oficial",
+        color: "blue",
+        desc: "Los libros oficiales de Google que inventaron la disciplina de Site Reliability Engineering (SRE), Error Budgets, eliminación de Toil y gestión de incidentes.",
+        links: [
+          { title: "Site Reliability Engineering (Libro 1)", url: "https://sre.google/sre-book/table-of-contents/" },
+          { title: "The Site Reliability Workbook (Práctico)", url: "https://sre.google/workbook/table-of-contents/" }
+        ]
+      },
+      {
+        id: "dora-dev",
+        name: "DORA (DevOps Research and Assessment)",
+        url: "https://dora.dev/",
+        badge: "Métricas Oficiales",
+        color: "indigo",
+        desc: "El programa de investigación de Google Cloud que define las 4 métricas clave de desempeño (Deployment Frequency, Lead Time, CFR, MTTR).",
+        links: [
+          { title: "State of DevOps Report", url: "https://dora.dev/publications/" },
+          { title: "Guía de las 4 Métricas DORA", url: "https://dora.dev/guides/dora-metrics-four-keys/" }
+        ]
+      },
+      {
+        id: "bytebytego",
+        name: "ByteByteGo (Alex Xu)",
+        url: "https://bytebytego.com/",
+        badge: "Arquitectura Cloud",
+        color: "rose",
+        desc: "Diagramas visuales claros sobre arquitectura distribuida, cómo funciona un balanceador de carga, CDNs, Docker vs VM y escalabilidad.",
+        links: [
+          { title: "ByteByteGo Newsletter & Diagramas", url: "https://blog.bytebytego.com/" }
+        ]
+      },
+      {
+        id: "roadmap-devops",
+        name: "roadmap.sh (DevOps Roadmap)",
+        url: "https://roadmap.sh/devops",
+        badge: "Ruta de Carrera",
+        color: "teal",
+        desc: "El mapa interactivo paso a paso de todas las tecnologías, protocolos y habilidades que debe dominar un ingeniero DevOps moderno.",
+        links: [
+          { title: "DevOps Roadmap Interactivo", url: "https://roadmap.sh/devops" }
+        ]
+      },
+      {
+        id: "phippy-k8s-guide",
+        name: "The Illustrated Children's Guide to Kubernetes (CNCF)",
+        url: "https://www.cncf.io/wp-content/uploads/2020/08/The-Illustrated-Childrens-Guide-to-Kubernetes.pdf",
+        badge: "Libro Ilustrado CNCF",
+        color: "cyan",
+        desc: "El libro ilustrado oficial más icónico del ecosistema Cloud Native (creado por Matt Butcher y Karen Chu, adoptado por la CNCF). A través de Phippy la Jirafa y el Capitán Kube, explica de forma visual, amigable y memorable la arquitectura de Kubernetes: Pods, ReplicaSets, Deployments, Services e Ingress.",
+        links: [
+          { title: "Descargar / Ver PDF Oficial (CNCF)", url: "https://www.cncf.io/wp-content/uploads/2020/08/The-Illustrated-Childrens-Guide-to-Kubernetes.pdf" },
+          { title: "Ver copia local en PDF (material/)", url: "material/The-Illustrated-Childrens-Guide-to-Kubernetes.pdf" },
+          { title: "Phippy & Friends (Personajes Oficiales CNCF)", url: "https://www.cncf.io/phippy/" }
+        ]
+      }
+    ];
+
+    // ==========================================
+    // 3. BASE DE DATOS DEL GLOSARIO DE CONCEPTOS
+    // ==========================================
+    const GLOSARIO = [
+      {
+        cat: "KERNEL",
+        term: "Contenedor (Linux Container)",
+        shortDef: "Un proceso estándar del sistema operativo anfitrión que comparte el kernel de Linux pero tiene visibilidad restringida por Namespaces y consumo limitado por cgroups.",
+        deepDive: "No existe 'struct container' en el kernel de Linux. Es simplemente una instancia de struct task_struct con punteros a espacios de nombres (nsproxy) y grupos de control (cgroups)."
+      },
+      {
+        cat: "KERNEL",
+        term: "Linux Namespaces (Espacios de Nombres)",
+        shortDef: "Mecanismo del Kernel que aísla qué puede VER un proceso (procesos, red, archivos, hostname, usuarios).",
+        deepDive: "Se configuran vía syscall clone() o unshare(). Incluyen PID (árbol de procesos con PID 1), NET (IP y routing propio), MNT (puntos de montaje), UTS (hostname), IPC (memoria compartida) y USER (mapeo de root a usuario sin privilegios)."
+      },
+      {
+        cat: "KERNEL",
+        term: "Control Groups (cgroups v1 / v2)",
+        shortDef: "Mecanismo del Kernel de Linux que limita, audita y aísla cuánto recurso de hardware puede CONSUMIR un conjunto de procesos.",
+        deepDive: "Regula CPU (CFS Quota / Throttling), memoria RAM (con disparo del OOM Killer si excede el límite), ancho de banda de I/O y número máximo de procesos (pids.max) para evitar fork bombs."
+      },
+      {
+        cat: "KERNEL",
+        term: "OverlayFS (Union File System)",
+        shortDef: "Sistema de archivos por capas que fusiona capas de solo lectura (imagen base) con una capa efímera de lectura/escritura (contenedor).",
+        deepDive: "Utiliza la técnica Copy-on-Write (CoW). Si un contenedor modifica un archivo de la imagen base, el kernel lo copia a la capa 'upperdir' y lo modifica allí, sin alterar jamás la imagen original."
+      },
+      {
+        cat: "KERNEL",
+        term: "runc & containerd",
+        shortDef: "runc es el ejecutor de bajo nivel que habla con el Kernel (OCI Runtime); containerd es el supervisor que gestiona imágenes, snapshots y redes.",
+        deepDive: "Docker CLI habla con dockerd, este delega en containerd, que lanza containerd-shim y runc. runc ejecuta las syscalls clone(), pivot_root() y execve(), y luego muere dejando al contenedor corriendo."
+      },
+      {
+        cat: "KERNEL",
+        term: "Seccomp & Linux Capabilities",
+        shortDef: "Capas de seguridad del Kernel que restringen qué llamadas al sistema (syscalls) y qué poderes de root puede ejecutar un contenedor.",
+        deepDive: "Docker bloquea por defecto unas 44 llamadas al sistema críticas (como reboot o init_module) y elimina privilegios peligrosos de root como CAP_SYS_ADMIN o CAP_NET_ADMIN."
+      },
+      {
+        cat: "SRE",
+        term: "SLI (Service Level Indicator)",
+        shortDef: "Métrica real y objetiva medida en producción en tiempo real (ej. % de peticiones HTTP exitosas).",
+        deepDive: "Fórmula habitual: SLI = (Peticiones Exitosas / Total Peticiones) * 100. Se mide con Prometheus, Datadog o Grafana."
+      },
+      {
+        cat: "SRE",
+        term: "SLO (Service Level Objective)",
+        shortDef: "Objetivo interno de disponibilidad y calidad acordado entre el equipo de ingeniería y producto (ej. 99.90%).",
+        deepDive: "Es la meta a defender. La regla de oro de SRE establece que SLA < SLO < SLI Deseado para mantener un margen de seguridad operativo."
+      },
+      {
+        cat: "SRE",
+        term: "SLA (Service Level Agreement)",
+        shortDef: "El compromiso contractual y legal firmado con los clientes que incluye penalizaciones económicas si se incumple (ej. 99.50%).",
+        deepDive: "Si el servicio cae por debajo del SLA, la empresa debe devolver dinero o acreditar 'Service Credits'. Jamás debe ser igual al SLO."
+      },
+      {
+        cat: "SRE",
+        term: "Error Budget (Presupuesto de Error)",
+        shortDef: "El margen tolerable de fallo de un servicio (100% - SLO) utilizado como crédito para arriesgarse y desplegar código nuevo.",
+        deepDive: "Si tu SLO es 99.9%, tu Error Budget es 0.1%. Mientras haya presupuesto, desarrollo puede desplegar rápido. Si se agota, se frena el despliegue de nuevas features."
+      },
+      {
+        cat: "SRE",
+        term: "Deployment Freeze (Congelamiento de Despliegue)",
+        shortDef: "Política estricta de SRE que bloquea el lanzamiento de nuevas funcionalidades cuando el Error Budget llega a cero.",
+        deepDive: "El 100% de la capacidad de ingeniería se reasigna a resolver bugs, pagar deuda técnica, mejorar tests y asegurar la infraestructura antes de volver a desplegar."
+      },
+      {
+        cat: "SRE",
+        term: "Toil (Trabajo Rutinario)",
+        shortDef: "Trabajo operativo manual, repetitivo, sin valor duradero y que escala linealmente con el crecimiento del servicio.",
+        deepDive: "Google SRE impone la regla del 50%: máximo 50% de tiempo en Toil y mínimo 50% en ingeniería y automatización para que el Toil muera."
+      },
+      {
+        cat: "DORA",
+        term: "4 Métricas DORA",
+        shortDef: "Métricas estándar de la industria (Google DORA) para medir velocidad y estabilidad de equipos de desarrollo.",
+        deepDive: "1. Deployment Frequency (Frecuencia). 2. Lead Time for Changes (Tiempo de entrega). 3. Change Failure Rate (Tasa de fallos). 4. MTTR (Tiempo de recuperación)."
+      },
+      {
+        cat: "DORA",
+        term: "Small Batches (Lotes Pequeños)",
+        shortDef: "Práctica de desplegar cambios mínimos y frecuentes en lugar de releases masivos trimestrales.",
+        deepDive: "Al desplegar un commit de 20 líneas, el radio de explosión (blast radius) es minúsculo, encontrar la causa del bug es trivial y el MTTR baja de días a minutos."
+      },
+      {
+        cat: "CULTURA",
+        term: "CALMS Framework",
+        shortDef: "Marco conceptual que evalúa la madurez de una organización en DevOps: Culture, Automation, Lean, Measurement, Sharing.",
+        deepDive: "DevOps no es un rol ni un software: es la adopción de estos 5 pilares para eliminar la 'Pared de la Confusión' entre Dev y Ops."
+      },
+      {
+        cat: "CULTURA",
+        term: "Pared de la Confusión (Wall of Confusion)",
+        shortDef: "Silo histórico donde Desarrollo era premiado por velocidad y Operaciones por estabilidad, provocando conflicto permanente.",
+        deepDive: "Dev lanzaba código sin probar 'por encima del muro' y Ops sufría para mantenerlo vivo. DevOps demuele el muro con responsabilidad compartida."
+      },
+      {
+        cat: "KUBERNETES",
+        term: "Kubernetes & Guía Ilustrada de Phippy (CNCF)",
+        shortDef: "Orquestador de contenedores open source que automatiza el despliegue, escalado, autorrecuperación y networking de aplicaciones en clusters.",
+        deepDive: "Explicado con Phippy la Jirafa (CNCF): el Pod es la ballena/unidad mínima que aloja al contenedor, el ReplicaSet garantiza la cantidad deseada de réplicas, el Service actúa como balanceador/recepcionista con IP fija, y el Deployment gestiona actualizaciones progresivas sin caída de servicio. Guía oficial ilustrada: https://www.cncf.io/wp-content/uploads/2020/08/The-Illustrated-Childrens-Guide-to-Kubernetes.pdf"
+      }
+    ];
+
+    let currentFilter = "TODOS";
+
+    // ==========================================
+    // RENDERIZADO Y FILTROS
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", () => {
+      renderAll();
+    });
+
+    function setFiltro(tipo) {
+      currentFilter = tipo;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`btnFilter-${tipo}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const secLabs = document.getElementById('sec-labs');
+      const secBlogs = document.getElementById('sec-blogs');
+      const secGlosario = document.getElementById('sec-glosario');
+
+      if (tipo === 'TODOS') {
+        secLabs.classList.remove('hidden');
+        secBlogs.classList.remove('hidden');
+        secGlosario.classList.remove('hidden');
+      } else if (tipo === 'LAB') {
+        secLabs.classList.remove('hidden');
+        secBlogs.classList.add('hidden');
+        secGlosario.classList.add('hidden');
+      } else if (tipo === 'BLOG') {
+        secLabs.classList.add('hidden');
+        secBlogs.classList.remove('hidden');
+        secGlosario.classList.add('hidden');
+      } else if (tipo === 'GLOSARIO') {
+        secLabs.classList.add('hidden');
+        secBlogs.classList.add('hidden');
+        secGlosario.classList.remove('hidden');
+      }
+
+      filtrarRecursos();
+    }
+
+    function renderAll() {
+      renderLabs(LABS);
+      renderBlogs(BLOGS);
+      renderGlosario(GLOSARIO);
+    }
+
+    function renderLabs(items) {
+      const grid = document.getElementById('gridLabs');
+      if (!grid) return;
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 text-xs">No se encontraron laboratorios que coincidan con la búsqueda.</div>';
+        return;
+      }
+
+      grid.innerHTML = items.map(l => `
+        <div class="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 flex flex-col justify-between gap-4 transition shadow-lg group">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-mono">
+                ${l.tag}
+              </span>
+              <button onclick="copiarTexto('${l.url}', 'Link copiado: ${l.name}')" class="text-slate-400 hover:text-cyan-300 text-xs p-1 rounded hover:bg-slate-800 transition" title="Copiar enlace">
+                📋
+              </button>
+            </div>
+
+            <h4 class="font-bold text-white text-sm group-hover:text-cyan-400 transition">${l.name}</h4>
+            <p class="text-xs text-slate-300 leading-relaxed">${l.desc}</p>
+
+            <ul class="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-800/80">
+              ${l.features.map(f => `<li class="flex items-center gap-1.5"><span class="text-cyan-500">✓</span> <span>${f}</span></li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="flex items-center gap-2 pt-2 border-t border-slate-800/60">
+            <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="flex-1 bg-cyan-600/20 hover:bg-cyan-600 border border-cyan-500/40 text-cyan-200 hover:text-white text-xs font-semibold py-2 px-3 rounded-xl transition text-center flex items-center justify-center gap-1.5 shadow-sm">
+              <span>🚀 Abrir Playground</span> <span>↗</span>
+            </a>
+            <button onclick="copiarTexto('${l.url}', 'Enlace copiado')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium py-2 px-3 rounded-xl transition" title="Copiar link al portapapeles">
+              Copiar
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderBlogs(items) {
+      const grid = document.getElementById('gridBlogs');
+      if (!grid) return;
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 text-xs">No se encontraron blogs que coincidan con la búsqueda.</div>';
+        return;
+      }
+
+      grid.innerHTML = items.map(b => `
+        <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-5 flex flex-col justify-between gap-4 transition shadow-lg group">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-mono">
+                ${b.badge}
+              </span>
+              <button onclick="copiarTexto('${b.url}', 'Link copiado: ${b.name}')" class="text-slate-400 hover:text-indigo-300 text-xs p-1 rounded hover:bg-slate-800 transition" title="Copiar enlace principal">
+                📋
+              </button>
+            </div>
+
+            <h4 class="font-bold text-white text-sm group-hover:text-indigo-300 transition">${b.name}</h4>
+            <p class="text-xs text-slate-300 leading-relaxed">${b.desc}</p>
+
+            ${b.links && b.links.length > 0 ? `
+              <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Artículos Clave:</span>
+                ${b.links.map(a => `
+                  <div class="flex items-center justify-between gap-2 text-[11px] bg-slate-950/60 p-1.5 rounded-lg border border-slate-800">
+                    <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="text-indigo-300 hover:text-white truncate hover:underline">
+                      📄 ${a.title}
+                    </a>
+                    <button onclick="copiarTexto('${a.url}', 'Copiado: ${a.title}')" class="text-slate-500 hover:text-indigo-300 px-1" title="Copiar link">📋</button>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="pt-2 border-t border-slate-800/60 flex items-center gap-2">
+            <a href="${b.url}" target="_blank" rel="noopener noreferrer" class="flex-1 bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-200 hover:text-white text-xs font-semibold py-2 px-3 rounded-xl transition text-center flex items-center justify-center gap-1.5 shadow-sm">
+              <span>Visitar Sitio Web</span> <span>↗</span>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderGlosario(items) {
+      const grid = document.getElementById('gridGlosario');
+      if (!grid) return;
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 text-xs">No se encontraron conceptos que coincidan con la búsqueda.</div>';
+        return;
+      }
+
+      grid.innerHTML = items.map(g => {
+        let tagColor = "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
+        if (g.cat === "SRE") tagColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        else if (g.cat === "DORA") tagColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+        else if (g.cat === "CULTURA") tagColor = "bg-purple-500/10 text-purple-400 border-purple-500/30";
+        else if (g.cat === "KUBERNETES") tagColor = "bg-sky-500/10 text-sky-400 border-sky-500/30";
+
+        const textoParaCopiar = `*${g.term}* [${g.cat}]:\n${g.shortDef}\n\nDetalle técnico: ${g.deepDive}`;
+
+        return `
+          <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 flex flex-col justify-between gap-3 transition shadow-lg">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${tagColor}">
+                  ${g.cat}
+                </span>
+                <button 
+                  onclick="copiarDefinicion(\`${g.term.replace(/"/g, '&quot;')}\`, \`${g.shortDef.replace(/"/g, '&quot;')}\`, \`${g.deepDive.replace(/"/g, '&quot;')}\`)" 
+                  class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 transition"
+                  title="Copiar texto formateado para pegar en Zoom/Discord"
+                >
+                  <span>📋 Copiar para Chat</span>
+                </button>
+              </div>
+
+              <h4 class="font-bold text-white text-sm sm:text-base">${g.term}</h4>
+              <p class="text-xs text-slate-200 font-medium leading-relaxed">${g.shortDef}</p>
+              
+              <div class="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 mt-2 text-[11px] text-slate-400 font-mono leading-relaxed">
+                <span class="text-cyan-400 font-bold block mb-1">🔬 Nivel Arquitectura / Kernel:</span>
+                ${g.deepDive}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filtrarRecursos() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      const filteredLabs = LABS.filter(l => 
+        l.name.toLowerCase().includes(q) || 
+        l.desc.toLowerCase().includes(q) || 
+        l.features.some(f => f.toLowerCase().includes(q))
+      );
+
+      const filteredBlogs = BLOGS.filter(b => 
+        b.name.toLowerCase().includes(q) || 
+        b.desc.toLowerCase().includes(q) || 
+        (b.links && b.links.some(a => a.title.toLowerCase().includes(q)))
+      );
+
+      const filteredGlosario = GLOSARIO.filter(g => 
+        g.term.toLowerCase().includes(q) || 
+        g.shortDef.toLowerCase().includes(q) || 
+        g.deepDive.toLowerCase().includes(q) || 
+        g.cat.toLowerCase().includes(q)
+      );
+
+      renderLabs(filteredLabs);
+      renderBlogs(filteredBlogs);
+      renderGlosario(filteredGlosario);
+    }
+
+    function copiarTexto(texto, aviso = "Copiado al portapapeles") {
+      navigator.clipboard.writeText(texto);
+      showToast(aviso, "success");
+    }
+
+    function copiarDefinicion(term, shortDef, deepDive) {
+      const formatted = `💡 *${term}*:\n${shortDef}\n\n🔬 *Detalle técnico:* ${deepDive}`;
+      navigator.clipboard.writeText(formatted);
+      showToast(`Definición de "${term}" copiada para chat`, "success");
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-red-600 text-white' :
+                 type === 'success' ? 'bg-emerald-600 text-white' :
+                 'bg-slate-800 text-slate-100 border border-slate-700';
+      toast.className = `${bg} px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 pointer-events-auto transition-all transform duration-300 translate-y-2 opacity-0 backdrop-blur-md z-50`;
+      const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : '⚡';
+      toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

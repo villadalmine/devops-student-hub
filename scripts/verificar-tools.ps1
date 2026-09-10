@@ -40,6 +40,8 @@ $ghosttyPath = "$env:LOCALAPPDATA\Programs\ghostty"
 if (Test-Path $ghosttyPath) { $env:Path += ";$ghosttyPath" }
 $goPath = "C:\Program Files\Go\bin"
 if (Test-Path $goPath) { $env:Path += ";$goPath" }
+$cargoPath = "$env:USERPROFILE\.cargo\bin"
+if (Test-Path $cargoPath) { $env:Path += ";$cargoPath" }
 
 # 1. SOFTWARE BASE DEVOPS (CORE ESENCIAL)
 Write-Host " [1] SOFTWARE BASE OBLIGATORIO (MANDATORY):" -ForegroundColor Yellow
@@ -118,10 +120,12 @@ $optTools = @(
     @{ Name="Ghostty Terminal"; Cmd="ghostty"; Args="--version"; CustomCheck={ (Get-Command "ghostty" -ErrorAction SilentlyContinue) -or (Get-Command "ghostly" -ErrorAction SilentlyContinue) -or (Get-Command "winghostty" -ErrorAction SilentlyContinue) -or (Test-Path "$env:LOCALAPPDATA\Programs\ghostty\ghostty.exe", "$env:ProgramFiles\Ghostty\ghostty.exe") } },
     @{ Name="Go (Golang)"; Cmd="go"; Args="version" },
     @{ Name="Python"; Cmd="python"; Args="--version" },
+    @{ Name="Rust (rustc / cargo)"; Cmd="rustc"; Args="--version" },
     @{ Name="fzf (Fuzzy Finder)"; Cmd="fzf"; Args="--version" },
     @{ Name="nerdctl (containerd CLI)"; Cmd="nerdctl"; Args="version"; CustomCheck={ (Get-Command "nerdctl" -ErrorAction SilentlyContinue) -or (Get-Command "nerctl" -ErrorAction SilentlyContinue) } },
     @{ Name="Cilium CLI (eBPF K8s)"; Cmd="cilium"; Args="version --client" },
     @{ Name="Hubble CLI (eBPF Observability)"; Cmd="hubble"; Args="version" },
+    @{ Name="Trivy (Vulnerability Scanner)"; Cmd="trivy"; Args="--version" },
     @{ Name="Zed Editor"; Cmd="zed"; Args="--version" },
     @{ Name="Herdr (Multiplexer)"; Cmd="herdr"; Args="--version" },
     @{ Name="VLC Media Player"; Cmd="vlc"; Args="--version"; CustomCheck={ Test-Path "C:\Program Files\VideoLAN\VLC\vlc.exe", "C:\Program Files (x86)\VideoLAN\VLC\vlc.exe" } },

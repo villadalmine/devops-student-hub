@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo [*] Lanzando servidor local en http://localhost:8080 ...
-start "" "http://localhost:8080/devops_hub.html"
-python scripts\servidor_asistente.py
+echo [*] Lanzando servidor local en http://localhost:8081 ...
+start "" "http://localhost:8081/devops_hub.html"
+python scripts\servidor_asistente.py 8081
 pause

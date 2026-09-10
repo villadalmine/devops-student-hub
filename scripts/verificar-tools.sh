@@ -76,15 +76,17 @@ echo -e "\n${YELLOW}--- [EBPF] CONTENEDORES, REDES & EBPF ---${NC}"
 check_tool 24 "nerdctl (containerd)"  "nerdctl"    "version"          "OPT"
 check_tool 25 "Cilium CLI"            "cilium"     "version --client" "OPT"
 check_tool 26 "Hubble CLI"            "hubble"     "version"          "OPT"
+check_tool 27 "Trivy (Security)"      "trivy"      "--version"        "OPT"
 
 echo -e "\n${YELLOW}--- [LANG] LENGUAJES & RUNTIMES ---${NC}"
-check_tool 27 "Go (Golang)"           "go"         "version"          "OPT"
-check_tool 28 "Python 3"              "python3"    "--version"        "OPT"
+check_tool 28 "Go (Golang)"           "go"         "version"          "OPT"
+check_tool 29 "Python 3"              "python3"    "--version"        "OPT"
+check_tool 30 "Rust (rustc/cargo)"    "rustc"      "--version"        "OPT"
 
 echo -e "\n${YELLOW}--- [AI] AGENTES IA EN TERMINAL ---${NC}"
-check_tool 29 "Claude Code CLI"       "claude"     "--version"        "OPT"
-check_tool 30 "Shell-GPT (sgpt)"      "sgpt"       "--version"        "OPT"
-check_tool 31 "OMP (Oh My Pi)"        "omp"        "--version"        "OPT"
+check_tool 31 "Claude Code CLI"       "claude"     "--version"        "OPT"
+check_tool 32 "Shell-GPT (sgpt)"      "sgpt"       "--version"        "OPT"
+check_tool 33 "OMP (Oh My Pi)"        "omp"        "--version"        "OPT"
 
 echo -e "\n${CYAN}======================================================================${NC}"
 PERCENT=$(( (INSTALLED_COUNT * 100) / TOTAL_TOOLS ))

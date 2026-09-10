@@ -122,18 +122,18 @@ install_tui() {
 install_ebpf() {
     print_header "INSTALANDO HERRAMIENTAS EBPF Y REDES EN MACOS"
 
-    brew install cilium-cli hubble nerdctl || true
+    brew install cilium-cli hubble nerdctl trivy || true
 
     print_success "Categoría EBPF instalada exitosamente."
 }
 
 # ------------------------------------------------------------------------------
-# CATEGORÍA: LANG (Go & Python)
+# CATEGORÍA: LANG (Go, Python & Rust)
 # ------------------------------------------------------------------------------
 install_lang() {
-    print_header "INSTALANDO LENGUAJES Y RUNTIMES EN MACOS"
+    print_header "INSTALANDO LENGUAJES Y RUNTIMES EN MACOS (GO, PYTHON & RUST)"
 
-    brew install go python@3.12 node
+    brew install go python@3.12 node rust
 
     print_success "Categoría LANG instalada exitosamente."
 }

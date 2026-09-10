@@ -18,6 +18,7 @@ import re
 import json
 import time
 import shutil
+import subprocess
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
@@ -29,7 +30,7 @@ if sys.platform == "win32" and hasattr(sys.stdout, 'reconfigure'):
     except Exception:
         pass
 
-PORT = 8080
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 8081
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
 VIDEOS_DIR = os.path.join(STUDENT_DIR, "videos")
@@ -48,9 +49,9 @@ def log_event(level, msg):
 
 log_event("INIT", f"Servidor DevOps Hub Alumnos inicializado en {STUDENT_DIR}")
 
-# Catálogo completo de las 31 herramientas del curso
+# Catálogo completo de las 33 herramientas del curso
 TOOLS_CATALOG = [
-    # BASE
+    # BASE (12)
     {"id": 1,  "cat": "BASE", "name": "Zoom Workplace", "cmd": "zoom", "tipo": "Obligatorio"},
     {"id": 2,  "cat": "BASE", "name": "Git", "cmd": "git", "tipo": "Obligatorio"},
     {"id": 3,  "cat": "BASE", "name": "GitHub CLI (gh)", "cmd": "gh", "tipo": "Obligatorio"},
@@ -63,30 +64,32 @@ TOOLS_CATALOG = [
     {"id": 10, "cat": "BASE", "name": "Helm", "cmd": "helm", "tipo": "Obligatorio"},
     {"id": 11, "cat": "BASE", "name": "Minikube", "cmd": "minikube", "tipo": "Obligatorio"},
     {"id": 12, "cat": "BASE", "name": "jq (JSON Processor)", "cmd": "jq", "tipo": "Obligatorio"},
-    # TERM
+    # TERM (6)
     {"id": 13, "cat": "TERM", "name": "Gajim (XMPP)", "cmd": "gajim", "tipo": "Optativo"},
     {"id": 14, "cat": "TERM", "name": "Ghostty Terminal", "cmd": "ghostty", "tipo": "Optativo"},
     {"id": 15, "cat": "TERM", "name": "Zed Editor", "cmd": "zed", "tipo": "Optativo"},
     {"id": 16, "cat": "TERM", "name": "Herdr Multiplexer", "cmd": "herdr", "tipo": "Optativo"},
     {"id": 17, "cat": "TERM", "name": "Neovim", "cmd": "nvim", "tipo": "Optativo"},
     {"id": 18, "cat": "TERM", "name": "VLC Media Player", "cmd": "vlc", "tipo": "Optativo"},
-    # TUI
+    # TUI (5)
     {"id": 19, "cat": "TUI", "name": "fzf (Fuzzy Finder)", "cmd": "fzf", "tipo": "Optativo"},
     {"id": 20, "cat": "TUI", "name": "Lazygit", "cmd": "lazygit", "tipo": "Optativo"},
     {"id": 21, "cat": "TUI", "name": "Yazi (File Manager)", "cmd": "yazi", "tipo": "Optativo"},
     {"id": 22, "cat": "TUI", "name": "Lazydocker", "cmd": "lazydocker", "tipo": "Optativo"},
     {"id": 23, "cat": "TUI", "name": "k9s (K8s Monitor)", "cmd": "k9s", "tipo": "Optativo"},
-    # EBPF
+    # EBPF & Seguridad (4)
     {"id": 24, "cat": "EBPF", "name": "nerdctl (containerd)", "cmd": "nerdctl", "tipo": "Optativo"},
     {"id": 25, "cat": "EBPF", "name": "Cilium CLI", "cmd": "cilium", "tipo": "Optativo"},
     {"id": 26, "cat": "EBPF", "name": "Hubble CLI", "cmd": "hubble", "tipo": "Optativo"},
-    # LANG
-    {"id": 27, "cat": "LANG", "name": "Go (Golang)", "cmd": "go", "tipo": "Optativo"},
-    {"id": 28, "cat": "LANG", "name": "Python 3", "cmd": "python", "tipo": "Optativo"},
-    # AI
-    {"id": 29, "cat": "AI", "name": "Claude Code CLI", "cmd": "claude", "tipo": "Optativo"},
-    {"id": 30, "cat": "AI", "name": "Shell-GPT (sgpt)", "cmd": "sgpt", "tipo": "Optativo"},
-    {"id": 31, "cat": "AI", "name": "OMP (Oh My Pi)", "cmd": "omp", "tipo": "Optativo"}
+    {"id": 27, "cat": "EBPF", "name": "Trivy (Security Scanner)", "cmd": "trivy", "tipo": "Optativo"},
+    # LANG (3)
+    {"id": 28, "cat": "LANG", "name": "Go (Golang)", "cmd": "go", "tipo": "Optativo"},
+    {"id": 29, "cat": "LANG", "name": "Python 3", "cmd": "python", "tipo": "Optativo"},
+    {"id": 30, "cat": "LANG", "name": "Rust (Cargo)", "cmd": "rustc", "tipo": "Optativo"},
+    # AI (3)
+    {"id": 31, "cat": "AI", "name": "Claude Code CLI", "cmd": "claude", "tipo": "Optativo"},
+    {"id": 32, "cat": "AI", "name": "Shell-GPT (sgpt)", "cmd": "sgpt", "tipo": "Optativo"},
+    {"id": 33, "cat": "AI", "name": "OMP (Oh My Pi)", "cmd": "omp", "tipo": "Optativo"}
 ]
 
 def check_local_tool(t):
@@ -112,7 +115,103 @@ def check_local_tool(t):
         elif cmd == "zed":
             zed_p = os.path.expandvars(r"%LOCALAPPDATA%\Programs\Zed\Zed.exe")
             found = os.path.exists(zed_p)
+        elif cmd == "go":
+            found = os.path.exists(r"C:\Program Files\Go\bin\go.exe")
+        elif cmd == "rustc":
+            cargo_p = os.path.expandvars(r"%USERPROFILE%\.cargo\bin\rustc.exe")
+            found = os.path.exists(cargo_p)
+        elif cmd == "trivy":
+            links = os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WinGet\Links\trivy.exe")
+            found = os.path.exists(links)
     return found
+
+def launch_in_terminal(command, as_admin=False, cwd=None):
+    """Abre una nueva ventana de terminal independiente para ejecutar comandos de instalación."""
+    if not cwd:
+        cwd = STUDENT_DIR
+
+    log_event("EXEC", f"Lanzando terminal ({'ADMIN' if as_admin else 'USER'}) en {cwd}: {command}")
+
+    if sys.platform == "win32":
+        temp_dir = os.path.join(os.environ.get("TEMP", cwd), "devops_hub_scripts")
+        os.makedirs(temp_dir, exist_ok=True)
+        ps_file = os.path.join(temp_dir, "ejecutar_instalacion.ps1")
+
+        mode_str = "ADMINISTRADOR (ELEVADO)" if as_admin else "USUARIO ESTANDAR"
+        mode_color = "Green" if as_admin else "Cyan"
+
+        full_script = f"""# Script de Ejecución DevOps Hub
+Set-Location -LiteralPath '{cwd}'
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+$wingetLinks = "$env:LOCALAPPDATA\\Microsoft\\WinGet\\Links"
+if (Test-Path $wingetLinks) {{ $env:Path += ";$wingetLinks" }}
+$cargoPath = "$env:USERPROFILE\\.cargo\\bin"
+if (Test-Path $cargoPath) {{ $env:Path += ";$cargoPath" }}
+$goPath = "C:\\Program Files\\Go\\bin"
+if (Test-Path $goPath) {{ $env:Path += ";$goPath" }}
+
+Write-Host ""
+Write-Host "======================================================================" -ForegroundColor Cyan
+Write-Host "   DEVOPS WORKSPACE - INSTALADOR EN TERMINAL" -ForegroundColor Yellow
+Write-Host "   Comando : {command}" -ForegroundColor White
+Write-Host "   Modo    : {mode_str}" -ForegroundColor {mode_color}
+Write-Host "======================================================================" -ForegroundColor Cyan
+Write-Host ""
+
+{command}
+
+Write-Host ""
+Write-Host "======================================================================" -ForegroundColor Cyan
+Write-Host "   PROCESO FINALIZADO. Puedes revisar los resultados arriba." -ForegroundColor Green
+Write-Host "======================================================================" -ForegroundColor Cyan
+"""
+        with open(ps_file, "w", encoding="utf-8-sig") as f:
+            f.write(full_script)
+
+        # Lanzar terminal garantizada y visible en Windows
+        launched = False
+        if as_admin:
+            try:
+                import ctypes
+                ret = ctypes.windll.shell32.ShellExecuteW(
+                    None, "runas", "powershell.exe",
+                    f'-NoExit -ExecutionPolicy Bypass -File "{ps_file}"',
+                    None, 1
+                )
+                if ret > 32:
+                    launched = True
+                    log_event("EXEC", f"Terminal elevada abierta vía ShellExecuteW: {ps_file}")
+            except Exception as e:
+                log_event("WARN", f"Fallo al invocar elevación UAC: {e}")
+
+        if not launched:
+            # Si no es admin o si UAC es rechazado, abrir consola visible con CREATE_NEW_CONSOLE
+            subprocess.Popen(
+                ["powershell.exe", "-NoExit", "-ExecutionPolicy", "Bypass", "-File", ps_file],
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+            log_event("EXEC", f"Terminal visible abierta (CREATE_NEW_CONSOLE): {ps_file}")
+        return True
+    elif sys.platform.startswith("linux"):
+        temp_dir = "/tmp/devops_hub_scripts"
+        os.makedirs(temp_dir, exist_ok=True)
+        sh_file = os.path.join(temp_dir, "ejecutar_instalacion.sh")
+        with open(sh_file, "w", encoding="utf-8") as f:
+            f.write(f"#!/usr/bin/env bash\ncd '{cwd}'\necho '=== DEVOPS WORKSPACE - INSTALADOR ==='\necho 'Comando: {command}'\necho ''\n{command}\necho ''\necho '=== FINALIZADO ==='\nexec bash\n")
+        os.chmod(sh_file, 0o755)
+        for term in ["x-terminal-emulator", "gnome-terminal", "konsole", "xterm"]:
+            if shutil.which(term):
+                if term == "gnome-terminal":
+                    subprocess.Popen([term, "--", "bash", sh_file])
+                else:
+                    subprocess.Popen([term, "-e", f"bash {sh_file}"])
+                return True
+        return False
+    elif sys.platform == "darwin":
+        script = f'tell app "Terminal" to do script "cd \\"{cwd}\\" && echo \\"=== DEVOPS WORKSPACE ===\\" && {command}"'
+        subprocess.Popen(["osascript", "-e", script])
+        return True
+    return False
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
@@ -126,6 +225,12 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             super().handle_one_request()
         except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
             pass
+
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -204,6 +309,36 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             return
 
         super().do_GET()
+
+    def do_POST(self):
+        url_parts = urllib.parse.urlparse(self.path)
+        path = url_parts.path
+
+        if path == "/api/ejecutar":
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else "{}"
+            try:
+                body = json.loads(post_data)
+            except Exception:
+                body = {}
+
+            command = body.get("command", "").strip()
+            as_admin = bool(body.get("admin", False))
+
+            if not command:
+                self.send_json({"ok": False, "error": "No se especificó ningún comando para ejecutar."}, status=400)
+                return
+
+            ok = launch_in_terminal(command, as_admin=as_admin, cwd=STUDENT_DIR)
+            self.send_json({
+                "ok": ok,
+                "admin": as_admin,
+                "command": command,
+                "message": f"Terminal {'con elevación de Administrador' if as_admin else 'de usuario estándar'} abierta con éxito."
+            })
+            return
+
+        self.send_json({"error": "Endpoint no encontrado"}, status=404)
 
     def send_json(self, data, status=200):
         self.send_response(status)

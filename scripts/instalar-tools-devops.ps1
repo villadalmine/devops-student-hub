@@ -8,7 +8,7 @@
     para evitar reinstalarlas y ofrece opciones de instalacion por categorias o seleccion:
       1) Solo Software Base DevOps (Core Esencial) (Zoom, Git, GitHub CLI (gh), VS Code, Docker, Terraform, AWS CLI, Azure CLI, Kubectl, Helm, Minikube, jq).
       2) Ecosistema Completo (Obligatorio + Todas las herramientas optativas).
-      3) Seleccion Personalizada por Categorias o Numeros (ej: 'BASE', 'AI', 'TERM', 'TUI', 'EBPF', 'LANG', '1-31').
+      3) Seleccion Personalizada por Categorias o Numeros (ej: 'BASE', 'AI', 'TERM', 'TUI', 'EBPF', 'LANG', '1-33').
 
 .PARAMETER SoloObligatorio
     Si se activa, gestiona UNICAMENTE el software oficial requerido por DevOps.
@@ -32,10 +32,12 @@
 
 [CmdletBinding()]
 param (
+    [Alias("SoloBase", "Base", "Core")]
     [switch]$SoloObligatorio = $false,
     [switch]$Completo = $false,
     [string]$Categoria = "",
-    [switch]$AutoApprove = $false,
+    [switch]$AutoApprove = $true,       # Por defecto true: automático sin confirmaciones redundantes
+    [switch]$Menu = $false,             # Solo abre menú si se pasa explícitamente -Menu
     [switch]$SkipExtensions = $false
 )
 
@@ -68,20 +70,54 @@ function Write-Info {
     Write-Host " [i]  $Text" -ForegroundColor Cyan
 }
 
-# 1. VERIFICACION DE PRIVILEGIOS DE ADMINISTRADOR
+# 1. VERIFICACION DE PRIVILEGIOS DE ADMINISTRADOR CON AUTO-ELEVACION TRANSPARENTE (UAC)
 Write-Header "VERIFICACION DE PRIVILEGIOS DEL SISTEMA"
 
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-ErrorMsg "Este script requiere permisos de Administrador para instalar software en Windows."
-    Write-WarningMsg "Por favor, haz clic derecho sobre PowerShell y selecciona 'Ejecutar como Administrador'."
-    if (-not $AutoApprove) {
-        try {
-            Write-Host "`nPresiona cualquier tecla para salir..."
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        } catch {}
+    Write-WarningMsg "Este instalador requiere permisos de Administrador para instalar software en Windows (winget)."
+    Write-Host " [*] Elevando automáticamente a Administrador mediante Control de Cuentas de Usuario (UAC)..." -ForegroundColor Green
+    Write-Host " [!] Por favor, haz clic en 'SÍ' en la ventana emergente de Windows para continuar." -ForegroundColor Yellow
+    Write-Host ""
+
+    # Reconstruir parametros para el proceso elevado
+    $paramList = @()
+    if ($SoloObligatorio) { 
+        $paramList += "-SoloBase" 
+    } elseif ($Completo) { 
+        $paramList += "-Completo" 
+    } elseif (-not [string]::IsNullOrWhiteSpace($Categoria)) { 
+        $paramList += "-Categoria `"$Categoria`"" 
     }
-    Exit 1
+    if ($AutoApprove) { $paramList += "-AutoApprove" }
+    if ($SkipExtensions) { $paramList += "-SkipExtensions" }
+    
+    $scriptPath = $PSCommandPath
+    if (-not $scriptPath) {
+        $scriptPath = (Resolve-Path ".\instalar-tools-devops.ps1" -ErrorAction SilentlyContinue).Path
+        if (-not $scriptPath) {
+            $scriptPath = (Resolve-Path ".\scripts\instalar-tools-devops.ps1" -ErrorAction SilentlyContinue).Path
+        }
+    }
+    
+    if ($scriptPath -and (Test-Path $scriptPath)) {
+        $fullArgs = "-NoExit -ExecutionPolicy Bypass -File `"$scriptPath`" " + ($paramList -join " ")
+        try {
+            Start-Process powershell.exe -Verb RunAs -ArgumentList $fullArgs
+            Write-Success "Ventana de instalación de Administrador iniciada correctamente."
+            Write-Host " [i] Continúa en la ventana de Administrador abierta." -ForegroundColor Cyan
+            Exit 0
+        } catch {
+            Write-ErrorMsg "El diálogo UAC fue cancelado o no se concedieron permisos de Administrador."
+            Write-WarningMsg "Para abrir una consola de Administrador directamente desde PowerShell, ejecuta:"
+            Write-Host "   Start-Process powershell -Verb RunAs" -ForegroundColor Yellow
+            Exit 1
+        }
+    } else {
+        Write-ErrorMsg "No se pudo determinar la ruta del script para la auto-elevación."
+        Write-WarningMsg "Por favor, haz clic derecho sobre PowerShell y selecciona 'Ejecutar como Administrador'."
+        Exit 1
+    }
 }
 Write-Success "Permisos de Administrador verificados correctamente."
 
@@ -125,8 +161,10 @@ $ghosttyPath = "$env:LOCALAPPDATA\Programs\ghostty"
 if (Test-Path $ghosttyPath) { $env:Path += ";$ghosttyPath" }
 $goPath = "C:\Program Files\Go\bin"
 if (Test-Path $goPath) { $env:Path += ";$goPath" }
+$cargoPath = "$env:USERPROFILE\.cargo\bin"
+if (Test-Path $cargoPath) { $env:Path += ";$cargoPath" }
 
-# 3. CATALOGO COMPLETO DE HERRAMIENTAS CATEGORIZADAS (31 TOOLS)
+# 3. CATALOGO COMPLETO DE HERRAMIENTAS CATEGORIZADAS (33 TOOLS)
 $allTools = @(
     # --- [BASE] SOFTWARE BASE DEVOPS (CORE ESENCIAL) ---
     @{ IdNum=1;  Categoria="BASE"; CatNombre="Software Base DevOps (Core Esencial)"; Name="Zoom Workplace"; Id="Zoom.Zoom"; Command="zoom"; VersionArg=""; Description="Videoconferencias y comunicacion de equipo"; InstallerType="winget"; Tipo="Obligatorio"; CustomCheck={ Test-Path "$env:APPDATA\Zoom\bin\Zoom.exe", "C:\Program Files\Zoom\bin\Zoom.exe", "$env:LOCALAPPDATA\Zoom\bin\Zoom.exe" } },
@@ -157,19 +195,21 @@ $allTools = @(
     @{ IdNum=22; Categoria="TUI"; CatNombre="Herramientas TUI y Productividad"; Name="Lazydocker (TUI Docker)"; Id="JesseDuffield.Lazydocker"; Command="lazydocker"; VersionArg="--version"; Description="Visor TUI para Docker"; InstallerType="winget"; Tipo="Optativo" },
     @{ IdNum=23; Categoria="TUI"; CatNombre="Herramientas TUI y Productividad"; Name="k9s (TUI Kubernetes)"; Id="Derailed.k9s"; Command="k9s"; VersionArg="version"; Description="Monitor interactivo para Kubernetes"; InstallerType="winget"; Tipo="Optativo" },
 
-    # --- [EBPF] CONTENEDORES, REDES & EBPF ---
-    @{ IdNum=24; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes y eBPF"; Name="nerdctl (containerd CLI)"; Id="containerd.nerdctl"; Command="nerdctl"; VersionArg="version"; Description="CLI compatible con Docker para containerd"; InstallerType="nerdctl"; Tipo="Optativo"; CustomCheck={ (Get-Command "nerdctl" -ErrorAction SilentlyContinue) -or (Get-Command "nerctl" -ErrorAction SilentlyContinue) } },
-    @{ IdNum=25; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes y eBPF"; Name="Cilium CLI (eBPF)"; Id="Cilium.CiliumCLI"; Command="cilium"; VersionArg="version --client"; Description="CLI oficial de Cilium para redes y eBPF en K8s"; InstallerType="winget"; Tipo="Optativo" },
-    @{ IdNum=26; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes y eBPF"; Name="Hubble CLI (eBPF)"; Id="Cilium.Hubble"; Command="hubble"; VersionArg="version"; Description="CLI de Hubble para observabilidad de red con eBPF"; InstallerType="winget"; Tipo="Optativo" },
+    # --- [EBPF] CONTENEDORES, REDES, SEGURIDAD & EBPF ---
+    @{ IdNum=24; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes, Seguridad y eBPF"; Name="nerdctl (containerd CLI)"; Id="containerd.nerdctl"; Command="nerdctl"; VersionArg="version"; Description="CLI compatible con Docker para containerd"; InstallerType="nerdctl"; Tipo="Optativo"; CustomCheck={ (Get-Command "nerdctl" -ErrorAction SilentlyContinue) -or (Get-Command "nerctl" -ErrorAction SilentlyContinue) } },
+    @{ IdNum=25; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes, Seguridad y eBPF"; Name="Cilium CLI (eBPF)"; Id="Cilium.CiliumCLI"; Command="cilium"; VersionArg="version --client"; Description="CLI oficial de Cilium para redes y eBPF en K8s"; InstallerType="winget"; Tipo="Optativo" },
+    @{ IdNum=26; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes, Seguridad y eBPF"; Name="Hubble CLI (eBPF)"; Id="Cilium.Hubble"; Command="hubble"; VersionArg="version"; Description="CLI de Hubble para observabilidad de red con eBPF"; InstallerType="winget"; Tipo="Optativo" },
+    @{ IdNum=27; Categoria="EBPF"; CatNombre="Contenedores Alternativos, Redes, Seguridad y eBPF"; Name="Trivy (Vulnerability Scanner)"; Id="AquaSecurity.Trivy"; Command="trivy"; VersionArg="--version"; Description="Escaner de vulnerabilidades y seguridad para contenedores, K8s e IaC"; InstallerType="winget"; Tipo="Optativo" },
 
     # --- [LANG] LENGUAJES & RUNTIMES DEVOPS ---
-    @{ IdNum=27; Categoria="LANG"; CatNombre="Lenguajes de Programacion y Runtimes"; Name="Go (Golang)"; Id="GoLang.Go"; Command="go"; VersionArg="version"; Description="Lenguaje Go para herramientas K8s, Docker y eBPF"; InstallerType="winget"; Tipo="Optativo" },
-    @{ IdNum=28; Categoria="LANG"; CatNombre="Lenguajes de Programacion y Runtimes"; Name="Python 3.12"; Id="Python.Python.3.12"; Command="python"; VersionArg="--version"; Description="Lenguaje Python para scripting y automatizacion DevOps"; InstallerType="winget"; Tipo="Optativo" },
+    @{ IdNum=28; Categoria="LANG"; CatNombre="Lenguajes de Programacion y Runtimes"; Name="Go (Golang)"; Id="GoLang.Go"; Command="go"; VersionArg="version"; Description="Lenguaje Go para herramientas K8s, Docker y eBPF"; InstallerType="winget"; Tipo="Optativo" },
+    @{ IdNum=29; Categoria="LANG"; CatNombre="Lenguajes de Programacion y Runtimes"; Name="Python 3.12"; Id="Python.Python.3.12"; Command="python"; VersionArg="--version"; Description="Lenguaje Python para scripting y automatizacion DevOps"; InstallerType="winget"; Tipo="Optativo" },
+    @{ IdNum=30; Categoria="LANG"; CatNombre="Lenguajes de Programacion y Runtimes"; Name="Rust (Rustup / Cargo)"; Id="Rustlang.Rustup"; Command="rustc"; VersionArg="--version"; Description="Lenguaje de sistemas moderno para herramientas Cloud y CLI de alto rendimiento"; InstallerType="winget"; Tipo="Optativo" },
 
     # --- [AI] SUITE DE AGENTES DE INTELIGENCIA ARTIFICIAL ---
-    @{ IdNum=29; Categoria="AI"; CatNombre="Suite de Agentes de Inteligencia Artificial"; Name="Claude Code CLI"; Id="@anthropic-ai/claude-code"; Command="claude"; VersionArg="--version"; Description="Agente autonomo de Anthropic en terminal"; InstallerType="npm"; Tipo="Optativo" },
-    @{ IdNum=30; Categoria="AI"; CatNombre="Suite de Agentes de Inteligencia Artificial"; Name="OpenAI GPT CLI (Shell-GPT)"; Id="shell-gpt"; Command="sgpt"; VersionArg="--version"; Description="CLI para consultas a OpenAI"; InstallerType="pip"; Tipo="Optativo" },
-    @{ IdNum=31; Categoria="AI"; CatNombre="Suite de Agentes de Inteligencia Artificial"; Name="OMP (Oh My Pi AI Agent)"; Id="OMP"; Command="omp"; VersionArg="--version"; Description="Agente de IA para terminal (omp.sh)"; InstallerType="omp"; Tipo="Optativo" }
+    @{ IdNum=31; Categoria="AI"; CatNombre="Suite de Agentes de Inteligencia Artificial"; Name="Claude Code CLI"; Id="@anthropic-ai/claude-code"; Command="claude"; VersionArg="--version"; Description="Agente autonomo de Anthropic en terminal"; InstallerType="npm"; Tipo="Optativo" },
+    @{ IdNum=32; Categoria="AI"; CatNombre="Suite de Agentes de Inteligencia Artificial"; Name="OpenAI GPT CLI (Shell-GPT)"; Id="shell-gpt"; Command="sgpt"; VersionArg="--version"; Description="CLI para consultas a OpenAI"; InstallerType="pip"; Tipo="Optativo" },
+    @{ IdNum=33; Categoria="AI"; CatNombre="Suite de Agentes de Inteligencia Artificial"; Name="OMP (Oh My Pi AI Agent)"; Id="OMP"; Command="omp"; VersionArg="--version"; Description="Agente de IA para terminal (omp.sh)"; InstallerType="omp"; Tipo="Optativo" }
 )
 
 # 4. ESCANEO PREVIO DEL SISTEMA (MARCAJE EN VIVO DE ESTADO)
@@ -227,26 +267,31 @@ $selectedTools = @()
 
 if ($SoloObligatorio) {
     $selectedTools = $allTools | Where-Object { $_.Categoria -eq "BASE" }
-    Write-Info "Modo seleccionado por parametro: SOLO SOFTWARE BASE OBLIGATORIO."
+    Write-Info "Modo directo: SOFTWARE BASE DEVOPS (CORE ESENCIAL)."
 } elseif ($Completo) {
     $selectedTools = $allTools
-    Write-Info "Modo seleccionado por parametro: ECOSISTEMA COMPLETO."
+    Write-Info "Modo directo: ECOSISTEMA COMPLETO (33 Herramientas)."
 } elseif (-not [string]::IsNullOrWhiteSpace($Categoria)) {
     $catList = $Categoria.ToUpper() -split '[, ]+' | Where-Object { $_ -ne "" }
     $selectedTools = $allTools | Where-Object { $catList -contains $_.Categoria }
-    Write-Info "Modo seleccionado por parametro: CATEGORIAS ($($catList -join ', '))."
+    Write-Info "Modo directo: CATEGORIAS ($($catList -join ', '))."
 } else {
     Write-Header "SELECCION DE TIPO DE INSTALACION"
-    Write-Host " [1] Solo Software Base DevOps (Core Esencial) (Recomendado para desarrollo e infraestructura)" -ForegroundColor Green
-    Write-Host "     -> Zoom, Git, GitHub CLI (gh), VS Code, Docker, Terraform, AWS CLI, Azure CLI, Kubectl, Helm, Minikube, jq" -ForegroundColor Gray
+    Write-Host " [1] Solo Software Base DevOps (Core Esencial) [1-12]" -ForegroundColor Green
+    Write-Host "     -> Zoom, Git, gh, VS Code, Docker, Terraform, AWS CLI, Azure CLI, Kubectl, Helm, Minikube, jq" -ForegroundColor Gray
     Write-Host ""
-    Write-Host " [2] Ecosistema Completo (Obligatorio + Todas las 31 herramientas)" -ForegroundColor Cyan
-    Write-Host "     -> Instala todo el catalogo (Terminales, XMPP, TUIs, Redes eBPF, Lenguajes y Suite IA)" -ForegroundColor Gray
+    Write-Host " [2] Ecosistema Completo (Instalar todas las 33 herramientas)" -ForegroundColor Cyan
+    Write-Host "     -> Core + Terminales (Zed, WezTerm, Ghostty), TUIs, Redes eBPF, Lenguajes (Go, Rust), Suite IA" -ForegroundColor Gray
     Write-Host ""
     Write-Host " [3] Seleccion por Categorias o Numeros (Elige que bloques instalar)" -ForegroundColor Magenta
-    Write-Host "     -> Permite seleccionar categorias enteras ('BASE', 'AI', 'TERM', 'TUI', 'EBPF', 'LANG') o IDs" -ForegroundColor Gray
+    Write-Host "     -> Categorias [C1] a [C6] o rango de numeros (ej: 'C4', 'C1, C4', '13-33')" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "Selecciona una opcion [1, 2 o 3] (Default = 1): " -ForegroundColor Yellow -NoNewline
+    Write-Host " [4] Ver Comandos de Todas las Herramientas (Cheat Sheet de verificacion y uso)" -ForegroundColor Yellow
+    Write-Host "     -> Muestra la guia de comandos rapidos de cada una de las 33 herramientas" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host " [5] Salir (Sin realizar cambios)" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "Selecciona una opcion [1, 2, 3, 4 o 5] (Enter = Opcion 1 Base): " -ForegroundColor Yellow -NoNewline
     $modeChoice = Read-Host
 
     if ($modeChoice -eq "2") {
@@ -256,13 +301,27 @@ if ($SoloObligatorio) {
         Write-Header "CATALOGO DE HERRAMIENTAS AGRUPADAS POR CATEGORIA"
         
         $categoriesInfo = @(
-            @{ Code="BASE"; Name="SOFTWARE BASE DEVOPS (CORE ESENCIAL)"; Color="Yellow"; Range="1 - 12" },
-            @{ Code="TERM"; Name="TERMINALES, COMUNICACION Y EDITORES"; Color="Green"; Range="13 - 18" },
-            @{ Code="TUI";  Name="HERRAMIENTAS TUI Y PRODUCTIVIDAD"; Color="Cyan"; Range="19 - 23" },
-            @{ Code="EBPF"; Name="CONTENEDORES, REDES Y EBPF"; Color="Magenta"; Range="24 - 26" },
-            @{ Code="LANG"; Name="LENGUAJES Y RUNTIMES DEVOPS"; Color="White"; Range="27 - 28" },
-            @{ Code="AI";   Name="SUITE DE AGENTES DE IA (AIOPS)"; Color="DarkCyan"; Range="29 - 31" }
+            @{ Num=1; Code="BASE"; Name="SOFTWARE BASE DEVOPS (CORE ESENCIAL)"; Color="Yellow"; Range="1 - 12" },
+            @{ Num=2; Code="TERM"; Name="TERMINALES, COMUNICACION Y EDITORES"; Color="Green"; Range="13 - 18" },
+            @{ Num=3; Code="TUI";  Name="HERRAMIENTAS TUI Y PRODUCTIVIDAD"; Color="Cyan"; Range="19 - 23" },
+            @{ Num=4; Code="EBPF"; Name="CONTENEDORES, REDES, SEGURIDAD Y EBPF"; Color="Magenta"; Range="24 - 27" },
+            @{ Num=5; Code="LANG"; Name="LENGUAJES Y RUNTIMES DEVOPS"; Color="White"; Range="28 - 30" },
+            @{ Num=6; Code="AI";   Name="SUITE DE AGENTES DE IA (AIOPS)"; Color="DarkCyan"; Range="31 - 33" }
         )
+
+        Write-Host "======================================================================" -ForegroundColor Cyan
+        Write-Host " RESUMEN DE CATEGORIAS DISPONIBLES (Puedes elegir por C1..C6 o Nombre):" -ForegroundColor Yellow
+        foreach ($ci in $categoriesInfo) {
+            $catTools = $allTools | Where-Object { $_.Categoria -eq $ci.Code }
+            $instCount = ($catTools | Where-Object { $_.IsInstalled }).Count
+            $totCount = $catTools.Count
+            $catTag = "  [C$($ci.Num)]".PadRight(8)
+            $codeTag = "[$($ci.Code)]".PadRight(8)
+            $nameStr = "$($ci.Name) (Herramientas $($ci.Range))".PadRight(50)
+            Write-Host "$catTag $codeTag $nameStr [$instCount/$totCount instaladas]" -ForegroundColor $ci.Color
+        }
+        Write-Host "======================================================================" -ForegroundColor Cyan
+        Write-Host ""
 
         foreach ($cat in $categoriesInfo) {
             $catTools = $allTools | Where-Object { $_.Categoria -eq $cat.Code }
@@ -270,7 +329,7 @@ if ($SoloObligatorio) {
             $totalCount = $catTools.Count
             
             Write-Host "----------------------------------------------------------------------" -ForegroundColor DarkGray
-            Write-Host " [*] CATEGORIA: [$($cat.Code)] $($cat.Name)  (Instaladas: $installedCount/$totalCount)" -ForegroundColor $cat.Color
+            Write-Host " [*] CATEGORIA [C$($cat.Num)] [$($cat.Code)]: $($cat.Name)  (Instaladas: $installedCount/$totalCount)" -ForegroundColor $cat.Color
             Write-Host "----------------------------------------------------------------------" -ForegroundColor DarkGray
             
             foreach ($t in $catTools) {
@@ -287,10 +346,11 @@ if ($SoloObligatorio) {
 
         Write-Host "======================================================================" -ForegroundColor Cyan
         Write-Host " COMO SELECCIONAR:" -ForegroundColor Yellow
-        Write-Host "  * Por Categorias completas : Ingresa codigos como 'BASE', 'AI', 'TUI', 'TERM', 'EBPF', 'LANG'" -ForegroundColor White
-        Write-Host "  * Varias Categorias juntas : 'BASE, AI, TUI'" -ForegroundColor White
-        Write-Host "  * Por Numeros o Rangos     : '1-11', '12, 18, 20-25' o '1-31' para instalar todo lo faltante" -ForegroundColor White
-        Write-Host "  * Combinado                : 'AI, 6, 7, 11'" -ForegroundColor White
+        Write-Host "  * Por Numero de Categoria : Ingresa 'C1', 'C2', 'C3', 'C4', 'C5', 'C6'" -ForegroundColor White
+        Write-Host "  * Varias Categorias juntas: 'C1, C4' o 'BASE, EBPF, AI'" -ForegroundColor White
+        Write-Host "  * Por Codigo de Categoria : 'BASE', 'TERM', 'TUI', 'EBPF', 'LANG', 'AI'" -ForegroundColor White
+        Write-Host "  * Por Numeros de Tools    : '1-12', '13-18', '24, 25', '1-33'" -ForegroundColor White
+        Write-Host "  * Combinado               : 'C4, 14, 20'" -ForegroundColor White
         Write-Host "======================================================================" -ForegroundColor Cyan
         Write-Host "Tu seleccion: " -ForegroundColor Yellow -NoNewline
         $customInput = Read-Host
@@ -303,23 +363,30 @@ if ($SoloObligatorio) {
             $tokens = $customInput.ToUpper() -split '[, ]+' | Where-Object { $_ -ne "" }
             
             foreach ($token in $tokens) {
-                # 1. Si es codigo de categoria
-                $matchingCat = $allTools | Where-Object { $_.Categoria -eq $token }
-                if ($matchingCat) {
-                    $chosenTools += $matchingCat
+                # 1. Si es seleccion por categoria C1..C6 o CAT1..CAT6
+                if ($token -match '^C(?:AT)?([1-6])$') {
+                    $cNum = [int]$matches[1]
+                    $targetCat = $categoriesInfo | Where-Object { $_.Num -eq $cNum }
+                    if ($targetCat) {
+                        $chosenTools += ($allTools | Where-Object { $_.Categoria -eq $targetCat.Code })
+                    }
                 }
-                # 2. Si es rango de numeros (ej: 10-15)
+                # 2. Si es codigo de categoria directo (ej: BASE, AI, EBPF)
+                elseif ($allTools | Where-Object { $_.Categoria -eq $token }) {
+                    $chosenTools += ($allTools | Where-Object { $_.Categoria -eq $token })
+                }
+                # 3. Si es rango de numeros (ej: 10-15)
                 elseif ($token -match '^(\d+)-(\d+)$') {
                     $start = [int]$matches[1]
                     $end = [int]$matches[2]
                     $chosenTools += ($allTools | Where-Object { $_.IdNum -ge $start -and $_.IdNum -le $end })
                 }
-                # 3. Si es numero individual (ej: 10)
+                # 4. Si es numero individual (ej: 10)
                 elseif ($token -match '^\d+$') {
                     $idNum = [int]$token
                     $chosenTools += ($allTools | Where-Object { $_.IdNum -eq $idNum })
                 }
-                # 4. Si pide 'ALL' o 'TODO'
+                # 5. Si pide 'ALL' o 'TODO'
                 elseif ($token -in @("ALL", "TODO", "*")) {
                     $chosenTools += $allTools
                 }
@@ -335,9 +402,27 @@ if ($SoloObligatorio) {
                 Write-Success "Has seleccionado $($selectedTools.Count) herramientas para procesar."
             }
         }
+    } elseif ($modeChoice -eq "4") {
+        $curDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+        if (-not $curDir) { $curDir = $PWD.Path }
+        $cmdScript = Join-Path $curDir "mostrar-todos-comandos.ps1"
+        if (-not (Test-Path $cmdScript)) {
+            $cmdScript = Join-Path $curDir "scripts\mostrar-todos-comandos.ps1"
+        }
+        if (Test-Path $cmdScript) {
+            & powershell -ExecutionPolicy Bypass -File $cmdScript
+        } else {
+            Write-WarningMsg "No se encontro el script de comandos en $cmdScript"
+        }
+        Write-Host "Presiona cualquier tecla para salir..." -ForegroundColor Gray
+        [Console]::ReadKey($true) | Out-Null
+        Exit 0
+    } elseif ($modeChoice -eq "5") {
+        Write-WarningMsg "Saliendo del instalador."
+        Exit 0
     } else {
         $selectedTools = $allTools | Where-Object { $_.Categoria -eq "BASE" }
-        Write-Info "Has seleccionado: SOLO SOFTWARE BASE OBLIGATORIO."
+        Write-Info "Has seleccionado: SOFTWARE BASE DEVOPS (CORE ESENCIAL)."
     }
 }
 
@@ -357,10 +442,29 @@ foreach ($tool in $selectedTools) {
 
 # 7. INSTALACION EXCLUSIVA DE LAS HERRAMIENTAS FALTANTES
 if ($missingTools.Count -eq 0) {
-    Write-Header "TODO EN ORDEN"
-    Write-Success "Todas las herramientas seleccionadas ya estan instaladas en tu equipo."
-    Write-Info "No se requiere realizar ninguna descarga ni instalacion."
-} else {
+    Write-Header "TODO EN ORDEN EN ESTA SELECCION"
+    Write-Success "Todas las herramientas de esta seleccion ya estan instaladas en tu equipo."
+    
+    # Comprobar si hay otras herramientas optativas del curso sin instalar
+    $otherMissing = $allTools | Where-Object { -not $_.IsInstalled }
+    if ($otherMissing.Count -gt 0) {
+        Write-Host ""
+        Write-Host " [i] Tienes $($otherMissing.Count) herramientas optativas del curso disponibles para instalar:" -ForegroundColor Cyan
+        foreach ($om in $otherMissing) {
+            Write-Host "     - [$($om.Categoria)] $($om.Name) ($($om.Id))" -ForegroundColor Yellow
+        }
+        Write-Host ""
+        Write-Host " ¿Deseas instalar estas $($otherMissing.Count) herramientas optativas ahora? (S/n) [Enter = Sí]: " -ForegroundColor Yellow -NoNewline
+        $respOpt = Read-Host
+        if ([string]::IsNullOrWhiteSpace($respOpt) -or ($respOpt -match "^[sSyY]")) {
+            $missingTools = $otherMissing
+        }
+    } else {
+        Write-Info "Tienes el 100% de las 33 herramientas del curso instaladas en tu sistema."
+    }
+}
+
+if ($missingTools.Count -gt 0) {
     Write-Header "INSTALACION DE HERRAMIENTAS PENDIENTES"
     Write-Host "Se instalaran $($missingTools.Count) herramientas que faltan en el sistema:" -ForegroundColor Yellow
     foreach ($m in $missingTools) {
@@ -369,9 +473,9 @@ if ($missingTools.Count -eq 0) {
 
     if (-not $AutoApprove) {
         Write-Host ""
-        Write-Host "Deseas proceder con la instalacion de estas $($missingTools.Count) herramientas? (S/N): " -ForegroundColor Yellow -NoNewline
+        Write-Host "Deseas proceder con la instalacion de estas $($missingTools.Count) herramientas? (S/n) [Enter = Sí]: " -ForegroundColor Yellow -NoNewline
         $response = Read-Host
-        if ($response -notmatch "^[sSyY]") {
+        if ($response -and ($response -notmatch "^[sSyY]")) {
             Write-WarningMsg "Instalacion cancelada por el usuario."
             Exit 0
         }
