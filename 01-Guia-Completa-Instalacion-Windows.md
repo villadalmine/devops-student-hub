@@ -29,6 +29,8 @@ Este es el stack tecnológico que cada usuario y docente **debe tener instalado 
 | **Kubernetes CLI (kubectl)** | `Kubernetes.kubectl` (1.28+) | Administración de clústeres y despliegue de manifiestos. |
 | **Helm** | `Helm.Helm` (3.12+) | Gestor de paquetes y charts para Kubernetes. |
 | **Minikube** | `Kubernetes.minikube` (1.32+) | Clúster local ligero de Kubernetes para pruebas y laboratorios. |
+| **GNU Make (make)** | `ezwinports.make` / `GnuWin32.Make` | Orquestador de tareas, automatización y ejecución de Makefiles de laboratorio. |
+| **Taskfile (task)** | `Task.Task` (3.53+) | Orquestador moderno de tareas basado en Taskfile.yml (alternativa contemporánea a GNU Make). |
 | **jq (JSON Processor)** | `jqlang.jq` (1.7+) | Procesamiento, parsing y filtrado de respuestas JSON en pipelines y CLIs. |
 | **WSL 2 (Ubuntu)** | Kernel 5.10+ | Subsistema de Linux para Windows (backend de Docker). |
 
@@ -70,6 +72,7 @@ Las herramientas opcionales están organizadas en **5 categorías temáticas** p
 * **OpenAI GPT CLI (`sgpt`):** CLI para consultas directas a modelos de lenguaje GPT.
 * **OMP (`omp` - omp.sh):** Agente agnóstico de IA para terminal que conecta modelos (Claude, OpenAI, Gemini, Ollama).
 * **Antigravity CLI (`agy`):** CLI agéntico avanzado de Google DeepMind.
+* **HolmesGPT CLI (`holmes`):** Copiloto de Inteligencia Artificial para AIOps e investigación automatizada de incidentes y alertas de Prometheus en Kubernetes (`pip install holmesgpt`).
 
 ---
 

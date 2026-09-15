@@ -58,6 +58,8 @@ $coreTools = @(
     @{ Name="Kubernetes CLI (kubectl)"; Cmd="kubectl"; Args="version --client" },
     @{ Name="Helm"; Cmd="helm"; Args="version --short" },
     @{ Name="Minikube"; Cmd="minikube"; Args="version --short" },
+    @{ Name="GNU Make (make)"; Cmd="make"; Args="--version"; CustomCheck={ (Get-Command "make" -ErrorAction SilentlyContinue) -or (Test-Path "C:\Program Files (x86)\GnuWin32\bin\make.exe") -or (Test-Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\ezwinports.make_Microsoft.Winget.Source_8wekyb3d8bbwe\bin\make.exe") } },
+    @{ Name="Taskfile (task)"; Cmd="task"; Args="--version"; CustomCheck={ (Get-Command "task" -ErrorAction SilentlyContinue) -or (Test-Path "$env:LOCALAPPDATA\Microsoft\WinGet\Links\task.exe") } },
     @{ Name="jq (JSON Processor)"; Cmd="jq"; Args="--version"; CustomCheck={ (Get-Command "jq" -ErrorAction SilentlyContinue) -or (Test-Path "$env:LOCALAPPDATA\Microsoft\WinGet\Links\jq.exe") } }
 )
 
@@ -138,6 +140,7 @@ $optTools = @(
     @{ Name="Antigravity CLI"; Cmd="agy"; Args="--version" },
     @{ Name="OpenAI GPT CLI (sgpt)"; Cmd="sgpt"; Args="--version" },
     @{ Name="OMP (Oh My Pi AI Agent)"; Cmd="omp"; Args="--version" },
+    @{ Name="HolmesGPT CLI (AIOps)"; Cmd="holmes"; Args="version"; CustomCheck={ (Get-Command "holmes" -ErrorAction SilentlyContinue) -or (Test-Path "C:\Users\rino\AppData\Roaming\Python\Python314\Scripts\holmes.exe") } },
     @{ Name="Node.js"; Cmd="node"; Args="--version" }
 )
 

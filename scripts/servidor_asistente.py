@@ -28,6 +28,9 @@ import threading
 import subprocess
 import webbrowser
 import urllib.parse
+import urllib.request
+import urllib.error
+import sqlite3
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
@@ -57,10 +60,13 @@ else:
 VIDEOS_DIR = os.path.join(STUDENT_DIR, "videos")
 MIS_APUNTES_DIR = os.path.join(STUDENT_DIR, "mis_apuntes")
 PRACTICAS_DIR = os.path.join(STUDENT_DIR, "practicas")
+MAPA_ESTUDIO_DIR = os.path.join(STUDENT_DIR, "mapa_estudio")
+LOCAL_RAG_DB = os.path.join(MAPA_ESTUDIO_DIR, "conocimiento_local.db")
 
 os.makedirs(VIDEOS_DIR, exist_ok=True)
 os.makedirs(MIS_APUNTES_DIR, exist_ok=True)
 os.makedirs(PRACTICAS_DIR, exist_ok=True)
+os.makedirs(MAPA_ESTUDIO_DIR, exist_ok=True)
 
 SYSTEM_LOGS = []
 
@@ -71,6 +77,32 @@ def log_event(level, msg):
     SYSTEM_LOGS.append(log_entry)
     if len(SYSTEM_LOGS) > 200:
         SYSTEM_LOGS.pop(0)
+
+# ==================================================================
+# PROXY DE TEMARIO EN VIVO — study.cybercirujas.club (proyecto abierto
+# villadalmine/study-cybercirujas). Su API pública no expone CORS, así que
+# el navegador no puede leerla directo: este servidor la consulta por vos
+# (server-to-server, sin restricción de CORS) y la cachea en memoria para
+# no golpearla de más — el propio proyecto pide "cache what you fetch".
+# ==================================================================
+CYBERCIRUJAS_BASE = "https://study.cybercirujas.club"
+CYBERCIRUJAS_CACHE = {}
+CYBERCIRUJAS_CACHE_TTL = 600  # 10 minutos
+
+def fetch_cybercirujas(path):
+    """GET a study.cybercirujas.club con caché en memoria. Devuelve (ok, data_o_error)."""
+    now = time.time()
+    cached = CYBERCIRUJAS_CACHE.get(path)
+    if cached and (now - cached[0]) < CYBERCIRUJAS_CACHE_TTL:
+        return True, cached[1]
+    try:
+        req = urllib.request.Request(CYBERCIRUJAS_BASE + path, headers={"User-Agent": "CloudDevOpsStudentHub/1.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        CYBERCIRUJAS_CACHE[path] = (now, data)
+        return True, data
+    except Exception as e:
+        return False, str(e)
 
 log_event("INIT", f"Servidor Hub Universal Alumnos iniciado en {STUDENT_DIR}")
 if getattr(sys, "frozen", False):
@@ -294,6 +326,41 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         elif path == "/api/mis_apuntes":
             self.handle_api_mis_apuntes()
             return
+        elif path == "/api/materiales":
+            self.handle_api_materiales()
+            return
+        elif path == "/api/mapa_estudio/estado":
+            self.handle_mapa_estudio_estado()
+            return
+        elif path == "/api/mapa_estudio/buscar":
+            q = query.get("q", [""])[0]
+            limit_raw = query.get("limit", ["8"])[0]
+            limit = int(limit_raw) if limit_raw.isdigit() else 8
+            self.handle_mapa_estudio_buscar(q, limit)
+            return
+        elif path == "/api/mapa_estudio/documento":
+            doc_id_raw = query.get("id", [""])[0]
+            if not doc_id_raw.isdigit():
+                self.send_json({"ok": False, "error": "id inválido"}, status=400)
+                return
+            self.handle_mapa_estudio_documento(int(doc_id_raw))
+            return
+        elif path == "/api/ollama/modelos":
+            self.handle_ollama_modelos()
+            return
+        elif path == "/api/cybercirujas/catalogo":
+            self.handle_cybercirujas_catalogo()
+            return
+        elif path == "/api/cybercirujas/temario":
+            cert_id = query.get("cert", [""])[0]
+            self.handle_cybercirujas_temario(cert_id)
+            return
+        elif path == "/api/cybercirujas/material":
+            cert_id = query.get("cert", [""])[0]
+            topic_id = query.get("topic", [""])[0]
+            lang = query.get("lang", ["es"])[0]
+            self.handle_cybercirujas_material(cert_id, topic_id, lang)
+            return
         elif path == "/api/exportar_aportes":
             self.handle_exportar_aportes()
             return
@@ -377,6 +444,20 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                 self.send_json({"ok": False, "error": f"Error escribiendo archivo: {str(e)}"}, status=500)
             return
 
+        elif path == "/api/mapa_estudio/importar":
+            self.handle_mapa_estudio_importar()
+            return
+
+        elif path == "/api/motor_local":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            try:
+                body = json.loads(post_data)
+            except Exception:
+                body = {}
+            self.handle_motor_local(body)
+            return
+
         self.send_json({"error": "Endpoint no encontrado"}, status=404)
 
     def send_json(self, data, status=200):
@@ -429,6 +510,334 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                             "carpeta": carpeta
                         })
         self.send_json({"ok": True, "apuntes": apuntes_list})
+
+    def handle_api_materiales(self):
+        """Catálogo de materiales de estudio disponibles para el Bot IA (guías oficiales, apuntes y aportes).
+        Selección explícita en vez de RAG: el alumno elige el documento y se envía completo como contexto
+        (mismo criterio que el bot de study-cybercirujas, ver docs/STUDY_BOT_DESIGN.md del proyecto)."""
+        materiales = []
+
+        guias_raiz = [
+            ("01-Guia-Completa-Instalacion-Windows.md", "Guía Instalación Windows", "guia"),
+            ("02-Guia-Instalacion-Linux.md", "Guía Instalación Linux", "guia"),
+            ("03-Guia-Instalacion-MacOS.md", "Guía Instalación macOS", "guia"),
+            ("01-Instalacion-Software-y-Diagnostico.md", "Instalación de Software y Diagnóstico", "guia"),
+            ("README.md", "Introducción al Workspace / Student Hub", "guia"),
+        ]
+        for rel_name, titulo, cat in guias_raiz:
+            abs_p = os.path.join(STUDENT_DIR, rel_name)
+            if os.path.exists(abs_p):
+                materiales.append({
+                    "titulo": titulo,
+                    "rel_path": rel_name,
+                    "categoria": cat,
+                    "tamano_kb": round(os.path.getsize(abs_p) / 1024, 2)
+                })
+
+        carpetas = [
+            ("apuntes", "apunte_curso", "Apunte del curso"),
+            ("mis_apuntes", "mi_apunte", "Mi apunte"),
+            ("practicas", "practica", "Práctica"),
+            ("aportes", "aporte", "Aporte"),
+        ]
+        for carpeta, cat, etiqueta in carpetas:
+            folder_p = os.path.join(STUDENT_DIR, carpeta)
+            if os.path.exists(folder_p):
+                for root, _, files in os.walk(folder_p):
+                    for f in sorted(files):
+                        if f.lower() == "readme.md":
+                            continue
+                        if not f.lower().endswith((".md", ".markdown", ".txt")):
+                            continue
+                        abs_p = os.path.join(root, f)
+                        rel_p = os.path.relpath(abs_p, STUDENT_DIR).replace("\\", "/")
+                        nombre_limpio = os.path.splitext(f)[0].replace("_", " ").replace("-", " ")
+                        materiales.append({
+                            "titulo": f"{etiqueta}: {nombre_limpio}",
+                            "rel_path": rel_p,
+                            "categoria": cat,
+                            "tamano_kb": round(os.path.getsize(abs_p) / 1024, 2)
+                        })
+
+        self.send_json({"ok": True, "materiales": materiales})
+
+    # ==================================================================
+    # TEMARIO EN VIVO DE study.cybercirujas.club — otra fuente de material
+    # explícito para el Bot IA, además de los archivos locales y el Mapa de
+    # Estudio del docente. Mismo criterio "selección explícita" que el resto:
+    # el alumno elige certificación + tema y se manda el contenido completo.
+    # ==================================================================
+    def handle_cybercirujas_catalogo(self):
+        ok, data = fetch_cybercirujas("/api/catalog")
+        if not ok:
+            self.send_json({"ok": False, "error": f"No se pudo contactar a study.cybercirujas.club: {data}"}, status=502)
+            return
+        certificaciones = [
+            {"id": cert_id, "name": info.get("name", cert_id), "vendor": info.get("vendor", ""), "level": info.get("level", ""), "category": info.get("category", "")}
+            for cert_id, info in data.items()
+        ]
+        certificaciones.sort(key=lambda c: (c["vendor"], c["name"]))
+        self.send_json({"ok": True, "certificaciones": certificaciones})
+
+    def handle_cybercirujas_temario(self, cert_id):
+        if not cert_id:
+            self.send_json({"ok": False, "error": "Falta el parámetro cert"}, status=400)
+            return
+        ok, data = fetch_cybercirujas(f"/api/certs/{urllib.parse.quote(cert_id)}")
+        if not ok:
+            self.send_json({"ok": False, "error": f"No se pudo obtener el temario de '{cert_id}': {data}"}, status=502)
+            return
+        topics = [
+            {"id": t.get("id"), "title": t.get("title"), "topic": t.get("topic"), "weight": t.get("weight"), "available": t.get("available", False)}
+            for t in data.get("topics", [])
+        ]
+        self.send_json({"ok": True, "cert": data.get("cert", {}).get("name", cert_id), "topics": topics})
+
+    def handle_cybercirujas_material(self, cert_id, topic_id, lang):
+        if not cert_id or not topic_id:
+            self.send_json({"ok": False, "error": "Faltan los parámetros cert y topic"}, status=400)
+            return
+        path = f"/api/certs/{urllib.parse.quote(cert_id)}/topics/{urllib.parse.quote(topic_id)}?lang={urllib.parse.quote(lang or 'es')}"
+        ok, data = fetch_cybercirujas(path)
+        if not ok:
+            self.send_json({"ok": False, "error": f"No se pudo obtener el material: {data}"}, status=502)
+            return
+        titulo = (data.get("topic") or {}).get("title", f"{cert_id} {topic_id}")
+        self.send_json({
+            "ok": True,
+            "titulo": f"{cert_id.upper()} {topic_id} — {titulo}",
+            "contenido": data.get("content", ""),
+            "generado_por": (data.get("generated_by") or {}).get("model", "desconocido"),
+            "lang": data.get("lang", lang)
+        })
+
+    # ==================================================================
+    # MAPA DE ESTUDIO — RAG local (import del export del docente + búsqueda
+    # FTS5) y motor de IA alternativo (Ollama local / CLI instalada).
+    # Mismo esquema y filosofía que el RAG del docente (scripts/servidor_docente_rag.py):
+    # tabla + tabla virtual FTS5, motor "call_ai_engine" con subprocess/HTTP,
+    # adaptado para correr 100% en la máquina del alumno.
+    # ==================================================================
+    def handle_mapa_estudio_estado(self):
+        if not os.path.exists(LOCAL_RAG_DB):
+            self.send_json({"ok": True, "importado": False})
+            return
+        try:
+            con = sqlite3.connect(LOCAL_RAG_DB)
+            total = con.execute("SELECT COUNT(*) FROM conocimiento").fetchone()[0]
+            categorias = [r[0] for r in con.execute("SELECT DISTINCT categoria FROM conocimiento ORDER BY categoria")]
+            con.close()
+            importado_el = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(LOCAL_RAG_DB)))
+            self.send_json({"ok": True, "importado": True, "total": total, "categorias": categorias, "importado_el": importado_el})
+        except Exception as e:
+            self.send_json({"ok": False, "error": f"Índice local dañado, reimportá: {e}"}, status=500)
+
+    def handle_mapa_estudio_importar(self):
+        htmls = []
+        if os.path.exists(MAPA_ESTUDIO_DIR):
+            htmls = [f for f in os.listdir(MAPA_ESTUDIO_DIR) if f.lower().endswith(".html")]
+        if not htmls:
+            self.send_json({
+                "ok": False,
+                "error": "No se encontró ningún .html en la carpeta mapa_estudio/. Pedile al docente el export ('Mapa de Estudio') y colocalo ahí."
+            }, status=404)
+            return
+        htmls.sort(key=lambda f: os.path.getmtime(os.path.join(MAPA_ESTUDIO_DIR, f)), reverse=True)
+        origen = htmls[0]
+        origen_path = os.path.join(MAPA_ESTUDIO_DIR, origen)
+        try:
+            with open(origen_path, "r", encoding="utf-8") as f:
+                html_text = f.read()
+            m = re.search(r'<script type="application/json" id="mapa-estudio-data">(.*?)</script>', html_text, re.DOTALL)
+            if not m:
+                self.send_json({"ok": False, "error": f"'{origen}' no tiene el formato de Mapa de Estudio esperado (falta el bloque de datos)."}, status=400)
+                return
+            payload = json.loads(m.group(1))
+            documentos = payload.get("documentos", [])
+
+            if os.path.exists(LOCAL_RAG_DB):
+                os.remove(LOCAL_RAG_DB)
+            con = sqlite3.connect(LOCAL_RAG_DB)
+            con.execute("""CREATE TABLE conocimiento (
+                id INTEGER PRIMARY KEY, titulo TEXT, categoria TEXT, clase INTEGER,
+                modulo TEXT, tags TEXT, resumen TEXT, contenido TEXT, fuente TEXT
+            )""")
+            con.execute("CREATE VIRTUAL TABLE conocimiento_fts USING fts5(titulo, contenido, tags, content='conocimiento', content_rowid='id')")
+            for d in documentos:
+                con.execute(
+                    "INSERT INTO conocimiento (id, titulo, categoria, clase, modulo, tags, resumen, contenido, fuente) VALUES (?,?,?,?,?,?,?,?,?)",
+                    (
+                        d.get("id"), d.get("titulo", ""), d.get("categoria", ""), d.get("clase"),
+                        d.get("modulo", ""), ", ".join(d.get("tags", []) or []), d.get("resumen", ""),
+                        d.get("contenido", ""), d.get("fuente", "")
+                    )
+                )
+            con.execute("INSERT INTO conocimiento_fts(conocimiento_fts) VALUES ('rebuild')")
+            con.commit()
+            total = con.execute("SELECT COUNT(*) FROM conocimiento").fetchone()[0]
+            categorias = [r[0] for r in con.execute("SELECT DISTINCT categoria FROM conocimiento ORDER BY categoria")]
+            con.close()
+            log_event("RAG", f"Mapa de Estudio importado desde {origen}: {total} documentos indexados localmente.")
+            self.send_json({"ok": True, "total": total, "categorias": categorias, "origen": origen})
+        except Exception as e:
+            self.send_json({"ok": False, "error": f"Error importando el mapa de estudio: {e}"}, status=500)
+
+    def handle_mapa_estudio_buscar(self, q, limit=8):
+        if not os.path.exists(LOCAL_RAG_DB):
+            self.send_json({"ok": False, "error": "Todavía no importaste un Mapa de Estudio. Primero presioná 'Importar / Reindexar'."}, status=404)
+            return
+        words = re.findall(r"[\w\u00c0-\u017f]+", q, flags=re.UNICODE)
+        if not words:
+            self.send_json({"ok": True, "resultados": []})
+            return
+        tokens = [f'"{w}"' for w in words]
+        con = sqlite3.connect(LOCAL_RAG_DB)
+        con.row_factory = sqlite3.Row
+        sql = """
+            SELECT c.id, c.titulo, c.categoria, c.clase, c.modulo, c.tags, c.resumen,
+                   snippet(conocimiento_fts, 1, '**', '**', '…', 10) AS fragmento
+            FROM conocimiento_fts f JOIN conocimiento c ON f.rowid = c.id
+            WHERE conocimiento_fts MATCH ? ORDER BY rank LIMIT ?
+        """
+        try:
+            filas = con.execute(sql, (" AND ".join(tokens), limit)).fetchall()
+            if not filas:
+                filas = con.execute(sql, (" OR ".join(tokens), limit)).fetchall()
+        except sqlite3.OperationalError as e:
+            con.close()
+            self.send_json({"ok": False, "error": f"Consulta inválida: {e}"}, status=400)
+            return
+        con.close()
+        self.send_json({"ok": True, "resultados": [dict(r) for r in filas]})
+
+    def handle_mapa_estudio_documento(self, doc_id):
+        if not os.path.exists(LOCAL_RAG_DB):
+            self.send_json({"ok": False, "error": "No hay índice local importado."}, status=404)
+            return
+        con = sqlite3.connect(LOCAL_RAG_DB)
+        con.row_factory = sqlite3.Row
+        fila = con.execute(
+            "SELECT id, titulo, categoria, clase, modulo, tags, contenido, fuente FROM conocimiento WHERE id = ?",
+            (doc_id,)
+        ).fetchone()
+        con.close()
+        if not fila:
+            self.send_json({"ok": False, "error": f"No existe el documento id={doc_id}"}, status=404)
+            return
+        self.send_json({"ok": True, "documento": dict(fila)})
+
+    def handle_ollama_modelos(self):
+        """Detecta los modelos realmente descargados en el Ollama local del alumno (GET /api/tags),
+        para que el selector de la UI ofrezca modelos reales en vez de un nombre adivinado."""
+        try:
+            req = urllib.request.Request("http://localhost:11434/api/tags")
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            modelos = [m.get("name") for m in data.get("models", []) if m.get("name")]
+            self.send_json({"ok": True, "disponible": True, "modelos": modelos})
+        except Exception:
+            self.send_json({"ok": True, "disponible": False, "modelos": []})
+
+    def handle_motor_local(self, body):
+        """Motor de IA alternativo a OpenRouter: Ollama local o una CLI de agente instalada
+        (claude / gemini / omp / codex). Mismo patrón que call_ai_engine() del servidor RAG
+        del docente (scripts/servidor_docente_rag.py), sin dependencias de clave externa."""
+        engine = body.get("engine", "")
+        system_prompt = body.get("system", "")
+        pregunta = (body.get("pregunta") or "").strip()
+        historial = body.get("historial", []) or []
+        if not pregunta:
+            self.send_json({"ok": False, "error": "Falta la pregunta."}, status=400)
+            return
+
+        start = time.time()
+
+        if engine == "ollama":
+            modelo = (body.get("ollama_model") or "llama3.2").strip()
+            mensajes = [{"role": "system", "content": system_prompt}]
+            for h in historial[-6:]:
+                if h.get("role") in ("user", "assistant") and h.get("content"):
+                    mensajes.append({"role": h["role"], "content": h["content"]})
+            mensajes.append({"role": "user", "content": pregunta})
+            try:
+                req = urllib.request.Request(
+                    "http://localhost:11434/api/chat",
+                    data=json.dumps({"model": modelo, "messages": mensajes, "stream": False}).encode("utf-8"),
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(req, timeout=90) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                respuesta = (data.get("message") or {}).get("content", "").strip()
+                if not respuesta:
+                    self.send_json({"ok": False, "error": f"Ollama respondió vacío para '{modelo}'. ¿Lo descargaste? Probá: ollama pull {modelo}"}, status=502)
+                    return
+                self.send_json({"ok": True, "respuesta": respuesta, "motor": f"ollama:{modelo}", "elapsed_seg": round(time.time() - start, 1)})
+            except urllib.error.HTTPError as e:
+                # Ollama SÍ está corriendo (contestó), pero rechazó la request — típicamente
+                # el modelo pedido no está descargado. Nunca confundir esto con "no conecta".
+                try:
+                    detalle = json.loads(e.read().decode("utf-8")).get("error", "")
+                except Exception:
+                    detalle = ""
+                if "not found" in detalle.lower():
+                    self.send_json({"ok": False, "error": f"Ollama está corriendo, pero no tenés el modelo '{modelo}' descargado. Ejecutá: ollama pull {modelo}"}, status=404)
+                else:
+                    self.send_json({"ok": False, "error": f"Ollama rechazó la consulta: {detalle or e.reason}"}, status=502)
+            except urllib.error.URLError:
+                self.send_json({"ok": False, "error": "No se pudo conectar con Ollama en localhost:11434. ¿Está instalado y corriendo? Ejecutá: ollama serve"}, status=502)
+            except Exception as e:
+                self.send_json({"ok": False, "error": f"Error consultando Ollama: {e}"}, status=500)
+            return
+
+        if engine == "cli":
+            cli_id = (body.get("cli") or "").strip()
+            # via "stdin": el prompt se manda por entrada estándar (igual que claude -p en el servidor docente).
+            # via "arg": el prompt se pasa como argumento de línea de comandos.
+            cli_configs = {
+                "claude": {"bin": "claude", "args": ["-p"], "via": "stdin"},
+                "gemini": {"bin": "gemini", "args": ["-p"], "via": "arg"},
+                "omp": {"bin": "omp", "args": [], "via": "arg"},
+                "codex": {"bin": "codex", "args": ["exec"], "via": "arg"},
+            }
+            cfg = cli_configs.get(cli_id)
+            if not cfg:
+                self.send_json({"ok": False, "error": f"CLI no soportada: {cli_id}"}, status=400)
+                return
+            binario = shutil.which(cfg["bin"])
+            if not binario:
+                self.send_json({
+                    "ok": False,
+                    "error": f"No se encontró '{cfg['bin']}' instalado en tu PATH. Instalalo desde la pestaña 'Instalación & Software' (categoría 🤖 Agentes IA)."
+                }, status=404)
+                return
+
+            historial_txt = ""
+            for h in historial[-6:]:
+                if h.get("role") == "user":
+                    historial_txt += f"\nAlumno: {h.get('content', '')}\n"
+                elif h.get("role") == "assistant":
+                    historial_txt += f"Asistente: {h.get('content', '')}\n"
+            full_prompt = f"{system_prompt}\n{historial_txt}\nAlumno: {pregunta}\nAsistente:"
+
+            try:
+                log_event("CLI", f"Invocando {cfg['bin']} para el Asistente IA del alumno...")
+                if cfg["via"] == "stdin":
+                    res = subprocess.run([binario] + cfg["args"], input=full_prompt, capture_output=True, text=True, encoding="utf-8", timeout=120)
+                else:
+                    res = subprocess.run([binario] + cfg["args"] + [full_prompt], capture_output=True, text=True, encoding="utf-8", timeout=120)
+                respuesta = (res.stdout or "").strip()
+                if res.returncode != 0 or not respuesta:
+                    error_txt = (res.stderr or "sin salida").strip()[:300]
+                    self.send_json({"ok": False, "error": f"{cfg['bin']} finalizó con error: {error_txt}"}, status=502)
+                    return
+                self.send_json({"ok": True, "respuesta": respuesta, "motor": f"cli:{cfg['bin']}", "elapsed_seg": round(time.time() - start, 1)})
+            except subprocess.TimeoutExpired:
+                self.send_json({"ok": False, "error": f"{cfg['bin']} tardó demasiado (más de 120s) y se canceló."}, status=504)
+            except Exception as e:
+                self.send_json({"ok": False, "error": f"Error ejecutando {cfg['bin']}: {e}"}, status=500)
+            return
+
+        self.send_json({"ok": False, "error": f"Motor desconocido: {engine}"}, status=400)
 
     def handle_exportar_aportes(self):
         """Genera un archivo ZIP con todos los apuntes y prácticas del alumno para compartir."""

@@ -79,6 +79,9 @@
     <button onclick="cambiarTab('aportes')" id="tabBtn-aportes" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>🎒</span> <span>Mis Aportes & Notas</span>
     </button>
+    <button onclick="cambiarTab('asistente')" id="tabBtn-asistente" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>🤖</span> <span>Asistente IA</span>
+    </button>
     <button onclick="cambiarTab('telemetria')" id="tabBtn-telemetria" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>📡</span> <span>Logs & Telemetría</span>
     </button>
@@ -418,6 +421,167 @@
       </div>
     </section>
 
+    <!-- ================================================================= -->
+    <!-- TAB: ASISTENTE IA (BOT CON CLAVE OPENROUTER DEL ALUMNO) -->
+    <!-- ================================================================= -->
+    <section id="tab-asistente" class="hidden flex flex-col gap-6">
+      <div class="bg-gradient-to-r from-slate-900 via-purple-950/30 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col gap-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xl">🤖</span>
+          <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Asistente IA — Bot multi-motor (tu clave, tu PC, tu elección)</h2>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-mono font-bold">Costo $0 para la plataforma</span>
+        </div>
+        <p class="text-xs md:text-sm text-slate-300 leading-relaxed max-w-3xl">
+          Elegís el <strong>motor</strong> (OpenRouter en la nube con tu clave, Ollama local, o una CLI de agente ya instalada), el <strong>material</strong> (una guía, un apunte, o un resultado buscado en el <em>Mapa de Estudio</em> que te pasó el docente) y el modelo lo recibe completo — selección explícita en vez de RAG ciego. Con OpenRouter, la clave se guarda solo en <code class="text-cyan-400">localStorage</code> y las preguntas van directo a <code class="text-cyan-400">openrouter.ai</code>, nunca pasan por este servidor. Diseño y catálogo de modelos gratis tomados del proyecto abierto <a href="https://github.com/villadalmine/study-cybercirujas/blob/main/DEVELOPERS.md" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline">study-cybercirujas</a>.
+        </p>
+        <p class="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+          ⚠️ Las respuestas son generadas por IA y <strong>no están verificadas</strong> por el docente. Usalas como apoyo de estudio, no como fuente única — contrastá siempre con la guía oficial.
+        </p>
+      </div>
+
+      <!-- MOTOR DE IA -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+        <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>🔌</span> Motor de IA</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button onclick="cambiarMotorBot('openrouter')" id="botEngineBtn-openrouter" class="bot-engine-btn text-left bg-cyan-600/20 border border-cyan-500 text-cyan-100 text-xs font-semibold px-3 py-2.5 rounded-xl transition">
+            🌐 OpenRouter <span class="block text-[10px] font-normal text-slate-400">Nube · tu clave · modelos gratis</span>
+          </button>
+          <button onclick="cambiarMotorBot('ollama')" id="botEngineBtn-ollama" class="bot-engine-btn text-left bg-slate-800/80 border border-slate-700 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">
+            💻 Ollama local <span class="block text-[10px] font-normal text-slate-400">100% offline · sin clave</span>
+          </button>
+          <button onclick="cambiarMotorBot('cli')" id="botEngineBtn-cli" class="bot-engine-btn text-left bg-slate-800/80 border border-slate-700 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">
+            🤖 CLI instalada <span class="block text-[10px] font-normal text-slate-400">Claude Code / Gemini / OMP / Codex</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONFIGURACIÓN: MOTOR SELECCIONADO Y MATERIAL -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Config OpenRouter -->
+        <div id="botConfigOpenRouter" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 lg:col-span-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>🔑</span> Tu clave de OpenRouter</h3>
+              <input id="botOpenRouterKeyInput" type="password" placeholder="sk-or-v1-..." class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+              <div class="flex items-center gap-2">
+                <button onclick="guardarClaveOpenRouterBot()" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">💾 Guardar</button>
+                <button onclick="olvidarClaveOpenRouterBot()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg transition" title="Olvidar clave guardada">🗑️</button>
+              </div>
+              <p id="botKeyStatus" class="text-[11px] text-slate-400">Sin clave configurada.</p>
+              <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" class="text-[11px] text-cyan-400 hover:underline">↗ Conseguir una clave gratis en openrouter.ai</a>
+            </div>
+            <div class="flex flex-col gap-2">
+              <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>🧠</span> Modelo (catálogo gratis :free)</h3>
+              <select id="botModelSelect" onchange="cambiarModeloBot()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition"></select>
+              <p id="botModelDesc" class="text-[11px] text-slate-400"></p>
+              <p id="botModelCostWarning" class="hidden text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-1.5"></p>
+              <p class="text-[10px] text-slate-500">Catálogo completo (gratis + pago) de <a href="https://study.cybercirujas.club/api/models" target="_blank" rel="noopener noreferrer" class="text-cyan-500 hover:underline">study.cybercirujas.club/api/models</a> (snapshot 2026-09-14). Los modelos pagos se cobran de verdad a tu clave.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Config Ollama -->
+        <div id="botConfigOllama" class="hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 lg:col-span-2">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>💻</span> Ollama local</h3>
+            <button onclick="detectarModelosOllamaBot()" class="text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">🔄 Detectar modelos instalados</button>
+          </div>
+          <select id="botOllamaModelSelect" onchange="cambiarModeloOllamaBot()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+            <option value="">Presioná "Detectar modelos instalados"</option>
+          </select>
+          <p id="botOllamaEstado" class="text-[11px] text-slate-400">La pregunta se procesa 100% en tu PC, sin clave ni internet.</p>
+          <p class="text-[10px] text-slate-500">Necesitás Ollama corriendo (<code class="text-cyan-400">ollama serve</code>). Si la lista sale vacía, descargá un modelo con <code class="text-cyan-400">ollama pull llama3.2</code> y volvé a detectar.</p>
+        </div>
+
+        <!-- Config CLI -->
+        <div id="botConfigCli" class="hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 lg:col-span-2">
+          <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>🤖</span> CLI de agente instalada</h3>
+          <select id="botCliSelect" onchange="cambiarCliBot()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+            <option value="claude">Claude Code CLI (claude)</option>
+            <option value="gemini">Gemini CLI (gemini)</option>
+            <option value="omp">OMP — Oh My Pi (omp)</option>
+            <option value="codex">Codex CLI (codex)</option>
+          </select>
+          <p class="text-[11px] text-slate-400">Corre el binario ya instalado en tu PC (pestaña "Instalación & Software" → 🤖 Agentes IA) en modo no interactivo. Sin clave de OpenRouter.</p>
+        </div>
+
+        <!-- Selector de material local -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+          <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>📎</span> Material local</h3>
+          <select id="botMaterialSelect" onchange="cargarMaterialSeleccionadoBot()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+            <option value="">Sin material (solo tu pregunta)</option>
+          </select>
+          <p id="botMaterialInfo" class="text-[11px] text-slate-400">Guías, apuntes y aportes de este equipo.</p>
+          <label class="flex items-center gap-2 text-[11px] text-slate-300 cursor-pointer">
+            <input id="botRecordarToggle" type="checkbox" class="accent-cyan-500">
+            Recordar la conversación (reenvía las últimas 6 respuestas; gasta más tokens)
+          </label>
+        </div>
+      </div>
+
+      <!-- MAPA DE ESTUDIO DEL DOCENTE (RAG LOCAL) -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>📚</span> Mapa de Estudio del Docente (RAG local)</h3>
+          <button onclick="importarMapaEstudioBot()" class="bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-200 hover:text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg transition">📥 Importar / Reindexar</button>
+        </div>
+        <p id="botMapaEstado" class="text-[11px] text-slate-400">Sin importar todavía. Pedile al docente el export ("Mapa de Estudio") y colocalo en la carpeta <code class="text-cyan-400">mapa_estudio/</code> de este workspace.</p>
+        <div class="flex items-center gap-2">
+          <input id="botMapaBuscarInput" type="text" placeholder="Buscar en el mapa de estudio: 'CrashLoopBackOff', 'terraform plan', 'módulo 5'..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition" onkeydown="if(event.key==='Enter') buscarMapaEstudioBot()">
+          <button onclick="buscarMapaEstudioBot()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition">🔍 Buscar</button>
+        </div>
+        <div id="botMapaResultados" class="flex flex-col gap-1.5"></div>
+      </div>
+
+      <!-- TEMARIO EN VIVO DE study-cybercirujas.club -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>🌐</span> Temario en vivo de study-cybercirujas.club</h3>
+          <span class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full font-mono">CKA, CKAD, AWS, Azure, LPI y más</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Además de tu material local, podés traer temario real de certificaciones (Linux, Kubernetes, Cloud, IA) directo desde el catálogo abierto de study-cybercirujas — se consulta al vuelo, no se guarda en este equipo.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <select id="botCyberCertSelect" onchange="cargarTemarioCyberciruajsBot()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+            <option value="">Cargando certificaciones...</option>
+          </select>
+          <select id="botCyberTopicSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+            <option value="">Elegí primero una certificación</option>
+          </select>
+          <button onclick="cargarMaterialCyberciruajsBot()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition">📥 Cargar como material</button>
+        </div>
+        <p id="botCyberEstado" class="text-[11px] text-slate-500"></p>
+      </div>
+
+      <!-- MODO DE PREGUNTA (TASK HARNESS) -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h3 class="font-bold text-xs text-white flex items-center gap-2"><span>🎯</span> Elegí qué necesitás</h3>
+          <span id="botUsageStats" class="text-[10px] font-mono text-slate-500">Sesión: 0 preguntas · 0 tokens · $0 USD gastados</span>
+        </div>
+        <div id="botMaterialActivo" class="hidden text-[11px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2"></div>
+        <p id="botCostoEstimado" class="hidden text-[11px]"></p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <button onclick="prepararIntentBot('doc_qa')" class="bot-intent-btn bg-slate-800/80 hover:bg-indigo-600/40 border border-slate-700 hover:border-indigo-500 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">📖 Explicámelo distinto</button>
+          <button onclick="prepararIntentBot('lab_assistant')" class="bot-intent-btn bg-slate-800/80 hover:bg-emerald-600/40 border border-slate-700 hover:border-emerald-500 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">🧪 Dame un ejercicio</button>
+          <button onclick="prepararIntentBot('quiz_practice')" class="bot-intent-btn bg-slate-800/80 hover:bg-amber-600/40 border border-slate-700 hover:border-amber-500 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">❓ Tomame una posta</button>
+          <button onclick="prepararIntentBot('tutor')" class="bot-intent-btn bg-slate-800/80 hover:bg-purple-600/40 border border-slate-700 hover:border-purple-500 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">🎓 ¿Qué preguntaría el profe?</button>
+        </div>
+
+        <textarea id="botQuestionInput" rows="3" placeholder="Escribí tu pregunta o pedile ayuda con un error de terminal (docker, kubectl, terraform...)" class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 transition resize-y"></textarea>
+        <div class="flex items-center justify-between">
+          <button onclick="borrarConversacionBot()" class="text-[11px] text-slate-400 hover:text-red-400 transition">🗑️ Borrar conversación</button>
+          <button id="botSendBtn" onclick="enviarPreguntaBot()" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-950/40">
+            <span>🚀</span> <span>Preguntar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONVERSACIÓN -->
+      <div id="botChatMessages" class="bg-slate-950 border border-slate-800/90 rounded-2xl p-5 flex flex-col gap-4 min-h-[10rem]">
+        <p class="text-xs text-slate-500 italic text-center py-6">Configurá tu clave, elegí un modelo y hacé tu primera pregunta 👆</p>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL VISOR DE DOCUMENTOS MARKDOWN -->
@@ -594,6 +758,7 @@
       cargarVideos();
       cargarTelemetria();
       setInterval(cargarTelemetria, 4000);
+      inicializarBotIA();
     });
 
     // CAMBIO DE SISTEMA OPERATIVO
@@ -807,7 +972,7 @@
 
     // GESTIÓN DE PESTAÑAS
     function cambiarTab(tabId) {
-      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'telemetria'];
+      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
@@ -819,6 +984,9 @@
         ejecutarDiagnostico();
       } else if (tabId === 'aportes') {
         cargarMisApuntes();
+      } else if (tabId === 'asistente') {
+        cargarMaterialesBot();
+        cargarCertsCyberciruajsBot();
       }
     }
 
@@ -830,7 +998,7 @@
         if (data.ok && data.curso) {
           const c = data.curso;
           if (c.titulo) {
-            document.title = `${c.titulo} | Student Hub`;
+            document.title = c.titulo;
             const h = document.getElementById('cursoTituloHeader');
             if (h) h.textContent = c.titulo;
           }
@@ -1063,6 +1231,717 @@
 
     function cerrarVisorDoc() {
       document.getElementById('docViewerModal').classList.add('hidden');
+    }
+
+    // ==================================================================
+    // ASISTENTE IA (BOT) — cliente OpenRouter con la clave del alumno.
+    // Diseño BYO-key + selección explícita de material (sin RAG/vector DB)
+    // adaptado de study-cybercirujas: github.com/villadalmine/study-cybercirujas/blob/main/DEVELOPERS.md
+    // La clave del alumno solo se guarda en localStorage y viaja directo a
+    // openrouter.ai; este servidor nunca la recibe ni la reenvía.
+    // ==================================================================
+    const BOT_KEY_STORAGE = 'hubBot_openrouterKey';
+    const BOT_MODEL_STORAGE = 'hubBot_model';
+    const BOT_ENGINE_STORAGE = 'hubBot_engine';
+    const BOT_OLLAMA_MODEL_STORAGE = 'hubBot_ollamaModel';
+    const BOT_CLI_STORAGE = 'hubBot_cli';
+
+    // Catálogo COMPLETO (gratis + pagos) tomado de study.cybercirujas.club/api/models
+    // (OpenRouter, snapshot 2026-09-14). Precios "in"/"out" en USD por 1M de tokens.
+    const BOT_MODEL_TIERS = {
+      free: '🆓 Gratis ($0)',
+      low:  '💵 Económicos (< $1 /1M tok)',
+      mid:  '💰 Intermedios ($1–4 /1M tok)',
+      top:  '💎 Premium ($2.6–10 /1M tok)'
+    };
+    const BOT_MODELS = [
+      // GRATIS
+      { id: "nvidia/nemotron-3-super-120b-a12b:free", name: "Nemotron 3 Super 120B (NVIDIA)", tier: "free", in: 0, out: 0, nota: "Recomendado: respondió de forma estable en las pruebas de study-cybercirujas." },
+      { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron 3 Ultra 550B (NVIDIA)", tier: "free", in: 0, out: 0, nota: "Más grande y con más contexto (1M tokens); puede tardar más en responder." },
+      { id: "google/gemma-4-31b-it:free", name: "Gemma 4 31B (Google)", tier: "free", in: 0, out: 0, nota: "Puede saturarse (rate limit) en horarios pico; si no responde, reintentá o cambiá de modelo." },
+      { id: "google/gemma-4-26b-a4b-it:free", name: "Gemma 4 26B (Google)", tier: "free", in: 0, out: 0, nota: "Modelo liviano de Google; también puede saturarse en horarios pico." },
+      // ECONÓMICOS
+      { id: "qwen/qwen3.7-flash", name: "Qwen3.7 Flash", tier: "low", in: 0.03, out: 0.13, nota: "El más barato del catálogo pago." },
+      { id: "deepseek/deepseek-v4-flash", name: "DeepSeek V4 Flash", tier: "low", in: 0.0886, out: 0.1772, nota: "Piensa por defecto; se puede pedir sin razonamiento." },
+      { id: "openai/gpt-5-nano", name: "GPT-5 Nano", tier: "low", in: 0.05, out: 0.4, nota: "" },
+      { id: "minimax/minimax-m2.7", name: "MiniMax M2.7", tier: "low", in: 0.3, out: 1.2, nota: "" },
+      { id: "openai/gpt-5-mini", name: "GPT-5 Mini", tier: "low", in: 0.25, out: 2, nota: "Piensa siempre, aunque no lo pidas (cobra tokens de razonamiento)." },
+      { id: "anthropic/claude-haiku-4.5", name: "Claude Haiku 4.5", tier: "low", in: 1, out: 5, nota: "" },
+      // INTERMEDIOS
+      { id: "moonshotai/kimi-k2.5", name: "Kimi K2.5", tier: "mid", in: 0.45, out: 2.25, nota: "" },
+      { id: "deepseek/deepseek-v4-pro", name: "DeepSeek V4 Pro", tier: "mid", in: 1.6, out: 3.2, nota: "" },
+      { id: "qwen/qwen3.7-max", name: "Qwen3.7 Max", tier: "mid", in: 1.475, out: 4.425, nota: "" },
+      { id: "anthropic/claude-sonnet-5", name: "Claude Sonnet 5", tier: "mid", in: 2, out: 10, nota: "" },
+      { id: "openai/gpt-5.6-sol", name: "GPT-5.6 Sol", tier: "mid", in: 2, out: 10, nota: "" },
+      // PREMIUM
+      { id: "moonshotai/kimi-k3", name: "Kimi K3", tier: "top", in: 2.6481, out: 13.2827, nota: "" },
+      { id: "anthropic/claude-opus-5", name: "Claude Opus 5", tier: "top", in: 5, out: 25, nota: "" },
+      { id: "openai/gpt-6-astra", name: "GPT-6 Astra", tier: "top", in: 10, out: 50, nota: "El más caro del catálogo." }
+    ];
+
+    const BOT_INTENTS = {
+      doc_qa: {
+        label: "Explicámelo distinto",
+        prompt: "Explicá el tema del material (o de mi pregunta si no elegí material) con un enfoque distinto al habitual: cambiá el ángulo, usá una analogía nueva y aclará los puntos que suelen confundir a un alumno de DevOps. Si el material tiene fuentes o referencias, citalas; nunca inventes fuentes."
+      },
+      lab_assistant: {
+        label: "Dame un ejercicio",
+        prompt: "Dame UN ejercicio práctico de terminal sobre este tema, con pasos guiados. Poné la solución completa al final, dentro de un bloque que empiece con 'SOLUCIÓN:' para que pueda intentarlo antes de mirarla."
+      },
+      quiz_practice: {
+        label: "Tomame una posta",
+        prompt: "Haceme 3 preguntas de examen tipo múltiple choice sobre este tema, al estilo de un examen de certificación (AWS, CKA, Terraform o Docker según corresponda). Después de las 3 preguntas, mostrame las respuestas correctas con una justificación breve de cada una."
+      },
+      tutor: {
+        label: "¿Qué preguntaría el profesor?",
+        prompt: "Explicame qué preguntaría un profesor de DevOps sobre este tema en un examen oral o en una entrevista técnica de troubleshooting en producción. Dame 2 preguntas realistas y cómo debería estructurar una buena respuesta."
+      }
+    };
+
+    const BOT_SYSTEM_BASE = `Sos el Mentor y Asistente Técnico de IA del curso Cloud DevOps: Automatización y Despliegue (EducaciónIT).
+Tu objetivo es ayudar a diseñar arquitecturas escalables, resolver errores de consola y automatizar pipelines con mejores prácticas de la industria.
+Principios: 1) claridad conceptual antes que sintaxis; 2) mostrá el bloque de código completo y explicá los parámetros críticos; 3) en preguntas de práctica, usá escenarios reales de producción (troubleshooting, alta disponibilidad, seguridad); 4) ante un error de terminal (docker daemon not running, error connecting to the server, CrashLoopBackOff), analizá la causa raíz y dá comandos de resolución inmediatos.
+Respondé siempre en español rioplatense, de forma breve y técnica. Si el material de contexto no cubre algo, decilo explícitamente en vez de inventar.`;
+
+    let botState = {
+      engine: 'openrouter',
+      model: null,
+      ollamaModel: 'llama3.2',
+      cliId: 'claude',
+      materiales: [],
+      materialPath: "",
+      materialContenido: "",
+      materialNombre: "",
+      materialFuente: "",
+      materialCache: {},
+      mapaImportado: false,
+      historial: [],
+      preguntas: 0,
+      tokensTotales: 0,
+      costoTotalUSD: 0
+    };
+
+    function inicializarBotIA() {
+      const savedKey = localStorage.getItem(BOT_KEY_STORAGE);
+      const statusEl = document.getElementById('botKeyStatus');
+      if (savedKey && statusEl) {
+        statusEl.textContent = `Clave guardada (${savedKey.slice(0, 10)}...${savedKey.slice(-4)}). Se guarda solo en este navegador.`;
+        statusEl.classList.add('text-emerald-400');
+      }
+
+      const select = document.getElementById('botModelSelect');
+      if (select) {
+        select.innerHTML = renderOpcionesModelosBot();
+        botState.model = localStorage.getItem(BOT_MODEL_STORAGE) || BOT_MODELS[0].id;
+        if (!BOT_MODELS.some(m => m.id === botState.model)) botState.model = BOT_MODELS[0].id;
+        select.value = botState.model;
+        actualizarDescModeloBot();
+      }
+
+      botState.ollamaModel = localStorage.getItem(BOT_OLLAMA_MODEL_STORAGE) || '';
+
+      botState.cliId = localStorage.getItem(BOT_CLI_STORAGE) || 'claude';
+      const cliSelect = document.getElementById('botCliSelect');
+      if (cliSelect) cliSelect.value = botState.cliId;
+
+      cambiarMotorBot(localStorage.getItem(BOT_ENGINE_STORAGE) || 'openrouter');
+      cargarEstadoMapaEstudioBot();
+    }
+
+    // MOTOR DE IA: OpenRouter (nube) / Ollama (local) / CLI instalada
+    function cambiarMotorBot(engine) {
+      botState.engine = engine;
+      localStorage.setItem(BOT_ENGINE_STORAGE, engine);
+
+      const paneles = { openrouter: 'botConfigOpenRouter', ollama: 'botConfigOllama', cli: 'botConfigCli' };
+      ['openrouter', 'ollama', 'cli'].forEach(e => {
+        const panel = document.getElementById(paneles[e]);
+        if (panel) panel.classList.toggle('hidden', e !== engine);
+        const btn = document.getElementById(`botEngineBtn-${e}`);
+        if (btn) {
+          btn.classList.toggle('bg-cyan-600/20', e === engine);
+          btn.classList.toggle('border-cyan-500', e === engine);
+          btn.classList.toggle('text-cyan-100', e === engine);
+          btn.classList.toggle('bg-slate-800/80', e !== engine);
+          btn.classList.toggle('border-slate-700', e !== engine);
+          btn.classList.toggle('text-slate-200', e !== engine);
+        }
+      });
+      if (engine === 'ollama' && !botOllamaDetectado) detectarModelosOllamaBot();
+      actualizarEstimacionCostoBot();
+      actualizarIndicadorMaterialBot();
+    }
+
+    let botOllamaDetectado = false;
+    async function detectarModelosOllamaBot() {
+      botOllamaDetectado = true;
+      const select = document.getElementById('botOllamaModelSelect');
+      const estado = document.getElementById('botOllamaEstado');
+      estado.textContent = "Buscando modelos instalados en tu Ollama local...";
+      try {
+        const resp = await fetch('/api/ollama/modelos');
+        const data = await resp.json();
+        if (!data.disponible || data.modelos.length === 0) {
+          select.innerHTML = '<option value="">Sin modelos detectados</option>';
+          estado.textContent = data.disponible
+            ? "Ollama está corriendo pero no tenés ningún modelo descargado. Probá: ollama pull llama3.2"
+            : "No se detectó Ollama corriendo en localhost:11434. Instalalo, ejecutá 'ollama serve' y volvé a detectar.";
+          return;
+        }
+        select.innerHTML = data.modelos.map(m => `<option value="${m}">${m}</option>`).join('');
+        if (data.modelos.includes(botState.ollamaModel)) {
+          select.value = botState.ollamaModel;
+        } else {
+          botState.ollamaModel = data.modelos[0];
+          localStorage.setItem(BOT_OLLAMA_MODEL_STORAGE, botState.ollamaModel);
+          select.value = botState.ollamaModel;
+        }
+        estado.textContent = `✅ ${data.modelos.length} modelo(s) detectados. La pregunta se procesa 100% en tu PC, sin clave ni internet.`;
+      } catch (e) {
+        select.innerHTML = '<option value="">Error detectando modelos</option>';
+        estado.textContent = "Error de conexión con este servidor al buscar modelos de Ollama.";
+      } finally {
+        if (botState.engine === 'ollama') actualizarIndicadorMaterialBot();
+      }
+    }
+
+    function cambiarModeloOllamaBot() {
+      const select = document.getElementById('botOllamaModelSelect');
+      botState.ollamaModel = select.value;
+      localStorage.setItem(BOT_OLLAMA_MODEL_STORAGE, botState.ollamaModel);
+    }
+
+    function cambiarCliBot() {
+      const select = document.getElementById('botCliSelect');
+      botState.cliId = select.value;
+      localStorage.setItem(BOT_CLI_STORAGE, botState.cliId);
+    }
+
+    function guardarClaveOpenRouterBot() {
+      const input = document.getElementById('botOpenRouterKeyInput');
+      const key = input.value.trim();
+      if (!key) {
+        showToast("Pegá tu clave de OpenRouter antes de guardar", "error");
+        return;
+      }
+      localStorage.setItem(BOT_KEY_STORAGE, key);
+      input.value = "";
+      const statusEl = document.getElementById('botKeyStatus');
+      statusEl.textContent = `Clave guardada (${key.slice(0, 10)}...${key.slice(-4)}). Se guarda solo en este navegador.`;
+      statusEl.classList.add('text-emerald-400');
+      showToast("Clave de OpenRouter guardada en este equipo", "success");
+    }
+
+    function olvidarClaveOpenRouterBot() {
+      localStorage.removeItem(BOT_KEY_STORAGE);
+      const statusEl = document.getElementById('botKeyStatus');
+      statusEl.textContent = "Sin clave configurada.";
+      statusEl.classList.remove('text-emerald-400');
+      showToast("Clave eliminada de este navegador", "info");
+    }
+
+    function cambiarModeloBot() {
+      const select = document.getElementById('botModelSelect');
+      botState.model = select.value;
+      localStorage.setItem(BOT_MODEL_STORAGE, botState.model);
+      actualizarDescModeloBot();
+    }
+
+    function renderOpcionesModelosBot() {
+      const orden = ['free', 'low', 'mid', 'top'];
+      return orden.map(tier => {
+        const modelos = BOT_MODELS.filter(m => m.tier === tier);
+        if (!modelos.length) return '';
+        const opciones = modelos.map(m => {
+          const precio = m.tier === 'free' ? '' : ` — $${m.in}/$${m.out} por 1M tok`;
+          return `<option value="${m.id}">${m.name}${precio}</option>`;
+        }).join('');
+        return `<optgroup label="${BOT_MODEL_TIERS[tier]}">${opciones}</optgroup>`;
+      }).join('');
+    }
+
+    function actualizarDescModeloBot() {
+      const modelo = BOT_MODELS.find(m => m.id === botState.model);
+      const desc = document.getElementById('botModelDesc');
+      const warn = document.getElementById('botModelCostWarning');
+      if (!modelo) return;
+      if (desc) {
+        desc.textContent = modelo.tier === 'free'
+          ? (modelo.nota || 'Modelo gratis.')
+          : `${modelo.nota ? modelo.nota + ' ' : ''}Precio: $${modelo.in} /1M tok entrada · $${modelo.out} /1M tok salida.`;
+      }
+      if (warn) {
+        if (modelo.tier === 'free') {
+          warn.classList.add('hidden');
+        } else {
+          warn.classList.remove('hidden');
+          warn.textContent = `⚠️ Modelo PAGO — se cobra de verdad a tu clave de OpenRouter ($${modelo.in} /1M tok entrada, $${modelo.out} /1M tok salida).`;
+        }
+      }
+      actualizarEstimacionCostoBot();
+    }
+
+    function actualizarEstimacionCostoBot() {
+      const el = document.getElementById('botCostoEstimado');
+      if (!el) return;
+      if (botState.engine !== 'openrouter') {
+        el.classList.add('hidden');
+        return;
+      }
+      const modelo = BOT_MODELS.find(m => m.id === botState.model);
+      if (!modelo) {
+        el.classList.add('hidden');
+        return;
+      }
+      if (modelo.tier === 'free') {
+        el.classList.remove('hidden');
+        el.className = 'text-[11px] text-emerald-400';
+        el.textContent = '💵 Costo estimado de esta consulta: $0 USD (modelo gratis).';
+        return;
+      }
+      const materialTokens = botState.materialContenido ? Math.round(botState.materialContenido.length / 4) : 0;
+      const promptTokensAprox = materialTokens + 600; // system base + historial corto + pregunta
+      const maxOutTokens = 2000; // tope que manda el bot en cada request
+      const costoMax = (promptTokensAprox / 1e6) * modelo.in + (maxOutTokens / 1e6) * modelo.out;
+      el.classList.remove('hidden');
+      el.className = 'text-[11px] text-amber-300';
+      el.textContent = `💵 Costo estimado de esta consulta: hasta ~$${costoMax.toFixed(4)} USD (con ${materialTokens.toLocaleString('es-AR')} tok de material + tope de 2000 tok de respuesta).`;
+    }
+
+    async function cargarMaterialesBot() {
+      const select = document.getElementById('botMaterialSelect');
+      if (!select || botState.materiales.length > 0) return;
+      try {
+        const resp = await fetch('/api/materiales');
+        const data = await resp.json();
+        if (data.ok && data.materiales) {
+          botState.materiales = data.materiales;
+          const opciones = data.materiales.map(m =>
+            `<option value="${m.rel_path}">${m.titulo} (${m.tamano_kb} KB)</option>`
+          ).join('');
+          select.innerHTML = `<option value="">Sin material (solo tu pregunta)</option>${opciones}`;
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar el catálogo de materiales del bot:", e);
+      }
+    }
+
+    async function cargarMaterialSeleccionadoBot() {
+      const select = document.getElementById('botMaterialSelect');
+      const info = document.getElementById('botMaterialInfo');
+      const path = select.value;
+      botState.materialPath = path;
+
+      if (!path) {
+        quitarMaterialActivoBot();
+        info.textContent = "Guías, apuntes y aportes de este equipo.";
+        return;
+      }
+
+      if (botState.materialCache[path]) {
+        botState.materialContenido = botState.materialCache[path];
+      } else {
+        info.textContent = "Cargando material...";
+        try {
+          const resp = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
+          const texto = await resp.text();
+          botState.materialCache[path] = texto;
+          botState.materialContenido = texto;
+        } catch (e) {
+          info.textContent = "Error cargando el material seleccionado.";
+          return;
+        }
+      }
+
+      botState.materialNombre = select.options[select.selectedIndex].textContent;
+      botState.materialFuente = 'archivo';
+      const tokensAprox = Math.round(botState.materialContenido.length / 4);
+      info.textContent = `Cargado: ~${tokensAprox.toLocaleString('es-AR')} tokens estimados que se enviarán como contexto.`;
+      actualizarIndicadorMaterialBot();
+    }
+
+    function construirResumenEnvioBot() {
+      let motorTxt;
+      if (botState.engine === 'openrouter') {
+        const modelo = BOT_MODELS.find(m => m.id === botState.model);
+        motorTxt = `🌐 OpenRouter · ${modelo ? modelo.name : botState.model}`;
+      } else if (botState.engine === 'ollama') {
+        motorTxt = `💻 Ollama local · ${botState.ollamaModel || '(sin modelo detectado)'}`;
+      } else {
+        motorTxt = `🤖 CLI · ${botState.cliId}`;
+      }
+      const tokensAprox = botState.materialContenido ? Math.round(botState.materialContenido.length / 4) : 0;
+      const materialTxt = botState.materialContenido
+        ? `📎 con material: ${botState.materialNombre} (~${tokensAprox.toLocaleString('es-AR')} tok)`
+        : '📎 sin material adicional (solo tu pregunta)';
+      return { motorTxt, materialTxt };
+    }
+
+    function actualizarIndicadorMaterialBot() {
+      const chip = document.getElementById('botMaterialActivo');
+      if (chip) {
+        const { motorTxt, materialTxt } = construirResumenEnvioBot();
+        chip.classList.remove('hidden');
+        const quitarBtn = botState.materialContenido
+          ? `<button onclick="quitarMaterialActivoBot()" class="text-cyan-300 hover:text-white shrink-0" title="Quitar material">✕</button>`
+          : '';
+        chip.innerHTML = `<span>Vas a preguntar con: <strong>${motorTxt}</strong> · ${materialTxt}</span>${quitarBtn}`;
+      }
+      actualizarEstimacionCostoBot();
+    }
+
+    function quitarMaterialActivoBot() {
+      botState.materialContenido = "";
+      botState.materialNombre = "";
+      botState.materialFuente = "";
+      botState.materialPath = "";
+      const select = document.getElementById('botMaterialSelect');
+      if (select) select.value = "";
+      actualizarIndicadorMaterialBot();
+    }
+
+    function prepararIntentBot(intentId) {
+      const intent = BOT_INTENTS[intentId];
+      if (!intent) return;
+      const input = document.getElementById('botQuestionInput');
+      input.value = intent.prompt;
+      input.focus();
+      showToast(`Modo "${intent.label}" listo. Elegí un material si querés y presioná Preguntar.`, "info");
+    }
+
+    // MAPA DE ESTUDIO DEL DOCENTE — import del export HTML + búsqueda FTS5 local
+    async function cargarEstadoMapaEstudioBot() {
+      const estadoEl = document.getElementById('botMapaEstado');
+      if (!estadoEl) return;
+      try {
+        const resp = await fetch('/api/mapa_estudio/estado');
+        const data = await resp.json();
+        if (data.ok && data.importado) {
+          botState.mapaImportado = true;
+          estadoEl.innerHTML = `✅ <strong>${data.total}</strong> documentos indexados (${data.categorias.length} categorías) · importado el ${data.importado_el}.`;
+        } else {
+          botState.mapaImportado = false;
+          estadoEl.textContent = 'Sin importar todavía. Pedile al docente el export ("Mapa de Estudio") y colocalo en la carpeta mapa_estudio/ de este workspace.';
+        }
+      } catch (e) {
+        console.warn("No se pudo consultar el estado del Mapa de Estudio:", e);
+      }
+    }
+
+    async function importarMapaEstudioBot() {
+      const estadoEl = document.getElementById('botMapaEstado');
+      estadoEl.textContent = "Importando y reindexando...";
+      try {
+        const resp = await fetch('/api/mapa_estudio/importar', { method: 'POST' });
+        const data = await resp.json();
+        if (data.ok) {
+          showToast(`Mapa de Estudio importado: ${data.total} documentos`, "success");
+          cargarEstadoMapaEstudioBot();
+        } else {
+          estadoEl.textContent = `⚠️ ${data.error}`;
+          showToast(data.error || "No se pudo importar el Mapa de Estudio", "error");
+        }
+      } catch (e) {
+        estadoEl.textContent = "Error de conexión al importar.";
+        showToast("Error de conexión al importar el Mapa de Estudio", "error");
+      }
+    }
+
+    async function buscarMapaEstudioBot() {
+      const q = document.getElementById('botMapaBuscarInput').value.trim();
+      const resultados = document.getElementById('botMapaResultados');
+      if (!q) {
+        showToast("Escribí algo para buscar en el Mapa de Estudio", "error");
+        return;
+      }
+      resultados.innerHTML = '<p class="text-xs text-slate-500 italic">Buscando...</p>';
+      try {
+        const resp = await fetch(`/api/mapa_estudio/buscar?q=${encodeURIComponent(q)}&limit=8`);
+        const data = await resp.json();
+        if (!data.ok) {
+          resultados.innerHTML = `<p class="text-xs text-amber-400">${data.error}</p>`;
+          return;
+        }
+        if (data.resultados.length === 0) {
+          resultados.innerHTML = '<p class="text-xs text-slate-500 italic">Sin resultados para esa búsqueda.</p>';
+          return;
+        }
+        resultados.innerHTML = data.resultados.map(r => `
+          <button onclick="seleccionarDocumentoMapaBot(${r.id}, '${r.titulo.replace(/'/g, "\\'")}')" class="text-left bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-lg px-3 py-2 transition">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-white">${r.titulo}</span>
+              <span class="text-[10px] text-slate-500 font-mono shrink-0">${r.categoria}${r.clase ? ' · Clase ' + r.clase : ''}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">${r.fragmento}</p>
+          </button>
+        `).join('');
+      } catch (e) {
+        resultados.innerHTML = '<p class="text-xs text-red-400">Error de conexión buscando en el Mapa de Estudio.</p>';
+      }
+    }
+
+    async function seleccionarDocumentoMapaBot(id, titulo) {
+      try {
+        const resp = await fetch(`/api/mapa_estudio/documento?id=${id}`);
+        const data = await resp.json();
+        if (!data.ok) {
+          showToast(data.error || "No se pudo cargar el documento", "error");
+          return;
+        }
+        const select = document.getElementById('botMaterialSelect');
+        if (select) select.value = "";
+        botState.materialContenido = data.documento.contenido;
+        botState.materialNombre = titulo;
+        botState.materialFuente = 'mapa_estudio';
+        botState.materialPath = "";
+        actualizarIndicadorMaterialBot();
+        showToast(`Material cargado desde el Mapa de Estudio: ${titulo}`, "success");
+      } catch (e) {
+        showToast("Error cargando el documento del Mapa de Estudio", "error");
+      }
+    }
+
+    // TEMARIO EN VIVO DE study-cybercirujas.club — proxeado por este servidor (su API pública
+    // no tiene CORS habilitado, por eso no se puede pedir directo desde el navegador).
+    let botCyberCatalogo = [];
+
+    async function cargarCertsCyberciruajsBot() {
+      const select = document.getElementById('botCyberCertSelect');
+      if (!select || botCyberCatalogo.length > 0) return;
+      try {
+        const resp = await fetch('/api/cybercirujas/catalogo');
+        const data = await resp.json();
+        if (!data.ok) {
+          select.innerHTML = '<option value="">No disponible (sin conexión)</option>';
+          return;
+        }
+        botCyberCatalogo = data.certificaciones;
+        select.innerHTML = '<option value="">Elegí una certificación...</option>' +
+          data.certificaciones.map(c => `<option value="${c.id}">${c.name} (${c.vendor})</option>`).join('');
+      } catch (e) {
+        select.innerHTML = '<option value="">No disponible (sin conexión)</option>';
+      }
+    }
+
+    async function cargarTemarioCyberciruajsBot() {
+      const certId = document.getElementById('botCyberCertSelect').value;
+      const topicSelect = document.getElementById('botCyberTopicSelect');
+      const estado = document.getElementById('botCyberEstado');
+      if (!certId) {
+        topicSelect.innerHTML = '<option value="">Elegí primero una certificación</option>';
+        return;
+      }
+      topicSelect.innerHTML = '<option value="">Cargando temario...</option>';
+      try {
+        const resp = await fetch(`/api/cybercirujas/temario?cert=${encodeURIComponent(certId)}`);
+        const data = await resp.json();
+        if (!data.ok) {
+          topicSelect.innerHTML = '<option value="">Error cargando temario</option>';
+          estado.textContent = `⚠️ ${data.error}`;
+          return;
+        }
+        const disponibles = data.topics.filter(t => t.available);
+        topicSelect.innerHTML = disponibles.map(t => `<option value="${t.id}">${t.id} — ${t.title}</option>`).join('') || '<option value="">Sin temas disponibles</option>';
+        estado.textContent = `${disponibles.length} de ${data.topics.length} temas con material listo en ${data.cert}.`;
+      } catch (e) {
+        topicSelect.innerHTML = '<option value="">Error de conexión</option>';
+      }
+    }
+
+    async function cargarMaterialCyberciruajsBot() {
+      const certId = document.getElementById('botCyberCertSelect').value;
+      const topicId = document.getElementById('botCyberTopicSelect').value;
+      const estado = document.getElementById('botCyberEstado');
+      if (!certId || !topicId) {
+        showToast("Elegí una certificación y un tema primero", "error");
+        return;
+      }
+      estado.textContent = "Cargando material...";
+      try {
+        const resp = await fetch(`/api/cybercirujas/material?cert=${encodeURIComponent(certId)}&topic=${encodeURIComponent(topicId)}&lang=es`);
+        const data = await resp.json();
+        if (!data.ok) {
+          estado.textContent = `⚠️ ${data.error}`;
+          showToast(data.error || "No se pudo cargar el material", "error");
+          return;
+        }
+        const select = document.getElementById('botMaterialSelect');
+        if (select) select.value = "";
+        botState.materialContenido = data.contenido;
+        botState.materialNombre = data.titulo;
+        botState.materialFuente = 'cybercirujas';
+        botState.materialPath = "";
+        actualizarIndicadorMaterialBot();
+        estado.textContent = `✅ Cargado: ${data.titulo} (generado por ${data.generado_por}).`;
+        showToast(`Material cargado: ${data.titulo}`, "success");
+      } catch (e) {
+        estado.textContent = "Error de conexión con study-cybercirujas.";
+        showToast("Error de conexión con study-cybercirujas", "error");
+      }
+    }
+
+    function agregarMensajeBot(rol, texto, meta) {
+      const container = document.getElementById('botChatMessages');
+      if (container.querySelector('.text-slate-500.italic')) container.innerHTML = "";
+      const bubble = document.createElement('div');
+      if (rol === 'user') {
+        bubble.className = "self-end max-w-[85%] bg-cyan-600/20 border border-cyan-500/30 rounded-2xl rounded-br-sm px-4 py-2.5 text-xs text-cyan-100 ml-auto whitespace-pre-wrap";
+        bubble.textContent = texto;
+        if (meta) {
+          const metaEl = document.createElement('div');
+          metaEl.className = "mt-1.5 pt-1.5 border-t border-cyan-500/20 text-[10px] text-cyan-300/80 font-mono";
+          metaEl.textContent = meta;
+          bubble.appendChild(metaEl);
+        }
+      } else {
+        bubble.className = "self-start max-w-[90%] bg-slate-900 border border-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 text-xs text-slate-200 prose prose-invert prose-xs max-w-none";
+        bubble.innerHTML = marked.parse(texto);
+        if (meta) {
+          const metaEl = document.createElement('div');
+          metaEl.className = "mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-500 font-mono not-prose";
+          metaEl.textContent = meta;
+          bubble.appendChild(metaEl);
+        }
+      }
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function construirSystemPromptBot() {
+      let systemPrompt = BOT_SYSTEM_BASE;
+      if (botState.materialContenido) {
+        systemPrompt += `\n\nMATERIAL DE CONTEXTO (usalo como fuente principal; si algo no está acá, decilo):\n---\n${botState.materialContenido}\n---`;
+      }
+      return systemPrompt;
+    }
+
+    async function enviarPreguntaBot() {
+      if (botState.engine === 'openrouter' && !localStorage.getItem(BOT_KEY_STORAGE)) {
+        showToast("Configurá tu clave de OpenRouter antes de preguntar (o cambiá de motor a Ollama/CLI)", "error");
+        return;
+      }
+      const input = document.getElementById('botQuestionInput');
+      const pregunta = input.value.trim();
+      if (!pregunta) {
+        showToast("Escribí una pregunta primero", "error");
+        return;
+      }
+
+      const btn = document.getElementById('botSendBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> <span>Pensando...</span>';
+      const { motorTxt, materialTxt } = construirResumenEnvioBot();
+      agregarMensajeBot('user', pregunta, `${motorTxt} · ${materialTxt}`);
+      input.value = "";
+
+      const systemPrompt = construirSystemPromptBot();
+      const recordar = document.getElementById('botRecordarToggle').checked;
+      const historialPrevio = recordar ? botState.historial.slice(-6) : [];
+
+      try {
+        if (botState.engine === 'openrouter') {
+          await enviarPreguntaOpenRouterBot(pregunta, systemPrompt, historialPrevio, recordar);
+        } else {
+          await enviarPreguntaMotorLocalBot(pregunta, systemPrompt, historialPrevio, recordar);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🚀</span> <span>Preguntar</span>';
+      }
+    }
+
+    async function enviarPreguntaOpenRouterBot(pregunta, systemPrompt, historialPrevio, recordar) {
+      const key = localStorage.getItem(BOT_KEY_STORAGE);
+      const messages = [{ role: 'system', content: systemPrompt }, ...historialPrevio, { role: 'user', content: pregunta }];
+      try {
+        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://cloud-devops-student-hub.local',
+            'X-Title': 'Cloud DevOps Student Hub - Asistente IA'
+          },
+          body: JSON.stringify({ model: botState.model, messages: messages, max_tokens: 2000, temperature: 0.4 })
+        });
+        const data = await resp.json();
+
+        if (data.error) {
+          agregarMensajeBot('bot', `⚠️ **Error de OpenRouter:** ${data.error.message || JSON.stringify(data.error)}\n\nProbá con otro modelo gratis del selector: puede estar saturado o tu clave puede no ser válida.`);
+          showToast("El modelo no respondió, probá con otro del selector", "error");
+          return;
+        }
+        const respuesta = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "";
+        if (!respuesta) {
+          agregarMensajeBot('bot', "⚠️ El modelo devolvió una respuesta vacía (pasa con algunos modelos gratis en horarios pico). Probá con otro modelo del selector.");
+          return;
+        }
+        const modeloInfo = BOT_MODELS.find(m => m.id === botState.model);
+        const usage = data.usage || {};
+        const costoReal = modeloInfo && modeloInfo.tier !== 'free'
+          ? ((usage.prompt_tokens || 0) / 1e6) * modeloInfo.in + ((usage.completion_tokens || 0) / 1e6) * modeloInfo.out
+          : 0;
+        const costoTexto = costoReal > 0 ? ` · $${costoReal.toFixed(4)} USD` : (modeloInfo && modeloInfo.tier === 'free' ? ' · $0 (gratis)' : '');
+        const metaTexto = `Modelo: ${modeloInfo ? modeloInfo.name : botState.model} · ${usage.total_tokens || '?'} tokens${costoTexto} · Respuesta de IA sin verificar, contrastá con la guía oficial.`;
+        agregarMensajeBot('bot', respuesta, metaTexto);
+
+        if (recordar) {
+          botState.historial.push({ role: 'user', content: pregunta });
+          botState.historial.push({ role: 'assistant', content: respuesta });
+        }
+        botState.preguntas += 1;
+        botState.tokensTotales += usage.total_tokens || 0;
+        botState.costoTotalUSD += costoReal;
+        document.getElementById('botUsageStats').textContent =
+          `Sesión: ${botState.preguntas} pregunta${botState.preguntas === 1 ? '' : 's'} · ${botState.tokensTotales.toLocaleString('es-AR')} tokens · $${botState.costoTotalUSD.toFixed(4)} USD gastados`;
+      } catch (e) {
+        agregarMensajeBot('bot', `⚠️ Error de conexión con OpenRouter: ${e.message}`);
+        showToast("Error de conexión con OpenRouter", "error");
+      }
+    }
+
+    async function enviarPreguntaMotorLocalBot(pregunta, systemPrompt, historialPrevio, recordar) {
+      const body = { engine: botState.engine, system: systemPrompt, pregunta, historial: historialPrevio };
+      if (botState.engine === 'ollama') body.ollama_model = botState.ollamaModel;
+      if (botState.engine === 'cli') body.cli = botState.cliId;
+
+      try {
+        const resp = await fetch('/api/motor_local', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (!data.ok) {
+          agregarMensajeBot('bot', `⚠️ ${data.error}`);
+          showToast(data.error || "El motor local no respondió", "error");
+          return;
+        }
+        const metaTexto = `Motor: ${data.motor} · ${data.elapsed_seg}s · Respuesta de IA sin verificar, contrastá con la guía oficial.`;
+        agregarMensajeBot('bot', data.respuesta, metaTexto);
+
+        if (recordar) {
+          botState.historial.push({ role: 'user', content: pregunta });
+          botState.historial.push({ role: 'assistant', content: data.respuesta });
+        }
+        botState.preguntas += 1;
+        document.getElementById('botUsageStats').textContent =
+          `Sesión: ${botState.preguntas} pregunta${botState.preguntas === 1 ? '' : 's'} · motor local (sin conteo de tokens)`;
+      } catch (e) {
+        agregarMensajeBot('bot', `⚠️ Error de conexión con el servidor local: ${e.message}`);
+        showToast("Error de conexión con el servidor local", "error");
+      }
+    }
+
+    function borrarConversacionBot() {
+      botState.historial = [];
+      botState.preguntas = 0;
+      botState.tokensTotales = 0;
+      botState.costoTotalUSD = 0;
+      document.getElementById('botUsageStats').textContent = "Sesión: 0 preguntas · 0 tokens · $0 USD gastados";
+      document.getElementById('botChatMessages').innerHTML =
+        '<p class="text-xs text-slate-500 italic text-center py-6">Configurá tu clave, elegí un modelo y hacé tu primera pregunta 👆</p>';
+      showToast("Conversación borrada", "info");
     }
   </script>
 </body>

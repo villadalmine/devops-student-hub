@@ -40,7 +40,7 @@ Si prefieres ejecutar los comandos manualmente:
 
 ```bash
 # Herramientas CLI
-brew install git gh jq terraform awscli azure-cli kubectl helm minikube
+brew install git gh jq terraform awscli azure-cli kubectl helm minikube make go-task/tap/go-task derailed/k9s/k9s
 
 # Aplicaciones de Escritorio (Casks)
 brew install --cask zoom visual-studio-code docker
@@ -97,6 +97,10 @@ npm install -g @anthropic-ai/claude-code
 
 # Shell-GPT (sgpt)
 pip3 install --user shell-gpt
+
+
+# HolmesGPT CLI (AIOps para Kubernetes)
+pip3 install --user holmesgpt
 
 # OMP (Oh My Pi)
 curl -fsSL https://omp.sh | bash

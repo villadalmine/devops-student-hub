@@ -8,14 +8,29 @@
 
 No necesitas configurar entornos complejos ni tener Docker instalado. Puedes iniciar el portal directamente:
 
+### 📥 Primero: Descargar el repositorio completo
+
+El ejecutable **necesita todos los archivos** (HTMLs, scripts, JSON) para funcionar. Elige **una** opción:
+
+**Opción A - Clonar con Git (Recomendado):**
+```bash
+git clone https://github.com/villadalmine/devops-student-hub.git
+cd devops-student-hub
+```
+
+**Opción B - Descargar ZIP completo:**
+👉 **[⬇️ Descargar ZIP (Release v1.0.0)](https://github.com/villadalmine/devops-student-hub/releases/latest)** (busca el botón "Source code (.zip)")
+
 ### 🪟 En Windows (Sin requerir Python):
-1. Descarga el ejecutable standalone:  
-   👉 **[⬇️ Descargar student-hub.exe (Release v1.0.0)](https://github.com/villadalmine/devops-student-hub/releases/latest/download/student-hub.exe)**
-2. Haz doble clic sobre **`student-hub.exe`** (o sobre **`iniciar-mi-hub.bat`**).
+1. Una vez que tengas todos los archivos (después de clonar o descomprimir):
+2. Haz doble clic sobre **`student-hub.exe`** (o ejecuta **`iniciar-mi-hub.bat`**).
 3. ¡Listo! Tu navegador se abrirá automáticamente en **`http://localhost:8081`**.
+
+**⚠️ Importante:** No descargues *solo* el `.exe`. Necesitas el repositorio completo con `devops_hub.html`, `curso.json`, `scripts/` y otros archivos.
 
 ### 🐧 Linux / 🍎 macOS:
 ```bash
+# Después de clonar o descomprimir:
 chmod +x ./iniciar-mi-hub.sh
 ./iniciar-mi-hub.sh
 # O directamente con Python 3:
@@ -37,6 +52,7 @@ El **Student Hub** centraliza toda tu experiencia de clase en una interfaz visua
 | **📚 Apuntes & Guías Oficiales** | Visualizador integrado de documentos Markdown y acceso offline al libro ilustrado de la CNCF: *"The Illustrated Children's Guide to Kubernetes"* (PDF 15 MB). |
 | **🎥 Reproductor de Clases** | Streaming local inteligente (`HTTP Range 206`) para repasar grabaciones MP4 en tu disco con reproducción continua y sin saturar tu red. |
 | **📡 Telemetría en Vivo** | Monitor en tiempo real de llamadas HTTP, eventos del servidor y estado del sistema. |
+| **🤖 Asistente IA (Bot)** | Bot de IA que corre con tu propia clave, tu PC o el CLI que ya tengas instalado — sin costo para la plataforma. Detalle completo en la [sección 5](#-5-asistente-ia--bot-multi-motor-con-tu-propia-clave). |
 
 ---
 
@@ -89,13 +105,40 @@ dist_alumnos/
 ├── devops_hub.html            # Dashboard principal interactivo
 ├── glosario_recursos_devops.html # Visor de glosario y directorio de labs web
 ├── mis_apuntes/               # Carpeta personal de trabajo del estudiante
+├── apuntes/                   # Apuntes base del curso (indexables por el Bot IA)
 ├── practicas/                 # Enunciados y laboratorios prácticos
+├── mapa_estudio/              # Acá va el export del docente (mapa_estudio_devops.html) para el RAG local
 ├── material/                  # Guías PDF (incluye Guía Ilustrada de K8s CNCF)
 ├── videos/                    # Carpeta para colocar grabaciones locales MP4
 └── scripts/
     ├── servidor_asistente.py  # Backend HTTP multihilo y API REST
     └── instalar-tools-*       # Automatizadores de software para cada OS
 ```
+
+---
+
+## 🤖 5. Asistente IA — Bot multi-motor con tu propia clave
+
+La pestaña **🤖 Asistente IA** es un bot de estudio que corre **enteramente en tu equipo**: la plataforma no paga nada por tus consultas ni ve tu clave. Está inspirado en el diseño abierto de [study-cybercirujas](https://github.com/villadalmine/study-cybercirujas/blob/main/DEVELOPERS.md) — selección explícita de material en vez de RAG ciego, y "traé tu propia clave" en vez de un backend pago compartido.
+
+### Elegí el motor de IA
+| Motor | Cómo funciona | Costo |
+| :--- | :--- | :--- |
+| **🌐 OpenRouter** | Pegás tu clave (se guarda solo en `localStorage` de tu navegador, viaja directo a `openrouter.ai`, nunca pasa por este servidor). Catálogo de 18 modelos (4 gratis + 14 pagos), agrupados por precio. | $0 en los gratis; los pagos se cobran de verdad a tu clave — el bot te muestra una **estimación antes de preguntar** y el **gasto real acumulado** de la sesión. |
+| **💻 Ollama local** | Botón "Detectar modelos instalados" lee los modelos que ya tenés descargados (`ollama list`) y los ofrece en un selector — nada de adivinar nombres. Corre 100% en tu PC. | $0, sin clave, sin internet. |
+| **🤖 CLI instalada** | Usa el binario que ya instalaste desde la categoría 🤖 Agentes IA (`claude`, `gemini`, `omp` u `codex`) en modo no interactivo. | Según el plan que tengas contratado para esa CLI. |
+
+Un indicador siempre visible arriba del botón "Preguntar" te muestra exactamente qué se va a enviar (*"Vas a preguntar con: 💻 Ollama local · qwen2.5:7b · 📎 con material: ..."*), y cada pregunta que mandás queda etiquetada en el chat con lo que realmente se usó — para que nunca haya dudas de si el material se está teniendo en cuenta.
+
+### De dónde sale el material de contexto
+- **Material local**: las guías de instalación y tus propios apuntes (`apuntes/`, `mis_apuntes/`, `practicas/`, `aportes/`).
+- **📚 Mapa de Estudio del docente (RAG local)**: si tu docente te comparte un archivo `mapa_estudio_devops.html` (export curado de su base de conocimiento, sin exámenes ni guiones privados), colocalo en la carpeta `mapa_estudio/` y presioná **"Importar / Reindexar"**. Queda indexado en una base local con búsqueda de texto completo (FTS5) — podés buscar por tema y elegir qué fragmento cargar como material, todo offline.
+- **🌐 Temario en vivo de study-cybercirujas**: elegí una certificación real (CKA, CKAD, AWS, Azure, LPI, NVIDIA AI y más) y un tema puntual del temario oficial — el contenido se trae al vuelo desde `study.cybercirujas.club` (proyecto abierto, no se guarda en tu equipo).
+
+### Modos de pregunta (task harness)
+Cuatro botones listos según lo que necesites: **📖 Explicámelo distinto**, **🧪 Dame un ejercicio**, **❓ Tomame una posta** (estilo examen de certificación) y **🎓 ¿Qué preguntaría el profe?** — cada uno arma un prompt especializado; vos podés editarlo antes de enviarlo.
+
+**Todas las respuestas son generadas por IA y no están verificadas por el docente** — usalas como apoyo de estudio, no como fuente única.
 
 ---
 

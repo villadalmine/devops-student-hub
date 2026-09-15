@@ -184,6 +184,23 @@ install_base() {
         rm -f "minikube-linux-${M_ARCH}"
     fi
 
+    
+    if ! command -v make &>/dev/null; then
+        print_info "Instalando GNU Make..."
+        if [ "$PM" == "apt" ]; then
+            $SUDO apt-get install -y make
+        elif [ "$PM" == "dnf" ]; then
+            $SUDO dnf install -y make
+        elif [ "$PM" == "pacman" ]; then
+            $SUDO pacman -S --noconfirm make
+        fi
+    fi
+
+    if ! command -v task &>/dev/null; then
+        print_info "Instalando Taskfile (task)..."
+        sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+    fi
+
     print_success "Categoría BASE instalada exitosamente."
 }
 
@@ -336,6 +353,12 @@ install_ai() {
     if ! command -v omp &>/dev/null; then
         print_info "Instalando OMP (Oh My Pi)..."
         curl -fsSL https://omp.sh | bash || true
+    fi
+
+    
+    if ! command -v holmes &>/dev/null; then
+        print_info "Instalando HolmesGPT CLI (AIOps)..."
+        pip install --user holmesgpt || pip3 install --user holmesgpt || true
     fi
 
     print_success "Categoría AI instalada exitosamente."

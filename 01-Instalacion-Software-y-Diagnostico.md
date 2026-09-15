@@ -22,6 +22,8 @@ Se realizó un escaneo automatizado sobre el entorno local Windows. A continuaci
 | **Azure CLI (az)** | `BASE` | **INSTALADO** | `Azure CLI v2.89.1` |
 | **kubectl (Kubernetes CLI)** | `BASE` | **INSTALADO** | `Client Version: v1.36.1` |
 | **Helm** | `BASE` | **INSTALADO** | `v4.2.4` |
+| **GNU Make (make)** | `BASE` | **INSTALADO** | Orquestador de tareas y Makefiles (`winget install ezwinports.make`) |
+| **Taskfile (task)** | `BASE` | **INSTALADO** | Orquestador moderno de tareas basado en Taskfile.yml (`task 3.53.1`) |
 | **Minikube** | `BASE` | **INSTALADO** | `v1.38.1` |
 | **jq (JSON Processor)** | `BASE` | **INSTALADO** | `jq-1.8.2` |
 | **Ghostty Terminal** | `TERM` | **INSTALADO** | Emulador acelerado por GPU |
@@ -32,6 +34,7 @@ Se realizó un escaneo automatizado sobre el entorno local Windows. A continuaci
 | **Python** | `LANG` | **INSTALADO** | `Python 3.14.4` |
 | **Go (Golang)** | `LANG` | **INSTALADO** | `go version go1.27.0` |
 | **Suite Agentes IA (Claude, OMP, AGY)** | `AI` | **INSTALADO** | Claude Code, OMP, Antigravity |
+| **HolmesGPT CLI (AIOps)** | `AI` | **INSTALADO** | Copiloto de IA para resolución de incidentes en K8s (`pip install holmesgpt`) |
 
 ---
 

@@ -50,6 +50,10 @@ Si prefieres instalar las herramientas de forma manual o selectiva, a continuaci
 | **Helm** | Gestor de paquetes de K8s | `curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \| bash` |
 | **Minikube** | Clúster local de K8s | `curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube` |
 | **jq** | Procesador de JSON | `sudo apt install -y jq` |
+| **GNU Make (make)** | Orquestador clásico de Makefiles | `sudo apt install -y make` |
+| **Taskfile (task)** | Orquestador moderno (Taskfile.yml) | `sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin` |
+| **k9s** | Monitor visual TUI de Kubernetes | Ver sección TUI abajo |
+
 | **Zoom** | Videoconferencias | `sudo snap install zoom-client` |
 
 #### Instalación rápida de AWS CLI v2 en Linux:
@@ -136,7 +140,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 ---
 
-### 6. 🤖 Categoría AI (Agentes Inteligentes en Terminal)
+### 6. 🤖 Categoría AI
+
+* **HolmesGPT CLI (AIOps para K8s):**
+  ```bash
+  pip install --user holmesgpt
+  ```
+ (Agentes Inteligentes en Terminal)
 
 * **Claude Code CLI:**
   ```bash

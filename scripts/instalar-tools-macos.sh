@@ -79,7 +79,7 @@ install_base() {
     print_header "INSTALANDO SOFTWARE BASE DEVOPS EN MACOS"
 
     print_info "Instalando herramientas base con brew..."
-    brew install git gh jq terraform awscli azure-cli kubectl helm minikube
+    brew install git gh jq terraform awscli azure-cli kubectl helm minikube make go-task/tap/go-task derailed/k9s/k9s
 
     print_info "Instalando aplicaciones GUI con brew cask..."
     brew install --cask zoom visual-studio-code docker || true
@@ -157,6 +157,12 @@ install_ai() {
     if ! command -v omp &>/dev/null; then
         print_info "Instalando OMP (Oh My Pi)..."
         curl -fsSL https://omp.sh | bash || true
+    fi
+
+    
+    if ! command -v holmes &>/dev/null; then
+        print_info "Instalando HolmesGPT CLI (AIOps)..."
+        pip3 install --user holmesgpt || true
     fi
 
     print_success "Categoría AI instalada exitosamente."
