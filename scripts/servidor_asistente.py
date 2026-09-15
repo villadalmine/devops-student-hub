@@ -258,6 +258,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        log_event("HTTP", f"GET {self.path} desde {self.client_address[0]}")
         url_parts = urllib.parse.urlparse(self.path)
         path = url_parts.path
         query = urllib.parse.parse_qs(url_parts.query)
@@ -321,6 +322,10 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.send_header("Location", "/devops_hub.html")
             self.end_headers()
             return
+        log_event("FILE", f"Sirviendo archivo: {path}")
+        filepath = os.path.join(STUDENT_DIR, path.lstrip('/'))
+        log_event("FILE", f"Ruta completa: {filepath}")
+        log_event("FILE", f"¿Existe?: {os.path.exists(filepath)}")
         super().do_GET()
 
     def do_POST(self):
@@ -568,6 +573,9 @@ def open_browser_after_start():
         log_event("WARN", f"Aviso abriendo navegador: {e}")
 
 def run_server():
+    os.chdir(STUDENT_DIR)
+    log_event("CHDIR", f"Directorio de trabajo actual: {os.getcwd()}")
+    log_event("CHDIR", f"Archivos en ese directorio: {os.listdir('.')[:10]}")
     server_address = ("", PORT)
     httpd = ThreadedHTTPServer(server_address, StudentHubHandler)
     log_event("SERVER", f"Servidor Alumnos activo en http://localhost:{PORT}")
