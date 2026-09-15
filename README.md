@@ -60,22 +60,25 @@ python3 scripts/servidor_asistente.py 8081
 
 ---
 
-## 🔨 2. Para Docentes: Compilar un Nuevo Binario
+## 🔨 2. Recompilar el Binario (Si Hacés Cambios en el Código)
 
-Si hacés cambios en el código, necesitás recompilar el `.exe`:
+Cada vez que modifiques el código (servidor, HTMLs, etc.), necesitás generar un nuevo binario:
 
 ```bash
 # 1. Instalar PyInstaller (una sola vez)
 pip install pyinstaller
 
-# 2. Compilar
+# 2. Compilar (empaca TODO dentro del .exe)
 ./build.ps1
 
-# 3. El binario estará en: dist/student-hub.exe
-# 4. Actualizar la release en GitHub
+# 3. El binario estará en: dist/student-hub.exe (~22 MB con todo incluido)
+# 4. Copiar a la raíz y/o actualizar la release en GitHub
 ```
 
-**Nota:** Cada cambio = nuevo binario. El `.spec` empaca todos los archivos dentro del `.exe`.
+**Importante:** 
+- El binario `student-hub.exe` incluye **todos los archivos** (HTMLs, JSONs, scripts, material)
+- No necesita estar en el repositorio local; se genera en `dist/`
+- Cada cambio en el código requiere recompilar
 
 ---
 
