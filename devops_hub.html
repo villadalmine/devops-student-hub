@@ -191,6 +191,18 @@
         </div>
       </div>
 
+      <!-- Clases del curso: lo que el docente publica en la carpeta material/ -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div class="flex items-center gap-2 mb-1">
+          <span>🎓</span>
+          <h2 class="text-base font-bold text-white">Clases del Curso</h2>
+        </div>
+        <p class="text-xs text-slate-400 mb-4">Las clases que publica el docente. Se abren en el navegador; avanzá con las flechas o el botón Siguiente.</p>
+        <div id="clases-lista" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="text-xs text-slate-500">Cargando clases…</div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Guía Windows -->
         <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 hover:border-slate-700 transition">
@@ -987,6 +999,35 @@
       } else if (tabId === 'asistente') {
         cargarMaterialesBot();
         cargarCertsCyberciruajsBot();
+      } else if (tabId === 'material') {
+        cargarClases();
+      }
+    }
+
+    // CLASES PUBLICADAS POR EL DOCENTE (material/index.json)
+    async function cargarClases() {
+      const cont = document.getElementById('clases-lista');
+      if (!cont) return;
+      try {
+        const resp = await fetch('/material/index.json', { cache: 'no-store' });
+        if (!resp.ok) throw new Error('sin index');
+        const data = await resp.json();
+        const clases = (data.clases || []);
+        if (!clases.length) {
+          cont.innerHTML = '<div class="text-xs text-slate-500">Todavía no hay clases publicadas. El docente las deja en la carpeta <code>material/</code>.</div>';
+          return;
+        }
+        cont.innerHTML = clases.map(c => `
+          <a href="/material/${encodeURIComponent(c.archivo)}" target="_blank" rel="noopener"
+             class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3 hover:border-cyan-600 transition">
+            <div>
+              <div class="font-bold text-sm text-white">${(c.titulo || c.archivo)}</div>
+              <div class="text-[11px] text-slate-400 font-mono">${(c.modulo ? c.modulo + ' · ' : '')}${c.archivo}</div>
+            </div>
+            <span class="text-cyan-300 text-xs whitespace-nowrap">Abrir →</span>
+          </a>`).join('');
+      } catch (e) {
+        cont.innerHTML = '<div class="text-xs text-slate-500">Todavía no hay clases publicadas (falta <code>material/index.json</code>).</div>';
       }
     }
 

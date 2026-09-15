@@ -17,3 +17,7 @@ mis_videos/*.webm
 *.sqlite
 data/
 chats_guardados.json
+
+# Builds de PyInstaller (se regeneran con build.ps1)
+build/
+dist/

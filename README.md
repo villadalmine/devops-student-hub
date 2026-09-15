@@ -6,40 +6,83 @@
 
 ## ⚡ 1. Inicio Rápido (En 1 Clic)
 
-No necesitas configurar entornos complejos ni tener Docker instalado. Puedes iniciar el portal directamente:
+No necesitas configurar entornos complejos ni tener Docker instalado. Elige tu método:
 
-### 📥 Primero: Descargar el repositorio completo
+### 🪟 Opción A: Binario Standalone Windows (Solo .exe, todo empacado)
 
-El ejecutable **necesita todos los archivos** (HTMLs, scripts, JSON) para funcionar. Elige **una** opción:
+**Descarga solo el ejecutable** — incluye todos los archivos necesarios:
 
-**Opción A - Clonar con Git (Recomendado):**
+👉 **[⬇️ Descargar student-hub.exe](https://github.com/villadalmine/devops-student-hub/releases/latest)**
+
+Luego:
 ```bash
-git clone https://github.com/villadalmine/devops-student-hub.git
-cd devops-student-hub
+# Haz doble clic en student-hub.exe
+# O desde terminal:
+./student-hub.exe
+
+# Tu navegador se abrirá en http://localhost:8081
 ```
 
-**Opción B - Descargar ZIP completo:**
-👉 **[⬇️ Descargar ZIP (Release v1.0.0)](https://github.com/villadalmine/devops-student-hub/releases/latest)** (busca el botón "Source code (.zip)")
-
-### 🪟 En Windows (Sin requerir Python):
-1. Una vez que tengas todos los archivos (después de clonar o descomprimir):
-2. Haz doble clic sobre **`student-hub.exe`** (o ejecuta **`iniciar-mi-hub.bat`**).
-3. ¡Listo! Tu navegador se abrirá automáticamente en **`http://localhost:8081`**.
-
-**⚠️ Importante:** No descargues *solo* el `.exe`. Necesitas el repositorio completo con `devops_hub.html`, `curso.json`, `scripts/` y otros archivos.
-
-### 🐧 Linux / 🍎 macOS:
-```bash
-# Después de clonar o descomprimir:
-chmod +x ./iniciar-mi-hub.sh
-./iniciar-mi-hub.sh
-# O directamente con Python 3:
-python3 scripts/servidor_asistente.py 8081
-```
+**Ventajas:** ✅ Un solo archivo, no necesitas Git ni Python  
+**Desventajas:** ❌ Archivo más pesado (~50-100MB), requiere recompilar si hay cambios
 
 ---
 
-## 🖥️ 2. El Hub Dashboard: ¿Cómo Funciona?
+### 📥 Opción B: Clonar/Descargar Repositorio (Recomendado para desarrollo)
+
+El repositorio completo necesita todos los archivos. Elige **una** opción:
+
+**Con Git (Recomendado):**
+```bash
+git clone https://github.com/villadalmine/devops-student-hub.git
+cd devops-student-hub
+./iniciar-mi-hub.ps1      # Windows
+./iniciar-mi-hub.sh       # Linux/macOS
+```
+
+**O Descargar ZIP:**
+👉 **[⬇️ Descargar ZIP](https://github.com/villadalmine/devops-student-hub/releases/latest)** (busca "Source code (.zip)")
+
+Luego:
+```bash
+# Windows
+./iniciar-mi-hub.ps1
+
+# Linux/macOS
+chmod +x ./iniciar-mi-hub.sh
+./iniciar-mi-hub.sh
+# O con Python directo:
+python3 scripts/servidor_asistente.py 8081
+```
+
+**Ventajas:** ✅ Archivo más pequeño, cambios se reflejan inmediatamente  
+**Desventajas:** ❌ Necesitas Python 3 y Git/ZIP
+
+---
+
+## 🔨 2. Recompilar el Binario (Si Hacés Cambios en el Código)
+
+Cada vez que modifiques el código (servidor, HTMLs, etc.), necesitás generar un nuevo binario:
+
+```bash
+# 1. Instalar PyInstaller (una sola vez)
+pip install pyinstaller
+
+# 2. Compilar (empaca TODO dentro del .exe)
+./build.ps1
+
+# 3. El binario estará en: dist/student-hub.exe (~22 MB con todo incluido)
+# 4. Copiar a la raíz y/o actualizar la release en GitHub
+```
+
+**Importante:** 
+- El binario `student-hub.exe` incluye **todos los archivos** (HTMLs, JSONs, scripts, material)
+- No necesita estar en el repositorio local; se genera en `dist/`
+- Cada cambio en el código requiere recompilar
+
+---
+
+## 🖥️ 3. El Hub Dashboard: ¿Cómo Funciona?
 
 El **Student Hub** centraliza toda tu experiencia de clase en una interfaz visual moderna (`http://localhost:8081`) dividida en módulos interactivos:
 
@@ -52,11 +95,11 @@ El **Student Hub** centraliza toda tu experiencia de clase en una interfaz visua
 | **📚 Apuntes & Guías Oficiales** | Visualizador integrado de documentos Markdown y acceso offline al libro ilustrado de la CNCF: *"The Illustrated Children's Guide to Kubernetes"* (PDF 15 MB). |
 | **🎥 Reproductor de Clases** | Streaming local inteligente (`HTTP Range 206`) para repasar grabaciones MP4 en tu disco con reproducción continua y sin saturar tu red. |
 | **📡 Telemetría en Vivo** | Monitor en tiempo real de llamadas HTTP, eventos del servidor y estado del sistema. |
-| **🤖 Asistente IA (Bot)** | Bot de IA que corre con tu propia clave, tu PC o el CLI que ya tengas instalado — sin costo para la plataforma. Detalle completo en la [sección 5](#-5-asistente-ia--bot-multi-motor-con-tu-propia-clave). |
+| **🤖 Asistente IA (Bot)** | Bot de IA que corre con tu propia clave, tu PC o el CLI que ya tengas instalado — sin costo para la plataforma. Detalle completo en la [sección 6](#-6-asistente-ia--bot-multi-motor-con-tu-propia-clave). |
 
 ---
 
-## 🧩 3. Arquitectura Genérica: Una Plataforma para Cualquier Curso
+## 🧩 4. Arquitectura Genérica: Una Plataforma para Cualquier Curso
 
 El **Student Hub** no está cableado de forma rígida a una única materia; es un **chasis educativo universal** diseñado con los siguientes principios:
 
@@ -94,7 +137,7 @@ Los alumnos no son meros espectadores:
 
 ---
 
-## 📁 4. Estructura del Repositorio
+## 📁 5. Estructura del Repositorio
 
 ```text
 dist_alumnos/
@@ -117,7 +160,7 @@ dist_alumnos/
 
 ---
 
-## 🤖 5. Asistente IA — Bot multi-motor con tu propia clave
+## 🤖 6. Asistente IA — Bot multi-motor con tu propia clave
 
 La pestaña **🤖 Asistente IA** es un bot de estudio que corre **enteramente en tu equipo**: la plataforma no paga nada por tus consultas ni ve tu clave. Está inspirado en el diseño abierto de [study-cybercirujas](https://github.com/villadalmine/study-cybercirujas/blob/main/DEVELOPERS.md) — selección explícita de material en vez de RAG ciego, y "traé tu propia clave" en vez de un backend pago compartido.
 

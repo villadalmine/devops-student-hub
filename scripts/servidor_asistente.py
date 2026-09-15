@@ -45,22 +45,33 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 8081
 
 # Resolucion inteligente de rutas para soporte binario PyInstaller (sys.frozen) y script normal
 if getattr(sys, "frozen", False):
-    # Ejecutandose como binario compilado (.exe)
-    base_exe_dir = os.path.dirname(os.path.abspath(sys.executable))
-    if not os.path.exists(os.path.join(base_exe_dir, "devops_hub.html")) and os.path.exists(os.path.join(os.path.dirname(base_exe_dir), "devops_hub.html")):
-        STUDENT_DIR = os.path.dirname(base_exe_dir)
-        SCRIPT_DIR = base_exe_dir
-    else:
-        STUDENT_DIR = base_exe_dir
-        SCRIPT_DIR = os.path.join(STUDENT_DIR, "scripts")
+    # Ejecutandose como binario compilado con PyInstaller (.exe)
+    # sys._MEIPASS contiene la ruta donde PyInstaller desempacó los archivos empacados
+    # (devops_hub.html, scripts/, material/, apuntes/, practicas/): sirve para LEER contenido
+    # del curso, pero es una carpeta temporal que PyInstaller borra al cerrar el proceso.
+    STUDENT_DIR = sys._MEIPASS
+    SCRIPT_DIR = os.path.join(STUDENT_DIR, "scripts")
+    # Todo lo que el alumno necesita conservar ENTRE ejecuciones (sus notas, sus videos, el
+    # Mapa de Estudio que importó) tiene que vivir junto al .exe real, no en la carpeta
+    # temporal — si no, desaparece cada vez que cierra el programa.
+    WRITABLE_DIR = os.path.dirname(os.path.abspath(sys.executable))
 else:
+    # Ejecutandose como script Python normal
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
     STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
+    WRITABLE_DIR = STUDENT_DIR
 
-VIDEOS_DIR = os.path.join(STUDENT_DIR, "videos")
-MIS_APUNTES_DIR = os.path.join(STUDENT_DIR, "mis_apuntes")
+# Carpetas que el alumno escribe y que deben persistir entre ejecuciones del .exe, versus
+# carpetas que vienen empacadas con el curso (de solo lectura cuando está compilado).
+CARPETAS_ESCRIBIBLES = {"mis_apuntes", "aportes", "videos", "mapa_estudio"}
+
+def base_dir_para(carpeta):
+    return WRITABLE_DIR if carpeta in CARPETAS_ESCRIBIBLES else STUDENT_DIR
+
+VIDEOS_DIR = os.path.join(WRITABLE_DIR, "videos")
+MIS_APUNTES_DIR = os.path.join(WRITABLE_DIR, "mis_apuntes")
 PRACTICAS_DIR = os.path.join(STUDENT_DIR, "practicas")
-MAPA_ESTUDIO_DIR = os.path.join(STUDENT_DIR, "mapa_estudio")
+MAPA_ESTUDIO_DIR = os.path.join(WRITABLE_DIR, "mapa_estudio")
 LOCAL_RAG_DB = os.path.join(MAPA_ESTUDIO_DIR, "conocimiento_local.db")
 
 os.makedirs(VIDEOS_DIR, exist_ok=True)
@@ -181,7 +192,7 @@ def check_local_tool(t):
 def launch_in_terminal(command, as_admin=False, cwd=None):
     """Abre una nueva ventana de terminal independiente para ejecutar comandos."""
     if not cwd:
-        cwd = STUDENT_DIR
+        cwd = WRITABLE_DIR
 
     log_event("EXEC", f"Lanzando terminal ({'ADMIN' if as_admin else 'USER'}) en {cwd}: {command}")
 
@@ -290,6 +301,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        log_event("HTTP", f"GET {self.path} desde {self.client_address[0]}")
         url_parts = urllib.parse.urlparse(self.path)
         path = url_parts.path
         query = urllib.parse.parse_qs(url_parts.query)
@@ -388,6 +400,10 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             self.send_header("Location", "/devops_hub.html")
             self.end_headers()
             return
+        log_event("FILE", f"Sirviendo archivo: {path}")
+        filepath = os.path.join(STUDENT_DIR, path.lstrip('/'))
+        log_event("FILE", f"Ruta completa: {filepath}")
+        log_event("FILE", f"¿Existe?: {os.path.exists(filepath)}")
         super().do_GET()
 
     def do_POST(self):
@@ -406,7 +422,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             if not command:
                 self.send_json({"ok": False, "error": "No se especificó ningún comando para ejecutar."}, status=400)
                 return
-            ok = launch_in_terminal(command, as_admin=as_admin, cwd=STUDENT_DIR)
+            ok = launch_in_terminal(command, as_admin=as_admin, cwd=WRITABLE_DIR)
             self.send_json({
                 "ok": ok,
                 "admin": as_admin,
@@ -496,12 +512,12 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
         """Lista los archivos en mis_apuntes/ y practicas/."""
         apuntes_list = []
         for carpeta in ["mis_apuntes", "practicas", "aportes"]:
-            folder_p = os.path.join(STUDENT_DIR, carpeta)
+            folder_p = os.path.join(base_dir_para(carpeta), carpeta)
             if os.path.exists(folder_p):
                 for root, _, files in os.walk(folder_p):
                     for f in sorted(files):
                         abs_p = os.path.join(root, f)
-                        rel_p = os.path.relpath(abs_p, STUDENT_DIR).replace("\\", "/")
+                        rel_p = os.path.relpath(abs_p, base_dir_para(carpeta)).replace("\\", "/")
                         size_kb = round(os.path.getsize(abs_p) / 1024, 2)
                         apuntes_list.append({
                             "archivo": f,
@@ -521,11 +537,14 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             ("01-Guia-Completa-Instalacion-Windows.md", "Guía Instalación Windows", "guia"),
             ("02-Guia-Instalacion-Linux.md", "Guía Instalación Linux", "guia"),
             ("03-Guia-Instalacion-MacOS.md", "Guía Instalación macOS", "guia"),
+            ("04-Guia-Linux-en-Windows-WSL2-Grafica.md", "Guía Linux en Windows (WSL2 + WSLg)", "guia"),
             ("01-Instalacion-Software-y-Diagnostico.md", "Instalación de Software y Diagnóstico", "guia"),
             ("README.md", "Introducción al Workspace / Student Hub", "guia"),
         ]
         for rel_name, titulo, cat in guias_raiz:
-            abs_p = os.path.join(STUDENT_DIR, rel_name)
+            abs_p = os.path.join(WRITABLE_DIR, rel_name)
+            if not os.path.isfile(abs_p):
+                abs_p = os.path.join(STUDENT_DIR, rel_name)
             if os.path.exists(abs_p):
                 materiales.append({
                     "titulo": titulo,
@@ -541,7 +560,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             ("aportes", "aporte", "Aporte"),
         ]
         for carpeta, cat, etiqueta in carpetas:
-            folder_p = os.path.join(STUDENT_DIR, carpeta)
+            folder_p = os.path.join(base_dir_para(carpeta), carpeta)
             if os.path.exists(folder_p):
                 for root, _, files in os.walk(folder_p):
                     for f in sorted(files):
@@ -550,7 +569,7 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                         if not f.lower().endswith((".md", ".markdown", ".txt")):
                             continue
                         abs_p = os.path.join(root, f)
-                        rel_p = os.path.relpath(abs_p, STUDENT_DIR).replace("\\", "/")
+                        rel_p = os.path.relpath(abs_p, base_dir_para(carpeta)).replace("\\", "/")
                         nombre_limpio = os.path.splitext(f)[0].replace("_", " ").replace("-", " ")
                         materiales.append({
                             "titulo": f"{etiqueta}: {nombre_limpio}",
@@ -860,12 +879,12 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             carpetas_a_incluir = ["mis_apuntes", "practicas", "aportes", "apuntes"]
             archivos_agregados = 0
             for carpeta in carpetas_a_incluir:
-                folder_path = os.path.join(STUDENT_DIR, carpeta)
+                folder_path = os.path.join(base_dir_para(carpeta), carpeta)
                 if os.path.exists(folder_path) and os.path.isdir(folder_path):
                     for root, _, files in os.walk(folder_path):
                         for f in files:
                             full_p = os.path.join(root, f)
-                            rel_p = os.path.relpath(full_p, STUDENT_DIR)
+                            rel_p = os.path.relpath(full_p, base_dir_para(carpeta))
                             zip_file.write(full_p, arcname=rel_p)
                             archivos_agregados += 1
             if archivos_agregados == 0:
@@ -941,7 +960,9 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
 
     def handle_api_file(self, rel_path):
         clean_rel = os.path.normpath(rel_path).lstrip("\\/.")
-        target_path = os.path.join(STUDENT_DIR, clean_rel)
+        target_path = os.path.join(WRITABLE_DIR, clean_rel)
+        if not os.path.isfile(target_path):
+            target_path = os.path.join(STUDENT_DIR, clean_rel)
         if os.path.exists(target_path) and os.path.isfile(target_path):
             ext = os.path.splitext(target_path)[1].lower()
             mime_type = "text/plain; charset=utf-8"
@@ -977,6 +998,9 @@ def open_browser_after_start():
         log_event("WARN", f"Aviso abriendo navegador: {e}")
 
 def run_server():
+    os.chdir(WRITABLE_DIR)
+    log_event("CHDIR", f"Directorio de trabajo actual: {os.getcwd()}")
+    log_event("CHDIR", f"Archivos en ese directorio: {os.listdir('.')[:10]}")
     server_address = ("", PORT)
     httpd = ThreadedHTTPServer(server_address, StudentHubHandler)
     log_event("SERVER", f"Servidor Alumnos activo en http://localhost:{PORT}")
