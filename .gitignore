@@ -24,3 +24,5 @@ dist/
 
 # Destino de imports del alumno (datos de runtime, no fuente)
 biblioteca/
+
+cursos/

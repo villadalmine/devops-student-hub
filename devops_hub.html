@@ -82,6 +82,9 @@
     <button onclick="cambiarTab('asistente')" id="tabBtn-asistente" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>🤖</span> <span>Asistente IA</span>
     </button>
+    <button onclick="cambiarTab('cursos')" id="tabBtn-cursos" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>&#128218;</span> Mis Cursos
+    </button>
     <button onclick="cambiarTab('biblioteca')" id="tabBtn-biblioteca" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>&#129513;</span> Proyectos &amp; Ejercicios
     </button>
@@ -619,6 +622,14 @@
       </div>
     </section>
 
+    <section id="tab-cursos" class="hidden flex flex-col gap-6">
+      <div class="bg-gradient-to-r from-slate-900 via-sky-950/30 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">&#128218; Mis Cursos</h2>
+        <p class="text-xs text-slate-400 mt-1">Los cursos y clases que import&aacute;s se arman ac&aacute; solos: cada curso muestra sus m&oacute;dulos, sus clases y los ejercicios que le aplican (que viven globales en tu biblioteca y se agrupan por su metadata). Import&aacute; paquetes desde la pesta&ntilde;a Proyectos &amp; Ejercicios.</p>
+      </div>
+      <div id="cursosLista" class="grid grid-cols-1 lg:grid-cols-2 gap-4"><p class="text-xs text-slate-500 italic">Cargando...</p></div>
+    </section>
+
   </main>
 
   <!-- MODAL VISOR DE DOCUMENTOS MARKDOWN -->
@@ -1041,7 +1052,7 @@
 
     // GESTIÓN DE PESTAÑAS
     function cambiarTab(tabId) {
-      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria', 'biblioteca'];
+      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria', 'cursos', 'biblioteca'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
@@ -1060,6 +1071,53 @@
         cargarClases();
       } else if (tabId === 'biblioteca') {
         cargarBiblioteca();
+      } else if (tabId === 'cursos') {
+        cargarCursos();
+      }
+    }
+
+    // ===== MIS CURSOS (paquetes de curso/clase importados) =====
+    async function cargarCursos() {
+      const cont = document.getElementById('cursosLista');
+      if (!cont) return;
+      try {
+        const r = await fetch('/api/cursos', { cache: 'no-store' });
+        const d = await r.json();
+        const cs = d.cursos || [];
+        if (!cs.length) { cont.innerHTML = '<p class="text-xs text-slate-500 italic">Todav&iacute;a no importaste cursos. Import&aacute; un paquete de curso o clase desde la pesta&ntilde;a Proyectos &amp; Ejercicios (pegando el enlace del docente).</p>'; return; }
+        // ejercicios globales (para resolver los del curso por id)
+        let bib = [];
+        try { bib = (await (await fetch('/api/biblioteca', { cache: 'no-store' })).json()).unidades || []; } catch (e) {}
+        cont.innerHTML = cs.map(c => {
+          const mods = (c.modulos || []).map(m => `<a href="/cursos/${c.codigo}/${m.infografia}" target="_blank" class="text-[11px] bg-slate-800 text-fuchsia-300 px-2 py-0.5 rounded hover:text-fuchsia-200" title="infograf&iacute;a del m&oacute;dulo ${m.n}">M${m.n} &#127912;</a>`).join(' ');
+          const matClase = {}; (c.clases_material || []).forEach(x => matClase[x.clase_num] = x);
+          const clases = (c.clases || []).map(cl => {
+            const mm = matClase[cl.numero];
+            const badge = mm ? `<span class="text-[10px] text-emerald-400">&#10003; material (${mm.material} pzs, ${mm.biblioteca} ej.)</span>` : '<span class="text-[10px] text-slate-600">sin material propio</span>';
+            return `<div class="flex items-center justify-between text-[11px] bg-slate-950/60 border border-slate-800 rounded px-2 py-1">
+              <span class="text-slate-300">Clase ${cl.numero} &middot; M${cl.modulo_principal || '?'} &middot; ${cl.tema || ''}</span>${badge}</div>`;
+          }).join('');
+          // ejercicios del curso agrupados por modulo (por aplica_a)
+          const ejerCurso = (c.biblioteca || []);
+          const porMod = {};
+          ejerCurso.forEach(u => { (u.aplica_a || []).forEach(a => { if (a.curso === c.codigo) (a.modulos || ['?']).forEach(md => { (porMod[md] = porMod[md] || []).push(u); }); }); });
+          const tieneCodigo = id => bib.some(b => b.id === id);
+          const ejercicios = Object.keys(porMod).sort((a,b)=>a-b).map(md => {
+            const us = porMod[md];
+            return `<div class="text-[11px] text-slate-400 mt-1"><span class="font-bold">M${md}:</span> ${us.map(u => `<span class="${tieneCodigo(u.id)?'text-cyan-300':'text-slate-500'}" title="${tieneCodigo(u.id)?'importado en tu biblioteca':'referenciado (import&aacute; el ejercicio para tener el c&oacute;digo)'}">${u.nombre || u.id}${u.probado?' &#10003;':''}</span>`).join(' &middot; ')}</div>`;
+          }).join('');
+          return `<div class="bg-slate-900/70 border border-slate-800 rounded-xl p-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-base text-white">&#128218; ${c.nombre}</span>
+              <span class="text-[10px] text-slate-400">${c.total_horas||'?'} hs &middot; ${c.total_clases||(c.clases||[]).length} clases &middot; ${c.incluye||''}</span>
+            </div>
+            <div><div class="text-[11px] font-bold text-slate-300 mb-1">M&oacute;dulos (${(c.modulos||[]).length})</div><div class="flex flex-wrap gap-1">${mods||'<span class="text-[11px] text-slate-600">sin infograf&iacute;as</span>'}</div></div>
+            <div><div class="text-[11px] font-bold text-slate-300 mb-1">Clases (${(c.clases||[]).length})</div><div class="flex flex-col gap-1">${clases}</div></div>
+            <div><div class="text-[11px] font-bold text-slate-300 mb-1">Ejercicios del curso (${ejerCurso.length})</div>${ejercicios||'<span class="text-[11px] text-slate-600">-</span>'}</div>
+          </div>`;
+        }).join('');
+      } catch (e) {
+        cont.innerHTML = `<p class="text-xs text-rose-400">Error cargando cursos: ${e}</p>`;
       }
     }
 

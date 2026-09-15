@@ -411,6 +411,44 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode("utf-8"))
             return
+        elif path == "/api/cursos":
+            base = os.path.join(STUDENT_DIR, "cursos")
+            cursos = []
+            if os.path.isdir(base):
+                for cod in sorted(os.listdir(base)):
+                    cdir = os.path.join(base, cod)
+                    pj = os.path.join(cdir, "paquete.json")
+                    if not os.path.isdir(cdir):
+                        continue
+                    info = {"codigo": cod, "nombre": cod, "modulos": [], "clases_material": [], "biblioteca": []}
+                    if os.path.exists(pj):
+                        try:
+                            with open(pj, encoding="utf-8") as fh:
+                                p = json.load(fh)
+                            info.update({"nombre": p.get("nombre", cod), "total_horas": p.get("total_horas"),
+                                         "total_clases": p.get("total_clases"), "incluye": p.get("incluye"),
+                                         "modulos": p.get("modulos", []), "clases": p.get("clases", []),
+                                         "biblioteca": p.get("biblioteca", [])})
+                        except Exception:
+                            pass
+                    # clases importadas aparte (carpetas clase_NN con su paquete.json)
+                    for sub in sorted(os.listdir(cdir)):
+                        cpj = os.path.join(cdir, sub, "paquete.json")
+                        if sub.startswith("clase_") and os.path.exists(cpj):
+                            try:
+                                with open(cpj, encoding="utf-8") as fh:
+                                    cp = json.load(fh)
+                                info["clases_material"].append({"clase_num": cp.get("clase_num"),
+                                    "tema": cp.get("tema"), "modulo_principal": cp.get("modulo_principal"),
+                                    "material": len(cp.get("material", [])), "biblioteca": len(cp.get("biblioteca", [])),
+                                    "ruta": f"cursos/{cod}/{sub}"})
+                            except Exception:
+                                pass
+                    cursos.append(info)
+            self.send_response(200); self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*"); self.end_headers()
+            self.wfile.write(json.dumps({"ok": True, "cursos": cursos, "total": len(cursos)}, ensure_ascii=False).encode("utf-8"))
+            return
         elif path == "/api/biblioteca":
             biblio = os.path.join(STUDENT_DIR, "biblioteca")
             unidades = []
@@ -490,6 +528,66 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                 tmp = tempfile.mkdtemp()
                 with zipfile.ZipFile(io.BytesIO(datos)) as z:
                     z.extractall(tmp)
+                # paquete de CURSO o CLASE (estandar): tiene paquete.json
+                paq_path = None; paq_prof = 1e9
+                for root, _, files in os.walk(tmp):
+                    if "paquete.json" in files:
+                        prof = len(os.path.relpath(root, tmp).replace("\\", "/").split("/"))
+                        if prof < paq_prof:
+                            paq_prof = prof; paq_path = os.path.join(root, "paquete.json")
+                if paq_path:
+                    with open(paq_path, encoding="utf-8") as fh:
+                        pq = json.load(fh)
+                    ptipo = pq.get("tipo", "curso")
+                    destino_rel = (pq.get("destino_alumno")
+                                   or (f"cursos/{pq.get('codigo','curso')}/" if ptipo == "curso"
+                                       else f"cursos/{pq.get('codigo','curso')}/clase_{int(pq.get('clase_num',0)):02d}/")).rstrip("/").lstrip("/")
+                    destino = os.path.join(STUDENT_DIR, destino_rel.replace("/", os.sep))
+                    src = os.path.dirname(paq_path)
+                    # una CLASE no se puede importar si su CURSO no esta cargado
+                    if ptipo == "clase":
+                        curso_dir = os.path.join(STUDENT_DIR, "cursos", str(pq.get("codigo", "")))
+                        if not os.path.isdir(curso_dir):
+                            shutil.rmtree(tmp, ignore_errors=True)
+                            _resp({"ok": False, "error": f"Primero importa el curso {pq.get('codigo')} y despues sus clases."}, 400)
+                            return
+                    # los ejercicios/proyectos del paquete van a la biblioteca GLOBAL (reusables),
+                    # NO dentro del curso. El resto (metadata + material del profe) va al curso.
+                    _ig = shutil.ignore_patterns("biblioteca")
+                    if ptipo == "clase":
+                        if os.path.exists(destino):
+                            shutil.rmtree(destino)
+                        shutil.copytree(src, destino, ignore=_ig)
+                    else:
+                        shutil.copytree(src, destino, dirs_exist_ok=True, ignore=_ig)
+                    # colocar las unidades globales
+                    global_biblio = os.path.join(src, "biblioteca")
+                    n_uni = 0
+                    if os.path.isdir(global_biblio):
+                        for uid_dir in os.listdir(global_biblio):
+                            ud = os.path.join(global_biblio, uid_dir)
+                            man = next((os.path.join(ud, x) for x in ("ejercicio.json", "proyecto.json")
+                                        if os.path.exists(os.path.join(ud, x))), None)
+                            if not man:
+                                continue
+                            um = json.load(open(man, encoding="utf-8"))
+                            utipo = "proyecto" if os.path.basename(man) == "proyecto.json" else "ejercicio"
+                            urel = (um.get("entrega", {}).get("destino_alumno")
+                                    or f"biblioteca/{'proyectos' if utipo=='proyecto' else 'ejercicios'}/{um.get('id', uid_dir)}/").rstrip("/").lstrip("/")
+                            udest = os.path.join(STUDENT_DIR, urel.replace("/", os.sep))
+                            if os.path.exists(udest):
+                                shutil.rmtree(udest)
+                            shutil.copytree(ud, udest)
+                            n_uni += 1
+                    shutil.rmtree(tmp, ignore_errors=True)
+                    nfiles = sum(len(fs) for _, _, fs in os.walk(destino)) + n_uni
+                    ident = pq.get("codigo", "?") + (f" clase {pq.get('clase_num')}" if ptipo == "clase" else "")
+                    log_event("IMPORTAR", f"{ptipo} '{ident}' -> {destino_rel} ({nfiles} archivos)")
+                    _resp({"ok": True, "tipo": ptipo, "codigo": pq.get("codigo"),
+                           "nombre": pq.get("nombre") or pq.get("tema"), "destino": destino_rel,
+                           "clase_num": pq.get("clase_num"), "archivos": nfiles,
+                           "unidades_biblioteca": n_uni})
+                    return
                 man_path = tipo = None
                 mejor_prof = 1e9
                 for root, _, files in os.walk(tmp):
