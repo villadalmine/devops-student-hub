@@ -391,6 +391,26 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             filename = urllib.parse.unquote(path[8:])
             self.handle_video_streaming(filename)
             return
+        elif path == "/api/abrir_carpeta":
+            import subprocess as _sp
+            rel = (urllib.parse.parse_qs(url_parts.query).get("ruta", [""])[0] or "").replace("\\", "/").lstrip("/")
+            full = os.path.abspath(os.path.join(STUDENT_DIR, rel))
+            base_ok = os.path.abspath(os.path.join(STUDENT_DIR, "biblioteca"))
+            self.send_response(200); self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*"); self.end_headers()
+            try:
+                if not (full.startswith(base_ok) and os.path.isdir(full)):
+                    raise ValueError("ruta invalida")
+                if sys.platform == "win32":
+                    os.startfile(full)
+                elif sys.platform == "darwin":
+                    _sp.Popen(["open", full])
+                else:
+                    _sp.Popen(["xdg-open", full])
+                self.wfile.write(json.dumps({"ok": True, "ruta": rel}).encode("utf-8"))
+            except Exception as e:
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode("utf-8"))
+            return
         elif path == "/api/biblioteca":
             biblio = os.path.join(STUDENT_DIR, "biblioteca")
             unidades = []
