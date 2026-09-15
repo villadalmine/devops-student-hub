@@ -82,6 +82,9 @@
     <button onclick="cambiarTab('asistente')" id="tabBtn-asistente" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>🤖</span> <span>Asistente IA</span>
     </button>
+    <button onclick="cambiarTab('terminalai')" id="tabBtn-terminalai" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>&#128421;&#65039;</span> Terminal AI
+    </button>
     <button onclick="cambiarTab('cursos')" id="tabBtn-cursos" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>&#128218;</span> Mis Cursos
     </button>
@@ -630,6 +633,29 @@
       <div id="cursosLista" class="grid grid-cols-1 lg:grid-cols-2 gap-4"><p class="text-xs text-slate-500 italic">Cargando...</p></div>
     </section>
 
+    <section id="tab-terminalai" class="hidden flex flex-col gap-4">
+      <div class="bg-gradient-to-r from-slate-900 via-teal-950/30 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">&#128421;&#65039; Terminal AI</h2>
+        <p class="text-xs text-slate-400 mt-1">Una terminal con inteligencia: describí lo que querés y la IA te sugiere el comando; ejecutalo y pedile que te explique la salida o el error. Usa tu motor del Asistente IA (OpenRouter con tu clave, u Ollama local). <b>Revisá siempre el comando antes de ejecutarlo.</b></p>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+        <pre id="taiOut" class="text-[12px] text-slate-300 font-mono h-64 overflow-y-auto whitespace-pre-wrap m-0">Bienvenido a la Terminal AI. Escribí un comando y Enter, o pedí una sugerencia abajo.</pre>
+        <div class="flex gap-2 mt-2">
+          <span class="text-emerald-400 font-mono text-sm self-center">$</span>
+          <input id="taiCmd" type="text" placeholder="comando de shell..." onkeydown="if(event.key==='Enter')taiEjecutar()" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-teal-500" />
+          <button onclick="taiEjecutar()" class="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-lg text-xs font-bold">&#9654; Ejecutar</button>
+        </div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+        <div class="flex gap-2">
+          <input id="taiPedido" type="text" placeholder="¿qué querés hacer? (ej: listar los contenedores de docker corriendo)" onkeydown="if(event.key==='Enter')taiSugerir()" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-fuchsia-500" />
+          <button onclick="taiSugerir()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-2 rounded-lg text-xs font-bold shrink-0">&#129302; Sugerir comando</button>
+          <button onclick="taiExplicar()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold shrink-0">&#129302; Explicar salida</button>
+        </div>
+        <p id="taiAiMsg" class="text-[11px] text-slate-400 whitespace-pre-wrap"></p>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL VISOR DE DOCUMENTOS MARKDOWN -->
@@ -1052,7 +1078,7 @@
 
     // GESTIÓN DE PESTAÑAS
     function cambiarTab(tabId) {
-      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria', 'cursos', 'biblioteca'];
+      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria', 'terminalai', 'cursos', 'biblioteca'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
@@ -1073,7 +1099,75 @@
         cargarBiblioteca();
       } else if (tabId === 'cursos') {
         cargarCursos();
+      } else if (tabId === 'terminalai') {
+        setTimeout(() => document.getElementById('taiCmd')?.focus(), 100);
       }
+    }
+
+    // ===== TERMINAL AI (terminal + inteligencia: sugerir comando, explicar salida) =====
+    let taiUltimo = { cmd: '', salida: '' };
+    async function taiEjecutar() {
+      const cmd = (document.getElementById('taiCmd').value || '').trim();
+      if (!cmd) return;
+      const out = document.getElementById('taiOut');
+      out.textContent += '\n$ ' + cmd + '\n';
+      out.scrollTop = out.scrollHeight;
+      try {
+        const r = await fetch('/api/ejecutar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comando: cmd }) });
+        const d = await r.json();
+        const salida = (d.stdout || '') + (d.stderr || '') + (d.output || '') + (d.error || '');
+        out.textContent += (salida || '(sin salida)') + '\n';
+        out.scrollTop = out.scrollHeight;
+        taiUltimo = { cmd, salida };
+      } catch (e) {
+        out.textContent += 'error: ' + e + '\n';
+      }
+      document.getElementById('taiCmd').value = '';
+    }
+
+    // Reusa el motor IA del asistente (OpenRouter con tu clave, o Ollama local)
+    async function taiConsultarIA(userPrompt, system) {
+      const key = (typeof BOT_KEY_STORAGE !== 'undefined') ? localStorage.getItem(BOT_KEY_STORAGE) : null;
+      const engine = (typeof botState !== 'undefined' && botState.engine) ? botState.engine : (key ? 'openrouter' : 'ollama');
+      if (engine === 'openrouter' && key) {
+        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'Terminal AI' },
+          body: JSON.stringify({ model: (typeof botState !== 'undefined' ? botState.model : 'meta-llama/llama-3.1-8b-instruct:free'), messages: [{ role: 'system', content: system }, { role: 'user', content: userPrompt }], max_tokens: 800, temperature: 0.2 })
+        });
+        const d = await resp.json();
+        if (d.error) throw new Error(d.error.message || 'error de OpenRouter');
+        return d.choices?.[0]?.message?.content || '';
+      }
+      // Ollama local (el hub corre local; Ollama en 11434 permite localhost)
+      const resp = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'qwen2.5:7b', prompt: system + '\n\n' + userPrompt, stream: false, options: { temperature: 0.2 } })
+      });
+      const d = await resp.json();
+      return d.response || '';
+    }
+
+    async function taiSugerir() {
+      const q = (document.getElementById('taiPedido').value || '').trim();
+      if (!q) return;
+      const msg = document.getElementById('taiAiMsg'); msg.textContent = '🤖 pensando...';
+      try {
+        const sys = 'Sos un asistente de terminal. Devolvé SOLO el comando de shell que resuelve lo pedido, sin explicacion y sin backticks. Si hacen falta varios, uno por linea. Preferí comandos seguros.';
+        const r = (await taiConsultarIA(q, sys)).trim().replace(/^```\w*\n?|```$/g, '').trim();
+        document.getElementById('taiCmd').value = r.split('\n')[0];
+        msg.textContent = '🤖 sugerido (revisalo antes de ejecutar): ' + r;
+      } catch (e) { msg.textContent = '⚠️ ' + e.message + ' (configurá tu clave de OpenRouter en Asistente IA, o tené Ollama local)'; }
+    }
+
+    async function taiExplicar() {
+      if (!taiUltimo.cmd) { document.getElementById('taiAiMsg').textContent = 'Ejecutá un comando primero.'; return; }
+      const msg = document.getElementById('taiAiMsg'); msg.textContent = '🤖 explicando...';
+      try {
+        const sys = 'Sos un mentor de DevOps/Linux. Explicá en castellano, breve y claro, que hace el comando y que significa su salida. Si hay un error, decí la causa y como arreglarlo.';
+        const r = await taiConsultarIA(`Comando:\n${taiUltimo.cmd}\n\nSalida:\n${taiUltimo.salida.slice(0,1500)}`, sys);
+        msg.textContent = '🤖 ' + r;
+      } catch (e) { msg.textContent = '⚠️ ' + e.message; }
     }
 
     // ===== MIS CURSOS (paquetes de curso/clase importados) =====
