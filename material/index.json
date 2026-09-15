@@ -1,0 +1,4 @@
+{
+  "_comentario": "Índice de clases publicadas. El docente agrega una entrada por cada clase que exporta y deja el HTML en esta carpeta material/. El hub lo lista en la pestaña 'Guías & Apuntes' -> 'Clases del Curso'. Ejemplo de entrada: { \"titulo\": \"Clase 5 · Docker\", \"archivo\": \"clase_05_docker.html\", \"modulo\": \"M4\" }",
+  "clases": []
+}
