@@ -42,15 +42,12 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 8081
 
 # Resolucion inteligente de rutas para soporte binario PyInstaller (sys.frozen) y script normal
 if getattr(sys, "frozen", False):
-    # Ejecutandose como binario compilado (.exe)
-    base_exe_dir = os.path.dirname(os.path.abspath(sys.executable))
-    if not os.path.exists(os.path.join(base_exe_dir, "devops_hub.html")) and os.path.exists(os.path.join(os.path.dirname(base_exe_dir), "devops_hub.html")):
-        STUDENT_DIR = os.path.dirname(base_exe_dir)
-        SCRIPT_DIR = base_exe_dir
-    else:
-        STUDENT_DIR = base_exe_dir
-        SCRIPT_DIR = os.path.join(STUDENT_DIR, "scripts")
+    # Ejecutandose como binario compilado con PyInstaller (.exe)
+    # sys._MEIPASS contiene la ruta donde PyInstaller desempacó los archivos
+    STUDENT_DIR = sys._MEIPASS
+    SCRIPT_DIR = os.path.join(STUDENT_DIR, "scripts")
 else:
+    # Ejecutandose como script Python normal
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
     STUDENT_DIR = os.path.dirname(SCRIPT_DIR)
 
