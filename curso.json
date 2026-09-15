@@ -1,7 +1,7 @@
 {
   "curso_id": "DEVO07",
-  "codigo": "84214",
-  "institucion": "EducacionIT",
+  "codigo": "",
+  "institucion": "",
   "titulo": "Cloud DevOps: Automatizacion y Despliegue",
   "descripcion": "Estacion de trabajo profesional para provisionamiento, diagnostico, contenedores, CI/CD y observabilidad.",
   "total_clases": 12,

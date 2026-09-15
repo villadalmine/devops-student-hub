@@ -188,3 +188,21 @@ Cuatro botones listos según lo que necesites: **📖 Explicámelo distinto**, *
 ## 🤝 Soporte y Comunidad
 
 Si tienes dudas sobre el entorno o sugerencias de herramientas para incorporar al Hub, abre un issue en el repositorio o compártelo en clase mediante la función de exportación de aportes.
+
+
+---
+
+## Aviso de contenido generado con IA (transparencia)
+
+Parte del material, el codigo y la documentacion de este workspace fueron **generados con
+asistencia de inteligencia artificial y orquestados/revisados por una persona** antes de
+publicarse. Se informa en cumplimiento del principio de transparencia del **Reglamento (UE)
+2024/1689 (Reglamento de Inteligencia Artificial, "AI Act")**, en particular su articulo 50
+sobre la divulgacion de contenidos generados o manipulados por sistemas de IA.
+
+El contenido generado por IA puede contener errores: verifica los comandos antes de ejecutarlos.
+
+## Independencia de la plataforma
+
+Este es un proyecto **personal e independiente**. No esta asociado, respaldado ni afiliado a
+ninguna institucion educativa. Cualquier referencia a un curso es solo el tema del material.
