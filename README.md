@@ -6,21 +6,78 @@
 
 ## ⚡ 1. Inicio Rápido (En 1 Clic)
 
-No necesitas configurar entornos complejos ni tener Docker instalado. Puedes iniciar el portal directamente:
+No necesitas configurar entornos complejos ni tener Docker instalado. Elige tu método:
 
-### 🪟 En Windows (Sin requerir Python):
-1. Descarga el ejecutable standalone:  
-   👉 **[⬇️ Descargar student-hub.exe (Release v1.0.0)](https://github.com/villadalmine/devops-student-hub/releases/latest/download/student-hub.exe)**
-2. Haz doble clic sobre **`student-hub.exe`** (o sobre **`iniciar-mi-hub.bat`**).
-3. ¡Listo! Tu navegador se abrirá automáticamente en **`http://localhost:8081`**.
+### 🪟 Opción A: Binario Standalone Windows (Solo .exe, todo empacado)
 
-### 🐧 Linux / 🍎 macOS:
+**Descarga solo el ejecutable** — incluye todos los archivos necesarios:
+
+👉 **[⬇️ Descargar student-hub.exe](https://github.com/villadalmine/devops-student-hub/releases/latest)**
+
+Luego:
 ```bash
+# Haz doble clic en student-hub.exe
+# O desde terminal:
+./student-hub.exe
+
+# Tu navegador se abrirá en http://localhost:8081
+```
+
+**Ventajas:** ✅ Un solo archivo, no necesitas Git ni Python  
+**Desventajas:** ❌ Archivo más pesado (~50-100MB), requiere recompilar si hay cambios
+
+---
+
+### 📥 Opción B: Clonar/Descargar Repositorio (Recomendado para desarrollo)
+
+El repositorio completo necesita todos los archivos. Elige **una** opción:
+
+**Con Git (Recomendado):**
+```bash
+git clone https://github.com/villadalmine/devops-student-hub.git
+cd devops-student-hub
+./iniciar-mi-hub.ps1      # Windows
+./iniciar-mi-hub.sh       # Linux/macOS
+```
+
+**O Descargar ZIP:**
+👉 **[⬇️ Descargar ZIP](https://github.com/villadalmine/devops-student-hub/releases/latest)** (busca "Source code (.zip)")
+
+Luego:
+```bash
+# Windows
+./iniciar-mi-hub.ps1
+
+# Linux/macOS
 chmod +x ./iniciar-mi-hub.sh
 ./iniciar-mi-hub.sh
-# O directamente con Python 3:
+# O con Python directo:
 python3 scripts/servidor_asistente.py 8081
 ```
+
+**Ventajas:** ✅ Archivo más pequeño, cambios se reflejan inmediatamente  
+**Desventajas:** ❌ Necesitas Python 3 y Git/ZIP
+
+---
+
+## 🔨 2. Para Docentes: Compilar un Nuevo Binario
+
+Si hacés cambios en el código, necesitás recompilar el `.exe`:
+
+```bash
+# 1. Instalar PyInstaller (una sola vez)
+pip install pyinstaller
+
+# 2. Compilar
+./build.ps1
+
+# 3. El binario estará en: dist/student-hub.exe
+# 4. Actualizar la release en GitHub
+```
+
+**Nota:** Cada cambio = nuevo binario. El `.spec` empaca todos los archivos dentro del `.exe`.
+
+---
 
 ---
 
