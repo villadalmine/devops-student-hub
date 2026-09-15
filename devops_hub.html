@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cloud DevOps Student Hub | Ecosistema & Software</title>
+  <title>Hub Workspace Alumnos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
       </div>
       <div>
         <h1 class="font-bold text-sm md:text-base tracking-tight text-white flex items-center gap-2">
-          <span id="cursoTituloHeader">Cloud DevOps Student Hub</span>
+          <span id="cursoTituloHeader">Hub Workspace Alumnos</span>
           <span id="cursoCodeBadge" class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono font-semibold">Multi-OS</span>
         </h1>
         <p id="cursoDescHeader" class="text-[11px] text-slate-400">Toolkit Profesional, Diagnóstico y Recursos para Windows, Linux & macOS</p>
@@ -143,6 +143,9 @@
           </button>
           <button onclick="ejecutarBannerEnTerminal(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-slate-700 shrink-0" title="Abre terminal con tu usuario estándar">
             <span>👤</span> <span>Normal</span>
+          </button>
+          <button onclick="exportarComandosInstalacion()" class="bg-indigo-700/40 hover:bg-indigo-600 border border-indigo-500/50 text-indigo-200 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0" title="Descargar un archivo con TODOS los comandos de instalacion de las herramientas">
+            <span>&#11015;&#65039;</span> <span>Exportar comandos</span>
           </button>
           <button onclick="copiarComandoBanner()" class="bg-cyan-700/40 hover:bg-cyan-600 border border-cyan-500/50 text-cyan-200 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0" title="Copiar comando">
             <span>📋</span> <span>Copiar</span>
@@ -796,6 +799,38 @@
     });
 
     // CAMBIO DE SISTEMA OPERATIVO
+    function exportarComandosInstalacion() {
+      const os = (typeof currentOS !== 'undefined' && currentOS) ? currentOS : 'win';
+      const key = os === 'macos' ? 'mac' : os;
+      const esWin = os === 'win';
+      const nombreOS = esWin ? 'Windows (PowerShell)' : (os === 'linux' ? 'Linux (bash)' : 'macOS (bash)');
+      const c = esWin ? '# ' : '# ';
+      const L = [];
+      if (!esWin) L.push('#!/usr/bin/env bash', 'set -e', '');
+      L.push(c + 'Comandos de instalacion de TODAS las herramientas - ' + nombreOS);
+      L.push(c + 'Generado por el Hub Workspace Alumnos. Revisa antes de ejecutar.');
+      L.push('');
+      (typeof TOOLS !== 'undefined' ? TOOLS : []).forEach(t => {
+        const cmd = t[key] || t.win;
+        if (!cmd) return;
+        L.push(c + t.name + (t.tipo ? ' [' + t.tipo + ']' : ''));
+        L.push(cmd);
+        L.push('');
+      });
+      const contenido = L.join('\n');
+      const ext = esWin ? 'ps1' : 'sh';
+      const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'instalar-tools-' + os + '.' + ext;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (typeof showToast === 'function') showToast('Comandos exportados: instalar-tools-' + os + '.' + ext, 'success');
+    }
+
     function cambiarOS(os) {
       currentOS = os;
       document.querySelectorAll('.os-btn').forEach(b => b.classList.remove('active'));
@@ -1139,9 +1174,9 @@
         if (data.ok && data.curso) {
           const c = data.curso;
           if (c.titulo) {
-            document.title = c.titulo;
+            document.title = "Hub Workspace Alumnos";
             const h = document.getElementById('cursoTituloHeader');
-            if (h) h.textContent = c.titulo;
+            // header generico (hub universal), no pisamos con el titulo del curso
           }
           if (c.codigo) {
             const b = document.getElementById('cursoCodeBadge');
