@@ -21,3 +21,6 @@ chats_guardados.json
 # Builds de PyInstaller (se regeneran con build.ps1)
 build/
 dist/
+
+# Destino de imports del alumno (datos de runtime, no fuente)
+biblioteca/

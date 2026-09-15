@@ -391,6 +391,43 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
             filename = urllib.parse.unquote(path[8:])
             self.handle_video_streaming(filename)
             return
+        elif path == "/api/biblioteca":
+            biblio = os.path.join(STUDENT_DIR, "biblioteca")
+            unidades = []
+            for tipo, carpeta in (("proyecto", "proyectos"), ("ejercicio", "ejercicios")):
+                base = os.path.join(biblio, carpeta)
+                if not os.path.isdir(base):
+                    continue
+                for d in sorted(os.listdir(base)):
+                    man = os.path.join(base, d, f"{tipo}.json")
+                    if not os.path.exists(man):
+                        continue
+                    try:
+                        with open(man, "r", encoding="utf-8") as fh:
+                            m = json.load(fh)
+                    except Exception:
+                        continue
+                    archivos = []
+                    for sub in ("lab", "infra", "dependencias", "modules"):
+                        subdir = os.path.join(base, d, sub)
+                        if os.path.isdir(subdir):
+                            for root, _, files in os.walk(subdir):
+                                for fn in files:
+                                    rel = os.path.relpath(os.path.join(root, fn), os.path.join(base, d)).replace("\\", "/")
+                                    archivos.append(rel)
+                    unidades.append({"id": m.get("id", d), "tipo": tipo, "nombre": m.get("nombre", d),
+                                     "descripcion": m.get("descripcion", ""), "nivel": m.get("nivel", ""),
+                                     "tags": m.get("tags", []), "tags_cursos": m.get("tags_cursos", []),
+                                     "aplica_a": m.get("aplica_a", []), "depende_de": m.get("depende_de", []),
+                                     "requisitos": m.get("requisitos", []), "probado": m.get("probado", False),
+                                     "version": m.get("version", ""), "archivos": archivos,
+                                     "ruta": f"biblioteca/{carpeta}/{d}"})
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"ok": True, "unidades": unidades, "total": len(unidades)}, ensure_ascii=False).encode("utf-8"))
+            return
         elif path == "/favicon.ico":
             self.send_response(204)
             self.end_headers()
@@ -409,6 +446,62 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         url_parts = urllib.parse.urlparse(self.path)
         path = url_parts.path
+
+        if path == "/api/importar":
+            import base64, io, zipfile, tempfile, shutil
+            from urllib.request import urlopen
+            def _resp(o, code=200):
+                self.send_response(code)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps(o, ensure_ascii=False).encode("utf-8"))
+            length = int(self.headers.get("Content-Length", 0))
+            body = json.loads(self.rfile.read(length).decode("utf-8")) if length > 0 else {}
+            origen = (body.get("origen_url") or "").strip()
+            zip_b64 = body.get("zip_b64") or ""
+            try:
+                if origen:
+                    datos = urlopen(origen, timeout=30).read()
+                elif zip_b64:
+                    datos = base64.b64decode(zip_b64)
+                else:
+                    _resp({"ok": False, "error": "falta origen_url o zip_b64"}, 400); return
+                tmp = tempfile.mkdtemp()
+                with zipfile.ZipFile(io.BytesIO(datos)) as z:
+                    z.extractall(tmp)
+                man_path = tipo = None
+                mejor_prof = 1e9
+                for root, _, files in os.walk(tmp):
+                    if "dependencias" in root.replace("\\", "/").split("/"):
+                        continue
+                    for fn in files:
+                        if fn in ("ejercicio.json", "proyecto.json"):
+                            prof = len(os.path.relpath(root, tmp).replace("\\", "/").split("/"))
+                            if prof < mejor_prof:
+                                mejor_prof = prof
+                                man_path, tipo = os.path.join(root, fn), fn[:-5]
+                if not man_path:
+                    shutil.rmtree(tmp, ignore_errors=True)
+                    _resp({"ok": False, "error": "el paquete no tiene manifiesto (ejercicio/proyecto.json)"}, 400); return
+                with open(man_path, encoding="utf-8") as fh:
+                    m = json.load(fh)
+                uid = m.get("id", "sin-id")
+                destino_rel = (m.get("entrega", {}).get("destino_alumno")
+                               or f"biblioteca/{'proyectos' if tipo == 'proyecto' else 'ejercicios'}/{uid}/").rstrip("/").lstrip("/")
+                destino = os.path.join(STUDENT_DIR, destino_rel.replace("/", os.sep))
+                src = os.path.dirname(man_path)
+                if os.path.exists(destino):
+                    shutil.rmtree(destino)
+                shutil.copytree(src, destino)
+                shutil.rmtree(tmp, ignore_errors=True)
+                n = sum(len(fs) for sub in ("lab", "infra")
+                        for _, _, fs in os.walk(os.path.join(destino, sub)) if os.path.isdir(os.path.join(destino, sub)))
+                log_event("IMPORTAR", f"{tipo} '{uid}' -> {destino_rel} ({n} archivos de codigo)")
+                _resp({"ok": True, "id": uid, "tipo": tipo, "destino": destino_rel, "archivos_codigo": n})
+            except Exception as e:
+                _resp({"ok": False, "error": str(e)}, 500)
+            return
 
         if path == "/api/ejecutar":
             content_length = int(self.headers.get("Content-Length", 0))

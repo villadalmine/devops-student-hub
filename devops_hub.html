@@ -82,6 +82,9 @@
     <button onclick="cambiarTab('asistente')" id="tabBtn-asistente" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>🤖</span> <span>Asistente IA</span>
     </button>
+    <button onclick="cambiarTab('biblioteca')" id="tabBtn-biblioteca" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+      <span>&#129513;</span> Proyectos &amp; Ejercicios
+    </button>
     <button onclick="cambiarTab('telemetria')" id="tabBtn-telemetria" class="tab-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
       <span>📡</span> <span>Logs & Telemetría</span>
     </button>
@@ -594,6 +597,25 @@
       </div>
     </section>
 
+    <section id="tab-biblioteca" class="hidden flex flex-col gap-6">
+      <div class="bg-gradient-to-r from-slate-900 via-fuchsia-950/30 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">&#129513; Proyectos &amp; Ejercicios</h2>
+        <p class="text-xs text-slate-400 mt-1 mb-4">Importa lo que publica el docente pegando el enlace de descarga, o subiendo el ZIP. Se guarda en tu workspace, en la carpeta que indica su ficha, con todo el codigo adentro.</p>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input id="bibImportUrl" type="text" placeholder="http://IP-del-docente:8080/api/biblioteca/descargar?id=..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-fuchsia-500" />
+          <button onclick="importarBiblioteca()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-fuchsia-950/40 shrink-0">&#11015;&#65039; Importar por URL</button>
+          <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 cursor-pointer border border-slate-700 flex items-center gap-1.5">
+            &#128230; Subir ZIP
+            <input id="bibImportFile" type="file" accept=".zip" class="hidden" onchange="importarBibliotecaZip(this)" />
+          </label>
+        </div>
+        <p id="bibImportMsg" class="text-xs mt-2 text-slate-500"></p>
+      </div>
+      <div id="bibliotecaLista" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <p class="text-xs text-slate-500 italic">Cargando...</p>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL VISOR DE DOCUMENTOS MARKDOWN -->
@@ -984,7 +1006,7 @@
 
     // GESTIÓN DE PESTAÑAS
     function cambiarTab(tabId) {
-      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria'];
+      const tabs = ['software', 'material', 'glosario', 'videos', 'diagnostico', 'aportes', 'asistente', 'telemetria', 'biblioteca'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tabBtn-${t}`);
@@ -1001,7 +1023,85 @@
         cargarCertsCyberciruajsBot();
       } else if (tabId === 'material') {
         cargarClases();
+      } else if (tabId === 'biblioteca') {
+        cargarBiblioteca();
       }
+    }
+
+    // ===== PROYECTOS & EJERCICIOS (biblioteca importada) =====
+    async function cargarBiblioteca() {
+      const cont = document.getElementById('bibliotecaLista');
+      if (!cont) return;
+      try {
+        const r = await fetch('/api/biblioteca', { cache: 'no-store' });
+        const data = await r.json();
+        const us = data.unidades || [];
+        if (!us.length) {
+          cont.innerHTML = '<p class="text-xs text-slate-500 italic">Todavia no importaste nada. Pega arriba el enlace que te pasa el docente.</p>';
+          return;
+        }
+        const grupo = (tipo, emoji, titulo) => {
+          const items = us.filter(u => u.tipo === tipo);
+          if (!items.length) return '';
+          return `<div class="lg:col-span-2 mt-2 mb-1 text-xs font-bold text-slate-300">${emoji} ${titulo} (${items.length})</div>` +
+            items.map(u => {
+              const tags = (u.tags || []).map(t => `<span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">${t}</span>`).join(' ');
+              const deps = (u.depende_de || []).length ? `<div class="text-[10px] text-amber-400/80 mt-1">&#128279; necesita: ${(u.depende_de || []).join(', ')}</div>` : '';
+              const cursos = (u.aplica_a || []).map(a => `${a.curso} M${(a.modulos || []).join('/')}`).join(' &middot; ');
+              const prob = u.probado ? `<span class="text-[10px] text-emerald-400">&#10003; probado v${u.version || ''}</span>` : '<span class="text-[10px] text-slate-500">borrador</span>';
+              return `<div class="bg-slate-900/70 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+                <div class="flex items-center justify-between gap-2"><span class="font-semibold text-sm text-white">${u.nombre || u.id}</span>${prob}</div>
+                <div class="text-xs text-slate-400">${u.descripcion || ''}</div>
+                <div class="flex flex-wrap gap-1 mt-1">${tags}</div>
+                ${cursos ? `<div class="text-[10px] text-cyan-400/80 mt-1">&#127919; ${cursos}</div>` : ''}
+                ${deps}
+                <div class="text-[10px] text-slate-500 mt-1">&#128193; ${u.ruta} &mdash; ${(u.archivos || []).length} archivos</div>
+              </div>`;
+            }).join('');
+        };
+        cont.innerHTML = grupo('proyecto', '&#127959;', 'Proyectos') + grupo('ejercicio', '&#129514;', 'Ejercicios');
+      } catch (e) {
+        cont.innerHTML = `<p class="text-xs text-rose-400">Error cargando la biblioteca: ${e}</p>`;
+      }
+    }
+
+    async function _postImportar(payload, etiqueta) {
+      const msg = document.getElementById('bibImportMsg');
+      msg.className = 'text-xs mt-2 text-cyan-300';
+      msg.textContent = `Importando ${etiqueta}...`;
+      try {
+        const r = await fetch('/api/importar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const d = await r.json();
+        if (d.ok) {
+          msg.className = 'text-xs mt-2 text-emerald-400';
+          msg.textContent = `Importado ${d.tipo} "${d.id}" en ${d.destino} (${d.archivos_codigo} archivos de codigo).`;
+          cargarBiblioteca();
+        } else {
+          msg.className = 'text-xs mt-2 text-rose-400';
+          msg.textContent = `${d.error || 'no se pudo importar'}`;
+        }
+      } catch (e) {
+        msg.className = 'text-xs mt-2 text-rose-400';
+        msg.textContent = `Error: ${e}`;
+      }
+    }
+
+    function importarBiblioteca() {
+      const url = (document.getElementById('bibImportUrl').value || '').trim();
+      if (!url) { document.getElementById('bibImportMsg').textContent = 'Pega un enlace primero.'; return; }
+      _postImportar({ origen_url: url }, 'desde la URL');
+    }
+
+    function importarBibliotecaZip(input) {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const b64 = String(reader.result).split(',')[1] || '';
+        _postImportar({ zip_b64: b64 }, f.name);
+        input.value = '';
+      };
+      reader.readAsDataURL(f);
     }
 
     // CLASES PUBLICADAS POR EL DOCENTE (material/index.json)
