@@ -192,6 +192,25 @@ Si tienes dudas sobre el entorno o sugerencias de herramientas para incorporar a
 
 ---
 
+## Proyectos & Ejercicios (importar del docente)
+
+Pestana nueva del hub. Sirve para traer a tu workspace los proyectos y ejercicios que publica
+el docente, con todo el codigo adentro.
+
+- **Importar por URL:** pegas el enlace de descarga que te pasa el docente
+  (`http://IP-del-docente:8080/api/biblioteca/descargar?id=...`) y lo baja e instala solo.
+- **Subir ZIP:** si te pasaron el `.zip` a mano, lo subis y listo.
+- Cada unidad se guarda en `biblioteca/proyectos/<id>/` o `biblioteca/ejercicios/<id>/` (lo dice
+  su ficha), con su `lab/` (el codigo que corres), sus dependencias reutilizadas y, si tiene,
+  sus infografias.
+- Abajo ves lo importado listado con sus tags, de que depende y si esta probado.
+
+## Exportar comandos de instalacion
+
+En la seccion de herramientas, el boton **Exportar comandos** te baja un archivo `.ps1` (Windows)
+o `.sh` (Linux/Mac) con TODOS los comandos de instalacion segun tu sistema operativo, para
+correrlos de una o revisarlos.
+
 ## Aviso de contenido generado con IA (transparencia)
 
 Parte del material, el codigo y la documentacion de este workspace fueron **generados con
