@@ -621,6 +621,25 @@ class StudentHubHandler(SimpleHTTPRequestHandler):
                 _resp({"ok": False, "error": str(e)}, 500)
             return
 
+        if path == "/api/terminal_run":
+            content_length = int(self.headers.get("Content-Length", 0))
+            try:
+                body = json.loads(self.rfile.read(content_length).decode("utf-8")) if content_length > 0 else {}
+            except Exception:
+                body = {}
+            cmd = (body.get("command") or "").strip()
+            if not cmd:
+                self.send_json({"ok": False, "error": "sin comando"}, status=400); return
+            import subprocess as _sp
+            try:
+                r = _sp.run(cmd, shell=True, capture_output=True, text=True, timeout=60, cwd=WRITABLE_DIR)
+                self.send_json({"ok": r.returncode == 0, "stdout": r.stdout, "stderr": r.stderr, "code": r.returncode})
+            except _sp.TimeoutExpired:
+                self.send_json({"ok": False, "error": "timeout (60s)"})
+            except Exception as e:
+                self.send_json({"ok": False, "error": str(e)})
+            return
+
         if path == "/api/ejecutar":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"

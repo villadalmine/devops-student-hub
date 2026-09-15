@@ -1113,7 +1113,7 @@
       out.textContent += '\n$ ' + cmd + '\n';
       out.scrollTop = out.scrollHeight;
       try {
-        const r = await fetch('/api/ejecutar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comando: cmd }) });
+        const r = await fetch('/api/terminal_run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd }) });
         const d = await r.json();
         const salida = (d.stdout || '') + (d.stderr || '') + (d.output || '') + (d.error || '');
         out.textContent += (salida || '(sin salida)') + '\n';
