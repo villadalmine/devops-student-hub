@@ -1243,6 +1243,7 @@
                 ${cursos ? `<div class="text-[10px] text-cyan-400/80 mt-1">&#127919; ${cursos}</div>` : ''}
                 ${deps}
                 ${(() => { const infos = (u.archivos || []).filter(a => /modules\/infografia.*\.html$/i.test(a)); return infos.length ? `<div class="text-[10px] text-fuchsia-300/90 mt-1">&#127912; ${infos.length} infograf&iacute;a${infos.length>1?'s':''}: ${infos.map(a => `<a href="/${u.ruta}/${a}" target="_blank" class="underline hover:text-fuchsia-200">ver</a>`).join(' &middot; ')}</div>` : ''; })()}
+                ${(() => { const sals = (u.archivos || []).filter(a => /modules\/salida.*\.html$/i.test(a)); return sals.length ? `<div class="text-[10px] text-green-300/90 mt-1">&#9654;&#65039; output real: ${sals.map(a => `<a href="/${u.ruta}/${a}" target="_blank" class="underline hover:text-green-200" title="la salida real de los comandos">ver salida</a>`).join(' &middot; ')}</div>` : ''; })()}
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-[10px] text-slate-500">&#128193; ${u.ruta} &mdash; ${(u.archivos || []).length} archivos</span>
                   <button onclick="abrirCarpetaHub('${u.ruta}')" class="text-[10px] text-slate-300 hover:text-white border border-slate-700 rounded px-2 py-0.5" title="Abrir la carpeta">&#128194; abrir</button>
