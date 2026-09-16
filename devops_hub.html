@@ -620,6 +620,17 @@
         </div>
         <p id="bibImportMsg" class="text-xs mt-2 text-slate-500"></p>
       </div>
+      <div id="bibFiltros" class="flex flex-wrap items-center gap-2 hidden">
+        <input id="bibBuscar" type="text" placeholder="buscar (nombre, tag)" oninput="renderBibliotecaAlumno()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 w-44">
+        <select id="bibTipo" onchange="renderBibliotecaAlumno()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+          <option value="">Todos</option>
+          <option value="proyecto">&#127959;&#65039; Proyectos</option>
+          <option value="ejercicio">&#129514; Ejercicios</option>
+        </select>
+        <select id="bibModulo" onchange="renderBibliotecaAlumno()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200"><option value="">Curso &middot; M&oacute;dulo</option></select>
+        <select id="bibTag" onchange="renderBibliotecaAlumno()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200"><option value="">Todos los tags</option></select>
+        <button onclick="['bibBuscar','bibTipo','bibModulo','bibTag'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderBibliotecaAlumno()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-2.5 py-1.5 rounded-lg">&#10005;</button>
+      </div>
       <div id="bibliotecaLista" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <p class="text-xs text-slate-500 italic">Cargando...</p>
       </div>
@@ -1216,17 +1227,61 @@
     }
 
     // ===== PROYECTOS & EJERCICIOS (biblioteca importada) =====
+    let bibUnidades = [];
     async function cargarBiblioteca() {
       const cont = document.getElementById('bibliotecaLista');
       if (!cont) return;
       try {
         const r = await fetch('/api/biblioteca', { cache: 'no-store' });
         const data = await r.json();
-        const us = data.unidades || [];
-        if (!us.length) {
-          cont.innerHTML = '<p class="text-xs text-slate-500 italic">Todavia no importaste nada. Pega arriba el enlace que te pasa el docente.</p>';
-          return;
-        }
+        bibUnidades = data.unidades || [];
+        renderBibliotecaAlumno();
+      } catch (e) {
+        cont.innerHTML = `<p class="text-xs text-rose-400">Error cargando la biblioteca: ${e}</p>`;
+      }
+    }
+
+    function poblarFiltrosBib() {
+      const selM = document.getElementById('bibModulo'), selT = document.getElementById('bibTag');
+      if (selM) {
+        const prev = selM.value, cm = new Set();
+        bibUnidades.forEach(u => (u.aplica_a || []).forEach(a => (a.modulos || []).forEach(m => cm.add(`${a.curso}|${m}`))));
+        selM.innerHTML = '<option value="">Curso &middot; Módulo</option>' +
+          [...cm].sort((x, y) => x.localeCompare(y, undefined, { numeric: true })).map(v => { const [c, m] = v.split('|'); return `<option value="${v}">${c} · M${m}</option>`; }).join('');
+        if ([...selM.options].some(o => o.value === prev)) selM.value = prev;
+      }
+      if (selT) {
+        const prev = selT.value, tg = new Set();
+        bibUnidades.forEach(u => (u.tags || []).forEach(t => tg.add(t)));
+        selT.innerHTML = '<option value="">Todos los tags</option>' + [...tg].sort().map(t => `<option value="${t}">${t}</option>`).join('');
+        if ([...selT.options].some(o => o.value === prev)) selT.value = prev;
+      }
+    }
+
+    function renderBibliotecaAlumno() {
+      const cont = document.getElementById('bibliotecaLista');
+      const filtros = document.getElementById('bibFiltros');
+      if (!cont) return;
+      if (!bibUnidades.length) {
+        if (filtros) filtros.classList.add('hidden');
+        cont.innerHTML = '<p class="text-xs text-slate-500 italic">Todavia no importaste nada. Pega arriba el enlace que te pasa el docente.</p>';
+        return;
+      }
+      if (filtros) filtros.classList.remove('hidden');
+      poblarFiltrosBib();
+      const q = (document.getElementById('bibBuscar')?.value || '').trim().toLowerCase();
+      const tipoF = document.getElementById('bibTipo')?.value || '';
+      const modF = document.getElementById('bibModulo')?.value || '';
+      const tagF = document.getElementById('bibTag')?.value || '';
+      const us = bibUnidades.filter(u => {
+        if (tipoF && u.tipo !== tipoF) return false;
+        if (tagF && !(u.tags || []).includes(tagF)) return false;
+        if (modF) { const [c, m] = modF.split('|'); if (!(u.aplica_a || []).some(a => a.curso === c && (a.modulos || []).map(String).includes(m))) return false; }
+        if (q && !((u.nombre || u.id).toLowerCase().includes(q) || (u.tags || []).some(t => t.toLowerCase().includes(q)))) return false;
+        return true;
+      });
+      if (!us.length) { cont.innerHTML = '<p class="text-xs text-slate-500 italic">Sin resultados para ese filtro.</p>'; return; }
+      {
         const grupo = (tipo, emoji, titulo) => {
           const items = us.filter(u => u.tipo === tipo);
           if (!items.length) return '';
@@ -1252,8 +1307,6 @@
             }).join('');
         };
         cont.innerHTML = grupo('proyecto', '&#127959;', 'Proyectos') + grupo('ejercicio', '&#129514;', 'Ejercicios');
-      } catch (e) {
-        cont.innerHTML = `<p class="text-xs text-rose-400">Error cargando la biblioteca: ${e}</p>`;
       }
     }
 
